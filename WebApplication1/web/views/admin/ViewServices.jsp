@@ -147,20 +147,11 @@
                 color: #fff;
                 border-color: #7B1FA2;
             }
-            .alert-success {
-                margin-bottom: 20px;
-            }
         </style>
     </head>
     <body>
         <div class="container-wrapper">
             <div class="container">
-                <c:if test="${not empty successMessage}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        ${successMessage}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                </c:if>
                 <div class="d-flex justify-content-start mb-3">
                     <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">Home</a>
                 </div>
@@ -168,7 +159,28 @@
                 <div class="d-flex justify-content-end mb-3">
                     <a href="${pageContext.request.contextPath}/views/admin/AddService.jsp" class="btn btn-success">Thêm Dịch Vụ</a>
                 </div>
-                <form action="ViewServiceServlet" method="get">
+               
+              <!-- Form tìm kiếm  -->
+<div class="search-form">
+    <form action="${pageContext.request.contextPath}/ViewServiceServlet" method="get">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="keyword" value="${param.keyword}" placeholder="Tìm theo ID hoặc Tên Dịch Vụ">
+            </div>
+            <div class="col-md-2">
+                <input type="number" step="1" min="0" class="form-control" name="minPrice" value="${param.minPrice}" placeholder="Giá từ (VNĐ)">
+            </div>
+            <div class="col-md-2">
+                <input type="number" step="1" min="0" class="form-control" name="maxPrice" value="${param.maxPrice}" placeholder="Giá đến (VNĐ)">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Tìm Kiếm</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+                 <form action="ViewServiceServlet" method="get">
                     <table class="table table-bordered table-hover">
                         <thead class="table-light text-center">
                             <tr>
@@ -209,7 +221,7 @@
                                                 <fmt:formatDate value="${service.updatedAt}" pattern="dd/MM/yyyy" />
                                             </td>
                                             <td>
-                                                <a href="${pageContext.request.contextPath}/ViewDetailServiceAdminServlet?id=${service.serviceID}" class="btn btn-sm btn-info text-white">Xem chi tiết</a>
+                                                <a href="${pageContext.request.contextPath}/ViewDetailServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-info text-white">Xem chi tiết</a>
                                                 <a href="${pageContext.request.contextPath}/UpdateServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-primary">Sửa</a>
                                                 <a href="${pageContext.request.contextPath}/DeleteServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">Xóa</a>
                                             </td>

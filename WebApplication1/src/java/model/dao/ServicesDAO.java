@@ -197,4 +197,38 @@ public class ServicesDAO {
             return services;
         }
     }
+     public List<Services> searchServices(String keyword, double minPrice, double maxPrice) throws SQLException {
+        List<Services> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM Services WHERE (CAST(ServiceID AS CHAR) LIKE ? OR ServiceName LIKE ?) "
+                + "AND Price BETWEEN ? AND ?";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // Truyền tham số cho PreparedStatement
+            String keyParam = "%" + keyword + "%";
+            stmt.setString(1, keyParam);
+            stmt.setString(2, keyParam);
+            stmt.setDouble(3, minPrice);
+            stmt.setDouble(4, maxPrice);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Services s = new Services();
+                    s.setServiceID(rs.getInt("ServiceID"));
+                    s.setServiceName(rs.getString("ServiceName"));
+                    s.setPrice(rs.getDouble("Price"));
+                    s.setDescription(rs.getString("Description"));
+                    s.setStatus(rs.getString("Status"));
+                    s.setCreatedBy(rs.getInt("CreatedBy"));
+                    s.setCreatedAt(rs.getDate("CreatedAt"));
+                    s.setUpdatedAt(rs.getDate("UpdatedAt"));
+                    list.add(s);
+                }
+            }
+        }
+
+        return list;
+    }
+
 }
