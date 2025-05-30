@@ -26,9 +26,12 @@ public class RegistrationServlet extends HttpServlet {
         String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        // Lấy giá trị 'role' từ form đăng ký, đây là bước đầu tiên liên quan đến chia role.
+        // Người dùng gửi giá trị role (ví dụ: "User", "Admin") qua form.
         String role = request.getParameter("role");
 
-        // Retain form values in case of error
+        // Giữ lại giá trị role trong request để hiển thị lại trên form nếu có lỗi.
+        // Điều này đảm bảo người dùng không phải nhập lại role khi đăng ký thất bại.
         request.setAttribute("username", username);
         request.setAttribute("email", email);
         request.setAttribute("role", role);
@@ -71,6 +74,8 @@ public class RegistrationServlet extends HttpServlet {
             return;
         }
 
+        // Kiểm tra giá trị role có null hoặc rỗng không.
+        // Đây là bước xác thực cơ bản để đảm bảo người dùng phải cung cấp role khi đăng ký.
         if (role == null || role.trim().isEmpty()) {
             request.setAttribute("error", "Role không được để trống.");
             request.setAttribute("form", "register"); // Stay on registration form
@@ -79,7 +84,9 @@ public class RegistrationServlet extends HttpServlet {
         }
 
         try {
-            // Gọi registerUser với fullName là null
+            // Gọi phương thức registerUser của UserService và truyền 'role' vào.
+            // Đây là phần quan trọng liên quan đến chia role: giá trị role được gửi đến tầng service
+            // để lưu vào cơ sở dữ liệu hoặc xử lý theo logic phân quyền.
             if (userService.registerUser(username, email, password, role, null)) {
                 HttpSession session = request.getSession();
                 session.setAttribute("successMessage", "Đã đăng ký thành công, vui lòng đăng nhập!");
@@ -90,11 +97,12 @@ public class RegistrationServlet extends HttpServlet {
                 request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            // Kiểm tra nếu lỗi là do fullName (vì fullName là null trong bước đăng ký)
+            // Xử lý lỗi SQL, có thể liên quan đến role nếu cơ sở dữ liệu có ràng buộc về role.
+            // Ví dụ: nếu bảng users yêu cầu role phải thuộc tập giá trị nhất định (enum, constraint).
             if (e.getMessage().contains("Tên không được để trống")) {
                 try {
-                    // Đăng ký lại mà không yêu cầu fullName
-                    // Giả định UserService có thể xử lý fullName là null hoặc bạn cần chỉnh sửa UserService
+                    // Thử đăng ký lại, tiếp tục truyền 'role' vào UserService.
+                    // Điều này cho thấy role vẫn được sử dụng trong quá trình đăng ký lại.
                     if (userService.registerUser(username, email, password, role, null)) {
                         HttpSession session = request.getSession();
                         session.setAttribute("successMessage", "Đã đăng ký thành công, vui lòng đăng nhập và hoàn thiện hồ sơ!");
@@ -117,6 +125,8 @@ public class RegistrationServlet extends HttpServlet {
                 request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
             }
         } catch (IllegalArgumentException e) {
+            // Xử lý lỗi IllegalArgumentException, có thể liên quan đến role
+            // nếu UserService ném ngoại lệ khi role không hợp lệ (ví dụ: giá trị không được định nghĩa trước).
             request.setAttribute("error", e.getMessage());
             request.setAttribute("form", "register"); // Stay on registration form
             request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
