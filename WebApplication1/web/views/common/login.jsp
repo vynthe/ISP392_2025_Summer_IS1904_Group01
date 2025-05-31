@@ -58,10 +58,8 @@
                             <input type="checkbox" id="login-check" name="rememberMe">
                             <label for="login-check">Ghi nhớ</label>
                         </div>
-                        
-                            <div class="two">
-                                <label><a href="${pageContext.request.contextPath}/ForgotPasswordServlet">Quên mật khẩu?</a></label>
-                            </div>
+                        <div class="two">
+                            <label><a href="${pageContext.request.contextPath}/ForgotPasswordServlet">Quên mật khẩu?</a></label>
                         </div>
                     </div>
 

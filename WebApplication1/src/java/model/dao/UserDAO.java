@@ -137,11 +137,11 @@ public boolean registerUserBasic(Users user) throws SQLException {
         }
         return user;
     }
-   public List<Users> searchEmployees(String keyword) throws SQLException {
+  public List<Users> searchEmployees(String keyword) throws SQLException {
     List<Users> list = new ArrayList<>();
     String sql = "SELECT * FROM Users " +
                  "WHERE role IN ('doctor', 'nurse', 'receptionist') " +
-                 "AND (UserID = ? OR fullName LIKE ? OR gender LIKE ? OR specialization LIKE ? OR YEAR(dob) = ? OR phone LIKE ?)";
+                 "AND (UserID = ? OR fullName LIKE ? OR gender = ? OR specialization LIKE ? OR YEAR(dob) = ? OR phone LIKE ?)";
     try (Connection conn = dbContext.getConnection(); 
          PreparedStatement stmt = conn.prepareStatement(sql)) {
         
@@ -162,7 +162,7 @@ public boolean registerUserBasic(Users user) throws SQLException {
 
         stmt.setInt(1, id); // UserID
         stmt.setString(2, searchPattern); // FullName
-        stmt.setString(3, searchPattern); // Gender
+        stmt.setString(3, keyword); // Gender exact match
         stmt.setString(4, searchPattern); // Specialization
         stmt.setInt(5, year); // Year of Dob
         stmt.setString(6, searchPattern); // Phone
@@ -194,12 +194,12 @@ public boolean registerUserBasic(Users user) throws SQLException {
         }
     }
     return list;
-}
+} 
      public List<Users> searchPatients(String keyword) throws SQLException {
     List<Users> list = new ArrayList<>();
     String sql = "SELECT * FROM Users " +
                  "WHERE role = 'patient' " +
-                 "AND (UserID = ? OR fullName LIKE ? OR gender LIKE ? OR address LIKE ? OR YEAR(dob) = ? or phone like ? )";
+                 "AND (UserID = ? OR fullName LIKE ? OR gender = ? OR address LIKE ? OR YEAR(dob) = ? or phone like ? )";
     
     try (Connection conn = dbContext.getConnection(); 
          PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -221,7 +221,7 @@ public boolean registerUserBasic(Users user) throws SQLException {
 
         stmt.setInt(1, id);                // UserID
         stmt.setString(2, searchPattern);  // fullName
-        stmt.setString(3, searchPattern);  // gender
+        stmt.setString(3, keyword); // Gender exact match  
         stmt.setString(4, searchPattern);  // address
         stmt.setInt(5, year);              // Year(dob)
         stmt.setString(6, searchPattern); // Phone

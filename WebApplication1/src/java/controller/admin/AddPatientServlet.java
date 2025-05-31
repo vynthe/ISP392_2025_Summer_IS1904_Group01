@@ -120,7 +120,7 @@ public class AddPatientServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Integer createdBy = (Integer) session.getAttribute("adminId");
             if (createdBy == null) {
-                createdBy = 1; // Gán admin ID khớp với database
+                createdBy = 35; // Gán admin ID khớp với database
                 System.out.println("Không tìm thấy adminId trong session, sử dụng giá trị mặc định: " + createdBy);
             }
 
@@ -130,7 +130,7 @@ public class AddPatientServlet extends HttpServlet {
             String status = "Active";
 
             // Call UserService to add the user with hashed password
-            boolean success = userService.addUser(fullName, gender, dob, null, role, status, email, phone, address, username, hashedPassword, 1);
+            boolean success = userService.addUser(fullName, gender, dob, null, role, status, email, phone, address, username, hashedPassword, createdBy);
             if (success) {
                 System.out.println("Thêm bệnh nhân thành công: " + fullName + ", Email: " + email);
                 session.setAttribute("successMessage", "Thêm bệnh nhân thành công!");

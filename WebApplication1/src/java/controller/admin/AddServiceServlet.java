@@ -78,7 +78,7 @@ public class AddServiceServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Integer createdBy = (Integer) session.getAttribute("adminId");
             if (createdBy == null) {
-                createdBy = 1;
+                createdBy = 35;
                 System.out.println("AdminID not found in session, using default: " + createdBy + " at " + LocalDateTime.now() + " +07");
             }
 
