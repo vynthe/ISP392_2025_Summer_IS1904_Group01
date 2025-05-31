@@ -221,7 +221,7 @@
                                                 <fmt:formatDate value="${service.updatedAt}" pattern="dd/MM/yyyy" />
                                             </td>
                                             <td>
-                                                <a href="${pageContext.request.contextPath}/ViewDetailServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-info text-white">Xem chi tiết</a>
+                                                <a href="${pageContext.request.contextPath}/ViewDetailServiceAdminServlet?id=${service.serviceID}" class="btn btn-sm btn-info text-white">Xem chi tiết</a>
                                                 <a href="${pageContext.request.contextPath}/UpdateServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-primary">Sửa</a>
                                                 <a href="${pageContext.request.contextPath}/DeleteServiceServlet?id=${service.serviceID}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">Xóa</a>
                                             </td>

@@ -44,7 +44,7 @@ public class ViewDetailServiceAdminServlet extends HttpServlet {
             request.setAttribute("error", "ID không hợp lệ");
             request.getRequestDispatcher("/views/error.jsp").forward(request, response);
         } catch (SQLException e) {
-            System.out.println("Lỗi SQL trong ViewDetailServiceServlet tại 09:41 PM +07, 23/05/2025: " + e.getMessage());
+            System.out.println("Lỗi SQL trong ViewDetailServiceAdminServlet tại 09:41 PM +07, 23/05/2025: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("error", "Lỗi không xác định: " + e.getMessage());
             request.getRequestDispatcher("/views/error.jsp").forward(request, response);
