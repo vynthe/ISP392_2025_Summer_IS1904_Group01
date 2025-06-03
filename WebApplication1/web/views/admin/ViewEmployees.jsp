@@ -205,7 +205,7 @@
                                         <td>
                                             <a href="${pageContext.request.contextPath}/ViewDetailEmployeesServlet?id=${user.userID}" class="btn btn-sm btn-info text-white">Xem chi tiết</a>
                                             <a href="${pageContext.request.contextPath}/UpdateEmployeeServlet?id=${user.userID}" class="btn btn-sm btn-primary">Sửa</a>
-                                            <a href="${pageContext.request.contextPath}/DeleteDoctorServlet?id=${user.userID}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');">Xóa</a>
+                                            <a href="${pageContext.request.contextPath}/DeleteEmployeeServlet?id=${user.userID}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');">Xóa</a>
                                         </td>
                                     </tr>
                                 </c:forEach>

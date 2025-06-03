@@ -10,8 +10,8 @@ import model.service.UserService;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet("/DeleteDoctorServlet")
-public class DeleteDoctorServlet extends HttpServlet {
+@WebServlet("/DeleteEmployeeServlet")
+public class DeleteEmployeeServlet extends HttpServlet {
     private UserService userService;
 
     @Override
