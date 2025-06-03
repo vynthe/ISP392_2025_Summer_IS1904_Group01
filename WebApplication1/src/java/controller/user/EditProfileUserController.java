@@ -15,9 +15,11 @@ import model.service.UserService;
 @WebServlet(name = "EditProfileUserController", urlPatterns = {"/EditProfileUserController"})
 public class EditProfileUserController extends HttpServlet {
 
+    //// Khai báo biến UserService để tương tác với tầng dịch vụ
     private UserService userService;
 
     @Override
+    //// Phương thức init được gọi khi Servlet khởi tạo
     public void init() throws ServletException {
         userService = new UserService();
     }
@@ -32,9 +34,11 @@ public class EditProfileUserController extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
+// Lấy vai trò của người dùng
         String role = user.getRole();
+        // Xác định đường dẫn JSP dựa trên vai trò
         String jspPath = getJspPathByRole(role);
+        // Chuyển tiếp yêu cầu đến trang JSP tương ứng
         request.getRequestDispatcher(jspPath).forward(request, response);
     }
 
@@ -50,7 +54,7 @@ public class EditProfileUserController extends HttpServlet {
             return;
         }
 
-        // Lấy dữ liệu chung
+        // Lấy dữ liệu từ form gửi lên
         String fullName = request.getParameter("fullName");
         String dobStr = request.getParameter("dob");
         String gender = request.getParameter("gender");
@@ -70,13 +74,16 @@ public class EditProfileUserController extends HttpServlet {
             }
             Date dob;
             try {
+                // Chuyển đổi chuỗi ngày sinh sang kiểu Date
                 dob = Date.valueOf(dobStr);
+                // Kiểm tra ngày sinh không được lớn hơn ngày hiện tại
                 LocalDate currentDate = LocalDate.now();
                 LocalDate dobDate = dob.toLocalDate();
                 if (dobDate.isAfter(currentDate)) {
                     throw new ServletException("Ngày sinh không được vượt quá ngày hiện tại.");
                 }
             } catch (IllegalArgumentException e) {
+                // Xử lý lỗi định dạng ngày sinh không hợp lệ
                 throw new ServletException("Định dạng ngày sinh không hợp lệ: " + dobStr);
             }
 

@@ -133,7 +133,7 @@ public class AddEmployeeServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Integer createdBy = (Integer) session.getAttribute("adminId");
             if (createdBy == null) {
-                createdBy = 35; // Gán admin ID khớp với database
+                createdBy = 1; // Gán admin ID khớp với database
             }
 
             // Set default status as "Active"

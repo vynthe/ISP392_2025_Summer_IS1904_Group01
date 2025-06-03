@@ -147,11 +147,20 @@
                 color: #fff;
                 border-color: #7B1FA2;
             }
+            .alert-success {
+                margin-bottom: 20px;
+            }
         </style>
     </head>
     <body>
         <div class="container-wrapper">
             <div class="container">
+                 <c:if test="${not empty successMessage}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${successMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
                 <div class="d-flex justify-content-start mb-3">
                     <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">Home</a>
                 </div>

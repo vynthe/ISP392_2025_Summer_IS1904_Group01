@@ -19,14 +19,20 @@ public class EditProfileAdminController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //lấy session hiện tại 
         HttpSession session = request.getSession();
+        //lấy đối tượng admin từ session
         Admins admin = (Admins) session.getAttribute("admin");
+        //kiểm tra nếu admin chưa đăng nhập 
         if (admin == null) {
+            // thì chuyển hướng về trang đăng nhập
             response.sendRedirect(request.getContextPath() + "/views/admin/login.jsp");
             return;
         }
 
+        // đặt đối tượng admin vào request để sử dụng trong jsp
         request.setAttribute("admin", admin);
+        //Chuyển tiếp yêu cầu đến trang JSP để hiển thị form chỉnh sửa hồ sơ
         request.getRequestDispatcher("/views/admin/EditProfileAdmin.jsp").forward(request, response);
     }
 
