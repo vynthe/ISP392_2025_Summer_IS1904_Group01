@@ -155,7 +155,7 @@
                 </div>
             </c:if>
             <c:if test="${not empty employee}">
-                <form action="${pageContext.request.contextPath}/EditEmployeeServlet" method="post" id="employeeForm" class="needs-validation" novalidate>
+                <form action="${pageContext.request.contextPath}/UpdateEmployeeServlet" method="post" id="employeeForm" class="needs-validation" novalidate>
                     <input type="hidden" name="userID" value="${employee.userID}">
                     <div class="form-group">
                         <label for="fullName">Họ và tên:</label>
