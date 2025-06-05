@@ -70,7 +70,7 @@ public class AddRoomServlet extends HttpServlet {
             String createdByStr = request.getParameter("createdBy");
             Integer createdBy = null;
             if (createdByStr == null || createdByStr.trim().isEmpty()) {
-                createdBy = 1;
+                createdBy = 35;
                 System.out.println("createdBy not found in request, using default: " + createdBy + " at " + LocalDateTime.now() + " +07");
             } else {
                 try {

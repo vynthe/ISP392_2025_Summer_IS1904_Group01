@@ -27,8 +27,8 @@ public class DBContext {
         if (connection == null || connection.isClosed()) {
             try {
                 String user = "sa";
-                String password = "123123";
-                String url = "jdbc:sqlserver://localhost:1433;databaseName=ISP;encrypt=true;trustServerCertificate=true";
+                String password = "123456789";
+                String url = "jdbc:sqlserver://localhost:1433;databaseName=ISP392_Project;encrypt=true;trustServerCertificate=true";
                 Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
                 connection = DriverManager.getConnection(url, user, password);
                 System.out.println("DBContext: Đã tạo kết nối mới thành công.");
