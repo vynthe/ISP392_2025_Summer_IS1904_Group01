@@ -198,7 +198,7 @@
             <a href="${pageContext.request.contextPath}/ViewPatientServlet" class="btn-green">View Patients</a>
             <a href="${pageContext.request.contextPath}/ViewEmployeeServlet" class="btn-green">View Employees</a>
             <a href="${pageContext.request.contextPath}/ViewServiceServlet" class="btn-green">View Services</a>
-            <a href="ViewAppointments.jsp" class="btn-green">View Appointment List</a>
+            <a href="${pageContext.request.contextPath}/ViewRoomServlet" class="btn-green">View Rooms</a>
         </div>
     </div>
     <script>
