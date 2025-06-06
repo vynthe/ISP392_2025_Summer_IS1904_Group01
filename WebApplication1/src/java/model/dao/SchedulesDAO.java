@@ -170,145 +170,57 @@ public class SchedulesDAO {
         return schedulesList;
     }
 
-    public List<Map<String, Object>> getAllSchedules() throws SQLException {
-        List<Map<String, Object>> schedulesList = new ArrayList<>();
-        String scheduleQuery = "SELECT ScheduleID, DoctorID, NurseID, StartTime, EndTime, DayOfWeek, RoomID, [Status] FROM Schedules WHERE [Status] = 'Available'";
-
+     public List<Schedules> getAllSchedules() throws SQLException {
+        List<Schedules> schedules = new ArrayList<>();
+        String sql = "SELECT * FROM Schedules";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement scheduleStmt = conn.prepareStatement(scheduleQuery)) {
-            try (ResultSet scheduleRs = scheduleStmt.executeQuery()) {
-                while (scheduleRs.next()) {
-                    Map<String, Object> scheduleData = new HashMap<>();
-                    scheduleData.put("ScheduleID", scheduleRs.getInt("ScheduleID"));
-                    scheduleData.put("DoctorID", scheduleRs.getInt("DoctorID"));
-                    scheduleData.put("NurseID", scheduleRs.getInt("NurseID"));
-                    scheduleData.put("StartTime", scheduleRs.getDate("StartTime"));
-                    scheduleData.put("EndTime", scheduleRs.getDate("EndTime"));
-                    scheduleData.put("DayOfWeek", scheduleRs.getString("DayOfWeek"));
-                    scheduleData.put("RoomID", scheduleRs.getInt("RoomID"));
-                    scheduleData.put("Status", scheduleRs.getString("Status"));
-
-                    String roomQuery = "SELECT RoomID, RoomName, [Description] FROM Rooms WHERE RoomID = ?";
-                    try (PreparedStatement roomStmt = conn.prepareStatement(roomQuery)) {
-                        roomStmt.setInt(1, scheduleRs.getInt("RoomID"));
-                        try (ResultSet roomRs = roomStmt.executeQuery()) {
-                            if (roomRs.next()) {
-                                scheduleData.put("RoomName", roomRs.getString("RoomName"));
-                                scheduleData.put("RoomDescription", roomRs.getString("Description"));
-                            }
-                        }
-                    }
-
-                    // Add Doctor and Nurse names for admin view
-                    String doctorQuery = "SELECT UserID, FullName FROM Users WHERE UserID = ?";
-                    try (PreparedStatement doctorStmt = conn.prepareStatement(doctorQuery)) {
-                        doctorStmt.setInt(1, scheduleRs.getInt("DoctorID"));
-                        try (ResultSet doctorRs = doctorStmt.executeQuery()) {
-                            if (doctorRs.next()) {
-                                scheduleData.put("DoctorName", doctorRs.getString("FullName"));
-                            }
-                        }
-                    }
-
-                    String nurseQuery = "SELECT UserID, FullName FROM Users WHERE UserID = ?";
-                    try (PreparedStatement nurseStmt = conn.prepareStatement(nurseQuery)) {
-                        nurseStmt.setInt(1, scheduleRs.getInt("NurseID"));
-                        try (ResultSet nurseRs = nurseStmt.executeQuery()) {
-                            if (nurseRs.next()) {
-                                scheduleData.put("NurseName", nurseRs.getString("FullName"));
-                            }
-                        }
-                    }
-
-                    schedulesList.add(scheduleData);
-                }
+                PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Schedules schedule = new Schedules();
+                schedule.setScheduleID(rs.getInt("ScheduleID"));
+                schedule.setDoctorID(rs.getInt("DoctorID"));
+                schedule.setNurseID(rs.getInt("NurseID"));
+                schedule.setStartTime(rs.getDate("StartTime"));
+                schedule.setEndTime(rs.getDate("EndTime"));
+                schedule.setDayOfWeek(rs.getString("DayOfWeek"));
+                schedule.setRoomID(rs.getInt("RoomID"));
+                schedule.setStatus(rs.getString("Status"));
+                schedule.setCreatedBy(rs.getInt("CreatedBy"));
+                schedule.setCreatedAt(rs.getDate("CreatedAt"));
+                schedule.setUpdatedAt(rs.getDate("UpdatedAt"));
+                schedules.add(schedule);
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getAllSchedules: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
         }
-        return schedulesList;
+        return schedules;
     }
 
-    public List<Map<String, Object>> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
-        List<Map<String, Object>> schedulesList = new ArrayList<>();
-        String scheduleQuery = "SELECT ScheduleID, DoctorID, NurseID, StartTime, EndTime, DayOfWeek, RoomID, [Status] FROM Schedules WHERE [Status] = 'Available'";
-
-        if ("doctor".equalsIgnoreCase(role) || "nurse".equalsIgnoreCase(role)) {
-            // Doctors and nurses can only see their own schedules
-            String roomQuery = "SELECT RoomID FROM Rooms WHERE " + 
-                             (role.equalsIgnoreCase("doctor") ? "DoctorID" : "NurseID") + " = ?";
-            try (Connection conn = dbContext.getConnection();
-                 PreparedStatement roomStmt = conn.prepareStatement(roomQuery)) {
-                roomStmt.setInt(1, userId);
-                try (ResultSet roomRs = roomStmt.executeQuery()) {
-                    List<Integer> roomIds = new ArrayList<>();
-                    while (roomRs.next()) {
-                        roomIds.add(roomRs.getInt("RoomID"));
-                    }
-                    if (!roomIds.isEmpty()) {
-                        scheduleQuery += " AND RoomID IN (" + String.join(",", roomIds.stream().map(String::valueOf).toArray(String[]::new)) + ")";
-                    } else {
-                        return schedulesList; // Return empty list if no rooms found
-                    }
-                }
-            }
-        } // Admin and receptionist see all schedules (no additional filter)
-
+    public List<Schedules> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
+        List<Schedules> schedules = new ArrayList<>();
+        String sql = "SELECT * FROM Schedules WHERE " +
+                    (role.equalsIgnoreCase("doctor") ? "DoctorID = ?" : "NurseID = ?");
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement scheduleStmt = conn.prepareStatement(scheduleQuery)) {
-            try (ResultSet scheduleRs = scheduleStmt.executeQuery()) {
-                while (scheduleRs.next()) {
-                    Map<String, Object> scheduleData = new HashMap<>();
-                    scheduleData.put("ScheduleID", scheduleRs.getInt("ScheduleID"));
-                    scheduleData.put("DoctorID", scheduleRs.getInt("DoctorID"));
-                    scheduleData.put("NurseID", scheduleRs.getInt("NurseID"));
-                    scheduleData.put("StartTime", scheduleRs.getDate("StartTime"));
-                    scheduleData.put("EndTime", scheduleRs.getDate("EndTime"));
-                    scheduleData.put("DayOfWeek", scheduleRs.getString("DayOfWeek"));
-                    scheduleData.put("RoomID", scheduleRs.getInt("RoomID"));
-                    scheduleData.put("Status", scheduleRs.getString("Status"));
-
-                    String roomQuery = "SELECT RoomID, RoomName, [Description] FROM Rooms WHERE RoomID = ?";
-                    try (PreparedStatement roomStmt = conn.prepareStatement(roomQuery)) {
-                        roomStmt.setInt(1, scheduleRs.getInt("RoomID"));
-                        try (ResultSet roomRs = roomStmt.executeQuery()) {
-                            if (roomRs.next()) {
-                                scheduleData.put("RoomName", roomRs.getString("RoomName"));
-                                scheduleData.put("RoomDescription", roomRs.getString("Description"));
-                            }
-                        }
-                    }
-
-                    // Add Doctor and Nurse names for all views
-                    String doctorQuery = "SELECT UserID, FullName FROM Users WHERE UserID = ?";
-                    try (PreparedStatement doctorStmt = conn.prepareStatement(doctorQuery)) {
-                        doctorStmt.setInt(1, scheduleRs.getInt("DoctorID"));
-                        try (ResultSet doctorRs = doctorStmt.executeQuery()) {
-                            if (doctorRs.next()) {
-                                scheduleData.put("DoctorName", doctorRs.getString("FullName"));
-                            }
-                        }
-                    }
-
-                    String nurseQuery = "SELECT UserID, FullName FROM Users WHERE UserID = ?";
-                    try (PreparedStatement nurseStmt = conn.prepareStatement(nurseQuery)) {
-                        nurseStmt.setInt(1, scheduleRs.getInt("NurseID"));
-                        try (ResultSet nurseRs = nurseStmt.executeQuery()) {
-                            if (nurseRs.next()) {
-                                scheduleData.put("NurseName", nurseRs.getString("FullName"));
-                            }
-                        }
-                    }
-
-                    schedulesList.add(scheduleData);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Schedules schedule = new Schedules();
+                    schedule.setScheduleID(rs.getInt("ScheduleID"));
+                    schedule.setDoctorID(rs.getInt("DoctorID"));
+                    schedule.setNurseID(rs.getInt("NurseID"));
+                    schedule.setStartTime(rs.getDate("StartTime"));
+                    schedule.setEndTime(rs.getDate("EndTime"));
+                    schedule.setDayOfWeek(rs.getString("DayOfWeek"));
+                    schedule.setRoomID(rs.getInt("RoomID"));
+                    schedule.setStatus(rs.getString("Status"));
+                    schedule.setCreatedBy(rs.getInt("CreatedBy"));
+                    schedule.setCreatedAt(rs.getDate("CreatedAt"));
+                    schedule.setUpdatedAt(rs.getDate("UpdatedAt"));
+                    schedules.add(schedule);
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getSchedulesByRoleAndUserId: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
         }
-        return schedulesList;
+        return schedules;
     }
 
     public Map<String, Object> getRoomDetailsByScheduleId(int scheduleID) throws SQLException {

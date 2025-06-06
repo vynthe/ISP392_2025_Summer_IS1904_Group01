@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
-package controller.admin;
+package controller.common;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,8 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author exorc
  */
-@WebServlet(name="ViewDetailSchedulesServlet", urlPatterns={"/ViewDetailSchedulesServlet"})
-public class ViewDetailSchedulesServlet extends HttpServlet {
+@WebServlet(name="FetchUsersServlet", urlPatterns={"/FetchUsersServlet"})
+public class FetchUsersServlet extends HttpServlet {
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -36,10 +36,10 @@ public class ViewDetailSchedulesServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ViewDetailSchedulesServlet</title>");  
+            out.println("<title>Servlet FetchUsersServlet</title>");  
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ViewDetailSchedulesServlet at " + request.getContextPath () + "</h1>");
+            out.println("<h1>Servlet FetchUsersServlet at " + request.getContextPath () + "</h1>");
             out.println("</body>");
             out.println("</html>");
         } finally {

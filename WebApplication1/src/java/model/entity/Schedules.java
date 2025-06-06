@@ -1,19 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.entity;
+
 import java.sql.Date;
-/**
- *
- * @author exorc
- */
+
+
 public class Schedules {
+
     private int scheduleID;
     private int doctorID;
     private int nurseID;
-    private Date startTime;
-    private Date endTime;
+    private Date startTime; 
+    private Date endTime;  
     private String dayOfWeek;
     private int roomID;
     private String status;
@@ -21,23 +17,7 @@ public class Schedules {
     private Date createdAt;
     private Date updatedAt;
 
-    public Schedules() {
-    }
-
-    public Schedules(int scheduleID, int doctorID, int nurseID, Date startTime, Date endTime, String dayOfWeek, int roomID, String status, int createdBy, Date createdAt, Date updatedAt) {
-        this.scheduleID = scheduleID;
-        this.doctorID = doctorID;
-        this.nurseID = nurseID;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.dayOfWeek = dayOfWeek;
-        this.roomID = roomID;
-        this.status = status;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
+    // Getters and Setters
     public int getScheduleID() {
         return scheduleID;
     }
@@ -124,10 +104,5 @@ public class Schedules {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Schedules{" + "scheduleID=" + scheduleID + ", doctorID=" + doctorID + ", nurseID=" + nurseID + ", startTime=" + startTime + ", endTime=" + endTime + ", dayOfWeek=" + dayOfWeek + ", roomID=" + roomID + ", status=" + status + ", createdBy=" + createdBy + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
     }
 }

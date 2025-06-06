@@ -14,20 +14,18 @@ public class SchedulesService {
         this.schedulesDAO = new SchedulesDAO();
     }
 
-    // Lấy tất cả lịch (dành cho admin)
-    public List<Map<String, Object>> getAllSchedules() throws SQLException {
+  // Get all schedules (for admin)
+   public List<Schedules> getAllSchedules() throws SQLException {
+    return schedulesDAO.getAllSchedules();
+}
+   public List<Schedules> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
+    if ("admin".equalsIgnoreCase(role) || "receptionist".equalsIgnoreCase(role)) {
         return schedulesDAO.getAllSchedules();
+    } else if ("doctor".equalsIgnoreCase(role) || "nurse".equalsIgnoreCase(role)) {
+        return schedulesDAO.getSchedulesByRoleAndUserId(role, userId);
     }
-
-    // Lấy lịch dựa trên vai trò và userId
-    public List<Map<String, Object>> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
-        if ("admin".equalsIgnoreCase(role) || "receptionist".equalsIgnoreCase(role)) {
-            return schedulesDAO.getAllSchedules(); // Admin và receptionist xem tất cả lịch
-        } else if ("doctor".equalsIgnoreCase(role) || "nurse".equalsIgnoreCase(role)) {
-            return schedulesDAO.getSchedulesByRoleAndUserId(role, userId); // Doctor/Nurse chỉ xem lịch của mình
-        }
-        return null; // Vai trò không hợp lệ
-    }
+    return null;
+}
 
     // Lấy chi tiết phòng theo ScheduleID (chỉ cho doctor/nurse)
     public Map<String, Object> getRoomDetailsByScheduleId(int scheduleId, String role) throws SQLException {
