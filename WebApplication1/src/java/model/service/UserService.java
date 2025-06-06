@@ -143,7 +143,7 @@ public boolean registerUser(String username, String email, String password, Stri
     }
 
     // Validate username: chỉ chứa chữ cái và số
-    private void validateUsername(String username) throws SQLException {
+    public void validateUsername(String username) throws SQLException {
         if (username == null || username.trim().isEmpty()) {
             throw new SQLException("Tên đăng nhập không được để trống.");
         }

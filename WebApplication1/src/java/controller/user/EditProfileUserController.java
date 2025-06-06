@@ -55,7 +55,7 @@ public class EditProfileUserController extends HttpServlet {
         }
 
         // Lấy dữ liệu từ form gửi lên
-        String fullName = request.getParameter("fullName");
+        String username = request.getParameter("username");
         String dobStr = request.getParameter("dob");
         String gender = request.getParameter("gender");
         String phone = request.getParameter("phone");
@@ -66,7 +66,7 @@ public class EditProfileUserController extends HttpServlet {
         try {
             // Validate dữ liệu
             // Validate fullName using service method
-            userService.validateFullName(fullName);
+           userService.validateUsername(username);
 
             // Validate dob
             if (dobStr == null || dobStr.trim().isEmpty()) {
@@ -121,7 +121,7 @@ public class EditProfileUserController extends HttpServlet {
             }
 
             // Cập nhật thông tin chung
-            user.setFullName(fullName.trim());
+            user.setUsername(username);
             user.setDob(dob);
             user.setGender(mappedGender);
             user.setPhone(phone);
@@ -165,7 +165,7 @@ public class EditProfileUserController extends HttpServlet {
             e.printStackTrace();
             // Lưu trữ dữ liệu form để hiển thị lại khi có lỗi
             request.setAttribute("error", "Lỗi cập nhật hồ sơ: " + e.getMessage());
-            request.setAttribute("formFullName", fullName);
+            request.setAttribute("formUsername", username);
             request.setAttribute("formDob", dobStr);
             request.setAttribute("formGender", gender);
             request.setAttribute("formPhone", phone);
