@@ -72,8 +72,8 @@
             <form action="${pageContext.request.contextPath}/EditProfileUserController" method="post">
                 <input type="hidden" name="userID" value="${sessionScope.user.userID}">
                 <div class="form-group">
-                    <label for="fullName">Họ và tên:</label>
-                    <input type="text" id="fullName" name="fullName" value="${sessionScope.user.fullName}" required>
+                    <label for="fullName">User Name:</label>
+                    <input type="text" id="username" name="username" value="${sessionScope.user.username}" required>
                 </div>
                 <div class="form-group">
                     <label for="dob">Ngày sinh:</label>

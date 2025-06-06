@@ -71,8 +71,8 @@
         <h2>Chỉnh sửa hồ sơ Bác Sĩ Y Tá</h2>
         <form action="${pageContext.request.contextPath}/EditProfileUserController" method="post">
             <input type="hidden" name="userID" value="${sessionScope.user.userID}">
-            <label for="fullName">Họ và tên:</label>
-            <input type="text" id="fullName" name="fullName" value="${sessionScope.user.fullName}" required>
+            <label for="fullName">User Name:</label>
+            <input type="text" id="username" name="username" value="${sessionScope.user.username}" required>
             <label for="dob">Ngày sinh:</label>
             <input type="date" id="dob" name="dob" value="${sessionScope.user.dob}" required>
             <label for="gender">Giới tính:</label>
