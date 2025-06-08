@@ -365,13 +365,12 @@ public boolean registerUserBasic(Users user) throws SQLException {
         }
     }
 
-  public List<Users> getAllEmployee() throws SQLException {
+ public List<Users> getAllEmployee() throws SQLException {
     List<Users> users = new ArrayList<>();
-    String sql = "SELECT UserID, Username, [Password], Email, FullName, Dob, Gender, Phone, [Address], MedicalHistory, Specialization, [Role], [Status], CreatedBy, CreatedAt, UpdatedAt FROM Users WHERE Role IN ('doctor', 'nurse','receptionist')";
+    String sql = "SELECT UserID, Username, [Password], Email, FullName, Dob, Gender, Phone, [Address], MedicalHistory, Specialization, [Role], [Status], CreatedBy, CreatedAt, UpdatedAt FROM Users WHERE Role IN ('doctor', 'nurse', 'receptionist')";
     try (Connection conn = dbContext.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql);
          ResultSet rs = stmt.executeQuery()) {
-
         while (rs.next()) {
             Users user = new Users();
             user.setUserID(rs.getInt("UserID"));
@@ -570,7 +569,38 @@ public boolean UpdatePatient(Users patient) throws SQLException {
                 throw e;
             }
         }
-
+  public List<Users> getUsersByRole(String role) throws SQLException {
+        List<Users> users = new ArrayList<>();
+        // Truy vấn chỉ lấy những user có vai trò và status = 'Active'
+        String sql = "SELECT UserID, Username, [Password], Email, FullName, Dob, Gender, Phone, [Address], MedicalHistory, Specialization, [Role], [Status], CreatedBy, CreatedAt, UpdatedAt FROM Users WHERE [Role] = ? AND [Status] = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, role); // Đặt vai trò vào câu truy vấn SQL
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Users user = new Users();
+                    user.setUserID(rs.getInt("UserID"));
+                    user.setUsername(rs.getString("Username"));
+                    user.setPassword(rs.getString("Password"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setDob(rs.getDate("Dob"));
+                    user.setGender(rs.getString("Gender"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setMedicalHistory(rs.getString("MedicalHistory"));
+                    user.setSpecialization(rs.getString("Specialization"));
+                    user.setRole(rs.getString("Role"));
+                    user.setStatus(rs.getString("Status"));
+                    user.setCreatedBy(rs.getObject("CreatedBy") != null ? rs.getInt("CreatedBy") : null);
+                    user.setCreatedAt(rs.getDate("CreatedAt"));
+                    user.setUpdatedAt(rs.getDate("UpdatedAt"));
+                    users.add(user);
+                }
+            }
+        }
+        return users;
+    }
 }
 
 

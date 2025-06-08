@@ -109,4 +109,12 @@ public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         }
         roomsDAO.deleteRoom(roomID);
     }
+      public List<Integer> getAllRoomIds() throws SQLException, ClassNotFoundException {
+        try {
+            return roomsDAO.getAllRoomIds(); // Gọi phương thức từ DAO
+        } catch (SQLException e) {
+            System.err.println("Error in RoomService.getAllRoomIds: " + e.getMessage());
+            throw e; 
+        }
+    }
 }

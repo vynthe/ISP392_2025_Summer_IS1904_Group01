@@ -237,4 +237,19 @@ public class RoomsDAO {
             }
         }
     }
+     public List<Integer> getAllRoomIds() throws SQLException {
+        List<Integer> roomIds = new ArrayList<>();
+        String sql = "SELECT RoomID FROM Rooms"; 
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                roomIds.add(rs.getInt("RoomID"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all room IDs from DB: " + e.getMessage());
+            throw e;
+        }
+        return roomIds;
+    }
 }

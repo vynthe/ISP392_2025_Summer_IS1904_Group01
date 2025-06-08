@@ -4,7 +4,9 @@ import java.sql.SQLException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import model.dao.UserDAO;
 import model.entity.Users;
 import org.mindrot.jbcrypt.BCrypt;
@@ -351,4 +353,23 @@ public boolean registerUser(String username, String email, String password, Stri
       public List<Users> searchPatients(String keyword) throws SQLException {
         return userDAO.searchPatients(keyword);
     }
+       public List<Users> getUsersByRole(String role) throws SQLException, ClassNotFoundException {
+        try {
+            return userDAO.getUsersByRole(role);
+        } catch (SQLException e) {
+            System.err.println("Error in UserService.getUsersByRole: " + e.getMessage());
+            throw e; // Ném lại ngoại lệ để lớp gọi xử lý
+        }
+    }
+public Map<Integer, String> getEmployeeNameMap() throws SQLException {
+    Map<Integer, String> employeeMap = new HashMap<>();
+    List<Users> employees = userDAO.getAllEmployee();
+    for (Users user : employees) {
+        if (user.getUserID() > 0) { // Chỉ chấp nhận userID dương
+            employeeMap.put(user.getUserID(), user.getFullName() != null ? user.getFullName() : "Unknown Employee " + user.getUserID());
+        }
+    }
+    System.out.println("User Service - Employee Map Size: " + employeeMap.size() + ", Map: " + employeeMap); // Debug chi tiết
+    return employeeMap;
+}
 }

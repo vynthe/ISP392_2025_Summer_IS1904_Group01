@@ -1,21 +1,23 @@
 package model.entity;
 
+import java.sql.Time;
 import java.sql.Date;
-
 
 public class Schedules {
 
     private int scheduleID;
-    private int doctorID;
-    private int nurseID;
-    private Date startTime; 
-    private Date endTime;  
+    private int employeeID;
+    private String role; // 'Doctor', 'Nurse', or 'Receptionist'
+    private Date startTime;
+    private Date endTime;
     private String dayOfWeek;
     private int roomID;
     private String status;
     private int createdBy;
     private Date createdAt;
     private Date updatedAt;
+    private Time shiftStart;
+    private Time shiftEnd;
 
     // Getters and Setters
     public int getScheduleID() {
@@ -26,20 +28,20 @@ public class Schedules {
         this.scheduleID = scheduleID;
     }
 
-    public int getDoctorID() {
-        return doctorID;
+    public int getEmployeeID() {
+        return employeeID;
     }
 
-    public void setDoctorID(int doctorID) {
-        this.doctorID = doctorID;
+    public void setEmployeeID(int employeeID) {
+        this.employeeID = employeeID;
     }
 
-    public int getNurseID() {
-        return nurseID;
+    public String getRole() {
+        return role;
     }
 
-    public void setNurseID(int nurseID) {
-        this.nurseID = nurseID;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Date getStartTime() {
@@ -104,5 +106,33 @@ public class Schedules {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    public Time getShiftStart() {
+        return shiftStart;
+    }
+
+    public void setShiftStart(Time shiftStart) {
+        this.shiftStart = shiftStart;
+    }
+
+    public Time getShiftEnd() {
+        return shiftEnd;
+    }
+
+    public void setShiftEnd(Time shiftEnd) {
+        this.shiftEnd = shiftEnd;
+    }
+
+    // Convenience methods to check role type
+    public boolean isDoctor() {
+        return "Doctor".equals(role);
+    }
+
+    public boolean isNurse() {
+        return "Nurse".equals(role);
+    }
+
+    public boolean isReceptionist() {
+        return "Receptionist".equals(role);
     }
 }
