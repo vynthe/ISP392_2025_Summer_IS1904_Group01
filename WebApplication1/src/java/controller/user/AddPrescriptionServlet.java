@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.service.PrescriptionsService;
-import java.sql.SQLException;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
