@@ -151,7 +151,7 @@
         <div class="action-card">
             <h3>Quản Lý Bác Sĩ/Y Tá</h3>
             <a href="#" class="btn-green">Thêm Kết Quả Khám</a>
-            <a href="#" class="btn-green">Thêm Đơn Thuốc</a>
+            <a href="${pageContext.request.contextPath}/ViewPrescriptionServlet" class="btn-green">Thêm Đơn Thuốc</a>
             <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn-green">Xem Lịch Làm Việc</a>
         </div>
     </div>

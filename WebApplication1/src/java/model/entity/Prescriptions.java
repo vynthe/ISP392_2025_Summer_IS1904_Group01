@@ -4,6 +4,7 @@
  */
 package model.entity;
  import java.sql.Date;
+import java.sql.Timestamp;
 /**
  *
  * @author exorc
@@ -119,5 +120,13 @@ public class Prescriptions {
     @Override
     public String toString() {
         return "Prescriptions{" + "prescriptionID=" + prescriptionID + ", resultID=" + resultID + ", appointmentID=" + appointmentID + ", doctorID=" + doctorID + ", patientID=" + patientID + ", prescriptionDetails=" + prescriptionDetails + ", status=" + status + ", createdBy=" + createdBy + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setUpdatedAt(Timestamp createdAt) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
