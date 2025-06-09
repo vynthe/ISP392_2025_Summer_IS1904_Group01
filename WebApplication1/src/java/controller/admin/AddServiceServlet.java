@@ -36,16 +36,19 @@ public class AddServiceServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
 
+        // Lấy dữ liệu từ form
         String serviceName = request.getParameter("serviceName");
         String description = request.getParameter("description");
         String priceStr = request.getParameter("price");
         String status = request.getParameter("status");
 
+        // Lưu dữ liệu vào request để hiển thị lại nếu có lỗi
         request.setAttribute("serviceName", serviceName);
         request.setAttribute("description", description);
         request.setAttribute("price", priceStr);
         request.setAttribute("status", status);
 
+        // Kiểm tra và chuyển đổi giá dịch vụ
         double price;
         try {
             price = Double.parseDouble(priceStr);
@@ -58,6 +61,7 @@ public class AddServiceServlet extends HttpServlet {
             request.getRequestDispatcher("/views/admin/AddService.jsp").forward(request, response);
             return;
         }
+        // Kiểm tra và chuẩn hóa trạng thái
 
         status = status != null ? status.trim() : "";
         if (!status.equalsIgnoreCase("Active") && !status.equalsIgnoreCase("Inactive") && !status.equalsIgnoreCase("Discontinued")) {
@@ -68,6 +72,7 @@ public class AddServiceServlet extends HttpServlet {
         }
         status = status.equalsIgnoreCase("Active") ? "Active" : (status.equalsIgnoreCase("Inactive") ? "Inactive" : "Discontinued");
 
+        // Tạo đối tượng Services
         Services service = new Services();
         service.setServiceName(serviceName != null ? serviceName.trim() : "");
         service.setDescription(description != null ? description.trim() : "");
@@ -75,6 +80,7 @@ public class AddServiceServlet extends HttpServlet {
         service.setStatus(status);
 
         try {
+            // Lấy adminId từ session, mặc định là 1 nếu không có
             HttpSession session = request.getSession();
             Integer createdBy = (Integer) session.getAttribute("adminId");
             if (createdBy == null) {
@@ -82,15 +88,18 @@ public class AddServiceServlet extends HttpServlet {
                 System.out.println("AdminID not found in session, using default: " + createdBy + " at " + LocalDateTime.now() + " +07");
             }
 
+            // Gọi service để thêm dịch vụ
             servicesService.addService(service, createdBy);
             System.out.println("Service added successfully: ServiceName=" + serviceName + " at " + LocalDateTime.now() + " +07");
             session.setAttribute("successMessage", "Thêm dịch vụ thành công!");
             response.sendRedirect(request.getContextPath() + "/ViewServiceServlet");
         } catch (IllegalArgumentException e) {
+            // Xử lý lỗi dữ liệu không hợp lệ
             System.out.println("Validation error: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             request.setAttribute("error", e.getMessage()); // Display the exact message
             request.getRequestDispatcher("/views/admin/AddService.jsp").forward(request, response);
         } catch (SQLException e) {
+            // Xử lý lỗi cơ sở dữ liệu
             System.out.println("Database error: " + e.getMessage() + ", SQLState: " + e.getSQLState() + ", ErrorCode: " + e.getErrorCode() + " at " + LocalDateTime.now() + " +07");
             e.printStackTrace();
             request.setAttribute("error", "Lỗi cơ sở dữ liệu: " + e.getMessage());

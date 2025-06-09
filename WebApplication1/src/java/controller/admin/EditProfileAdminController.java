@@ -16,6 +16,7 @@ import model.service.AdminService;
 public class EditProfileAdminController extends HttpServlet {
 
     private final AdminService adminService = new AdminService();
+    //khởi tạo đối tượng AdminService để gọi các phương thức xử lý logic nghiệp vụ
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -39,10 +40,10 @@ public class EditProfileAdminController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8"); // Đảm bảo hỗ trợ tiếng Việt
-        HttpSession session = request.getSession();
-        Admins admin = (Admins) session.getAttribute("admin");
+        HttpSession session = request.getSession(); //session hien tai
+        Admins admin = (Admins) session.getAttribute("admin"); //lay admin tu session
 
-        if (admin == null) {
+        if (admin == null) {//ktra xem admin da login chua 
             response.sendRedirect(request.getContextPath() + "/views/admin/login.jsp");
             return;
         }

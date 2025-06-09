@@ -258,18 +258,19 @@ public boolean registerUserBasic(Users user) throws SQLException {
 
     // Cập nhật thông tin hồ sơ của user
     public void updateUserProfile(Users user) throws SQLException {
-        String sql = "UPDATE Users SET fullName = ?, dob = ?, gender = ?, phone = ?, address = ?, "
+        String sql = "UPDATE Users SET username = ?, dob = ?, gender = ?, phone = ?, address = ?, email = ?, "
                 + "medicalHistory = ?, specialization = ?, updatedAt = GETDATE() "
                 + "WHERE userID = ?";
         try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getFullName());
+            stmt.setString(1, user.getUsername());
             stmt.setDate(2, user.getDob());
             stmt.setString(3, user.getGender());
             stmt.setString(4, user.getPhone());
             stmt.setString(5, user.getAddress());
-            stmt.setString(6, user.getMedicalHistory());
-            stmt.setString(7, user.getSpecialization());
-            stmt.setInt(8, user.getUserID());
+            stmt.setString(6, user.getEmail());
+            stmt.setString(7, user.getMedicalHistory());
+            stmt.setString(8, user.getSpecialization());
+            stmt.setInt(9, user.getUserID());
             stmt.executeUpdate();
         }
     }

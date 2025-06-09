@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.entity.Admins"%>
+<%@page import="model.entity.Admins"%> 
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html lang="vi">
@@ -7,8 +7,8 @@
     <meta charset="UTF-8">
     <title>Chỉnh sửa hồ sơ Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <%--Font Awesome để sử dụng icon --%>
     <style>
-        /* Reset default styles */
         * {
             margin: 0;
             padding: 0;
@@ -35,6 +35,7 @@
             position: relative;
             overflow: hidden;
         }
+        <%-- Định dạng container chính: màu nền trắng, padding, bo góc, đổ bóng, và giới hạn chiều rộng tối đa --%>
 
         .container::before {
             content: '';
@@ -45,6 +46,7 @@
             height: 5px;
             background: linear-gradient(to right, #2e7d32, #66bb6a);
         }
+        <%-- Tạo một đường viền gradient phía trên container --%>
 
         h2 {
             text-align: center;
@@ -54,12 +56,14 @@
             font-weight: 600;
             letter-spacing: 1px;
         }
+        <%-- Định dạng tiêu đề h2: căn giữa, màu chữ, khoảng cách dưới, và kích thước chữ --%>
 
         .form-group, .input-box {
             margin-bottom: 20px;
             position: relative;
         }
 
+        <%-- Định dạng các nhóm input và input box: khoảng cách dưới và vị trí tương đối --%>
         .form-group label {
             display: block;
             font-weight: 500;
@@ -68,6 +72,7 @@
             font-size: 15px;
         }
 
+        <%-- Định dạng nhãn (label) của form: hiển thị dạng khối, màu chữ, và kích thước chữ --%>
         .form-group input[type="text"],
         .form-group input[type="email"] {
             width: 100%;
@@ -78,6 +83,7 @@
             background: #f9fafb;
             transition: all 0.3s ease;
         }
+        <%-- Định dạng các ô input dạng text và email: chiều rộng, padding, viền, và hiệu ứng chuyển tiếp --%>
 
         .form-group input:focus {
             border-color: #2e7d32;
@@ -85,7 +91,7 @@
             box-shadow: 0 0 5px rgba(46, 125, 50, 0.2);
             outline: none;
         }
-
+<%-- Định dạng khi ô input được focus: thay đổi màu viền, nền trắng, và thêm hiệu ứng đổ bóng --%>
         .input-box i {
             position: absolute;
             right: 15px;
@@ -94,7 +100,7 @@
             color: #7f8c8d;
             font-size: 16px;
         }
-
+<%-- Định dạng biểu tượng (icon) trong input box: vị trí bên phải, căn giữa theo chiều dọc --%>
         .form-group input[type="submit"],
         .form-group .btn-back {
             width: 100%;

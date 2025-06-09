@@ -84,6 +84,8 @@
             </select>
             <label for="phone">Số điện thoại:</label>
             <input type="tel" id="phone" name="phone" value="${sessionScope.user.phone}" required>
+            <label for="phone">Email:</label>
+            <input type="text" id="email" name="email" value="${sessionScope.user.email}" required>
             <label for="address">Địa chỉ:</label>
             <input type="text" id="address" name="address" value="${sessionScope.user.address}" required>
             <button type="submit" class="btn">Cập nhật</button>

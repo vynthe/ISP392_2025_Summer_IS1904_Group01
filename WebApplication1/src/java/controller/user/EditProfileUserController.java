@@ -15,11 +15,9 @@ import model.service.UserService;
 @WebServlet(name = "EditProfileUserController", urlPatterns = {"/EditProfileUserController"})
 public class EditProfileUserController extends HttpServlet {
 
-    //// Khai báo biến UserService để tương tác với tầng dịch vụ
     private UserService userService;
 
     @Override
-    //// Phương thức init được gọi khi Servlet khởi tạo
     public void init() throws ServletException {
         userService = new UserService();
     }
@@ -34,11 +32,8 @@ public class EditProfileUserController extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-// Lấy vai trò của người dùng
         String role = user.getRole();
-        // Xác định đường dẫn JSP dựa trên vai trò
         String jspPath = getJspPathByRole(role);
-        // Chuyển tiếp yêu cầu đến trang JSP tương ứng
         request.getRequestDispatcher(jspPath).forward(request, response);
     }
 
@@ -54,19 +49,36 @@ public class EditProfileUserController extends HttpServlet {
             return;
         }
 
-        // Lấy dữ liệu từ form gửi lên
+        // Lấy dữ liệu từ form
         String username = request.getParameter("username");
         String dobStr = request.getParameter("dob");
         String gender = request.getParameter("gender");
+        String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         String address = request.getParameter("address");
         String specialization = request.getParameter("specialization");
         String medicalHistory = request.getParameter("medicalHistory");
 
         try {
-            // Validate dữ liệu
-            // Validate fullName using service method
-           userService.validateUsername(username);
+            // Validate username
+            if (username == null || username.trim().isEmpty()) {
+                throw new ServletException("Tên đăng nhập không được để trống.");
+            }
+            userService.validateUsername(username);
+            if (!username.equals(user.getUsername()) && userService.isEmailOrUsernameExists(null, username)) {
+                throw new ServletException("Tên đăng nhập đã tồn tại.");
+            }
+
+            // Validate email
+            if (email == null || email.trim().isEmpty()) {
+                throw new ServletException("Email không được để trống.");
+            }
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                throw new ServletException("Định dạng email không hợp lệ.");
+            }
+            if (!email.equals(user.getEmail()) && userService.isEmailOrUsernameExists(email, null)) {
+                throw new ServletException("Email đã tồn tại.");
+            }
 
             // Validate dob
             if (dobStr == null || dobStr.trim().isEmpty()) {
@@ -74,16 +86,13 @@ public class EditProfileUserController extends HttpServlet {
             }
             Date dob;
             try {
-                // Chuyển đổi chuỗi ngày sinh sang kiểu Date
                 dob = Date.valueOf(dobStr);
-                // Kiểm tra ngày sinh không được lớn hơn ngày hiện tại
                 LocalDate currentDate = LocalDate.now();
                 LocalDate dobDate = dob.toLocalDate();
                 if (dobDate.isAfter(currentDate)) {
                     throw new ServletException("Ngày sinh không được vượt quá ngày hiện tại.");
                 }
             } catch (IllegalArgumentException e) {
-                // Xử lý lỗi định dạng ngày sinh không hợp lệ
                 throw new ServletException("Định dạng ngày sinh không hợp lệ: " + dobStr);
             }
 
@@ -92,7 +101,6 @@ public class EditProfileUserController extends HttpServlet {
                 throw new ServletException("Giới tính không được để trống.");
             }
             String mappedGender = gender.trim();
-            // Chấp nhận cả giá trị từ form ("Nam", "Nữ", "Khác") và từ cơ sở dữ liệu ("Male", "Female", "Other")
             if (mappedGender.equals("Nam") || mappedGender.equals("Male")) {
                 mappedGender = "Male";
             } else if (mappedGender.equals("Nữ") || mappedGender.equals("Female")) {
@@ -112,7 +120,7 @@ public class EditProfileUserController extends HttpServlet {
                     throw new ServletException("Số điện thoại đã tồn tại.");
                 }
             } else {
-                phone = null; // Cho phép số điện thoại rỗng
+                phone = null;
             }
 
             // Validate address
@@ -120,14 +128,15 @@ public class EditProfileUserController extends HttpServlet {
                 throw new ServletException("Địa chỉ không được để trống.");
             }
 
-            // Cập nhật thông tin chung
-            user.setUsername(username);
+            // Cập nhật thông tin
+            user.setUsername(username.trim());
+            user.setEmail(email.trim());
             user.setDob(dob);
             user.setGender(mappedGender);
             user.setPhone(phone);
-            user.setAddress(address);
+            user.setAddress(address.trim());
 
-            // Cập nhật thông tin riêng theo role
+            // Cập nhật theo role
             String role = user.getRole().toLowerCase();
             switch (role) {
                 case "doctor":
@@ -156,25 +165,24 @@ public class EditProfileUserController extends HttpServlet {
                     throw new ServletException("Vai trò không được hỗ trợ: " + role);
             }
 
-            // Gọi Service cập nhật
+            // Cập nhật vào database
             userService.updateUserProfile(user);
             session.setAttribute("user", user);
             request.setAttribute("success", "Cập nhật hồ sơ thành công.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            // Lưu trữ dữ liệu form để hiển thị lại khi có lỗi
             request.setAttribute("error", "Lỗi cập nhật hồ sơ: " + e.getMessage());
             request.setAttribute("formUsername", username);
             request.setAttribute("formDob", dobStr);
             request.setAttribute("formGender", gender);
+            request.setAttribute("formEmail", email);
             request.setAttribute("formPhone", phone);
             request.setAttribute("formAddress", address);
             request.setAttribute("formSpecialization", specialization);
             request.setAttribute("formMedicalHistory", medicalHistory);
         }
 
-        // Quay lại đúng trang JSP theo vai trò
         String jspPath = getJspPathByRole(user.getRole());
         request.getRequestDispatcher(jspPath).forward(request, response);
     }
