@@ -98,14 +98,29 @@ public boolean registerUser(String username, String email, String password, Stri
         return null;
     }
 
-    // Kiểm tra xem user đã hoàn thiện hồ sơ chưa
-    public boolean isProfileComplete(Users user) {
-        return user.getFullName() != null && !user.getFullName().trim().isEmpty()
-                && user.getDob() != null
-                && user.getGender() != null && !user.getGender().trim().isEmpty()
-                && user.getPhone() != null && !user.getPhone().trim().isEmpty()
-                && user.getAddress() != null && !user.getAddress().trim().isEmpty();
+   public boolean isProfileComplete(Users user) {
+    if (user == null) return false;
+    String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
+
+    // Kiểm tra cơ bản cho tất cả role
+    boolean basicCheck = user.getFullName() != null && !user.getFullName().trim().isEmpty()
+            && user.getDob() != null
+            && user.getGender() != null && !user.getGender().trim().isEmpty()
+            && user.getPhone() != null && !user.getPhone().trim().isEmpty();
+
+    // Yêu cầu bổ sung theo role
+    switch (role) {
+        case "patient":
+            return basicCheck && user.getAddress() != null && !user.getAddress().trim().isEmpty();
+        case "doctor":
+        case "nurse":
+            return basicCheck && user.getSpecialization() != null && !user.getSpecialization().trim().isEmpty();
+        case "receptionist":
+            return basicCheck; // Không yêu cầu address hoặc specialization
+        default:
+            return false; // Role không hợp lệ
     }
+}
 
     public boolean isPhoneExists(String phone) throws SQLException {
         return userDAO.isPhoneExists(phone);
