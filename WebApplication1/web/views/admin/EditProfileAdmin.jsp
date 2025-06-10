@@ -5,179 +5,44 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chỉnh sửa hồ sơ Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <%--Font Awesome để sử dụng icon --%>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-
-        body {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+        .modal-slide-in {
+            animation: slideIn 0.3s ease-out;
         }
-
-        .container {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 550px;
-            position: relative;
-            overflow: hidden;
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
         }
-        <%-- Định dạng container chính: màu nền trắng, padding, bo góc, đổ bóng, và giới hạn chiều rộng tối đa --%>
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, #2e7d32, #66bb6a);
-        }
-        <%-- Tạo một đường viền gradient phía trên container --%>
-
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        <%-- Định dạng tiêu đề h2: căn giữa, màu chữ, khoảng cách dưới, và kích thước chữ --%>
-
-        .form-group, .input-box {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        <%-- Định dạng các nhóm input và input box: khoảng cách dưới và vị trí tương đối --%>
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #34495e;
-            font-size: 15px;
-        }
-
-        <%-- Định dạng nhãn (label) của form: hiển thị dạng khối, màu chữ, và kích thước chữ --%>
-        .form-group input[type="text"],
-        .form-group input[type="email"] {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border: 1px solid #dfe6e9;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #f9fafb;
-            transition: all 0.3s ease;
-        }
-        <%-- Định dạng các ô input dạng text và email: chiều rộng, padding, viền, và hiệu ứng chuyển tiếp --%>
-
-        .form-group input:focus {
-            border-color: #2e7d32;
-            background: #ffffff;
-            box-shadow: 0 0 5px rgba(46, 125, 50, 0.2);
-            outline: none;
-        }
-<%-- Định dạng khi ô input được focus: thay đổi màu viền, nền trắng, và thêm hiệu ứng đổ bóng --%>
-        .input-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #7f8c8d;
-            font-size: 16px;
-        }
-<%-- Định dạng biểu tượng (icon) trong input box: vị trí bên phải, căn giữa theo chiều dọc --%>
-        .form-group input[type="submit"],
-        .form-group .btn-back {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(to right, #2e7d32, #66bb6a);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-            text-align: center;
-            display: block;
-        }
-
-        .form-group input[type="submit"]:hover,
-        .form-group .btn-back:hover {
-            background: linear-gradient(to right, #27632a, #59a35d);
-            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
-        }
-
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 14px;
-            border-left: 4px solid #c62828;
-        }
-
-        .success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 14px;
-            border-left: 4px solid #2e7d32;
-        }
-
-        .needs-validation.was-validated .form-control:invalid {
-            border-color: #c62828;
-            background-image: none;
-        }
-
-        .needs-validation.was-validated .form-control:valid {
-            border-color: #2e7d32;
-        }
-
-        .invalid-feedback {
-            display: none;
-            color: #c62828;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .was-validated .form-control:invalid ~ .invalid-feedback {
-            display: block;
+        .btn-hover:hover {
+            transform: translateY(-1px);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Chỉnh sửa hồ sơ Admin</h2>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl w-full max-w-lg p-6 modal-slide-in relative shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">Cập nhật hồ sơ Admin</h2>
+            <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="text-gray-500 hover:text-green-600 transition">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
 
         <c:if test="${not empty success}">
-            <div class="success">${success}</div>
+            <div class="bg-green-50 text-green-700 p-2 rounded-md mb-4 text-xs flex items-center">
+                <i class="fas fa-check-circle mr-2"></i> ${success}
+            </div>
         </c:if>
         <c:if test="${not empty error}">
-            <div class="error">${error}</div>
+            <div class="bg-red-50 text-red-700 p-2 rounded-md mb-4 text-xs flex items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i> ${error}
+            </div>
         </c:if>
 
         <%
@@ -188,36 +53,53 @@
             }
             request.setAttribute("admin", admin);
         %>
-        <form action="EditProfileAdminController" method="post" class="needs-validation" novalidate>
-            <div class="form-group">
-                <label for="username">Tên đăng nhập</label>
-                <div class="input-box">
-                    <input type="text" id="username" name="username" value="${admin.username}" placeholder="Nhập tên đăng nhập" required>
-                    <i class="fas fa-user"></i>
+
+        <form action="EditProfileAdminController" method="post" class="needs-validation space-y-4" novalidate>
+            <div>
+                <label for="username" class="block text-xs font-medium text-gray-600 mb-1">Tên đăng nhập</label>
+                <div class="relative">
+                    <input type="text" id="username" name="username" value="${admin.username}" 
+                           placeholder="Tên đăng nhập" 
+                           class="w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-sm text-gray-800 input-focus focus:border-green-500 transition"
+                           required>
+                    <i class="fas fa-user absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
                 </div>
-                <div class="invalid-feedback">Vui lòng nhập tên đăng nhập.</div>
+                <div class="invalid-feedback text-red-500 text-xs mt-1 hidden">Vui lòng nhập tên đăng nhập.</div>
             </div>
-            <div class="form-group">
-                <label for="fullName">Họ tên</label>
-                <div class="input-box">
-                    <input type="text" id="fullName" name="fullName" value="${admin.fullName}" placeholder="Nhập họ tên" required>
-                    <i class="fas fa-user"></i>
+
+            <div>
+                <label for="fullName" class="block text-xs font-medium text-gray-600 mb-1">Họ tên</label>
+                <div class="relative">
+                    <input type="text" id="fullName" name="fullName" value="${admin.fullName}" 
+                           placeholder="Họ tên" 
+                           class="w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-sm text-gray-800 input-focus focus:border-green-500 transition"
+                           required>
+                    <i class="fas fa-user absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
                 </div>
-                <div class="invalid-feedback">Vui lòng nhập họ tên.</div>
+                <div class="invalid-feedback text-red-500 text-xs mt-1 hidden">Vui lòng nhập họ tên.</div>
             </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <div class="input-box">
-                    <input type="email" id="email" name="email" value="${admin.email}" placeholder="Nhập email" required>
-                    <i class="fas fa-envelope"></i>
+
+            <div>
+                <label for="email" class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                <div class="relative">
+                    <input type="email" id="email" name="email" value="${admin.email}" 
+                           placeholder="Email" 
+                           class="w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-sm text-gray-800 input-focus focus:border-green-500 transition"
+                           required>
+                    <i class="fas fa-envelope absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
                 </div>
-                <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+                <div class="invalid-feedback text-red-500 text-xs mt-1 hidden">Vui lòng nhập email hợp lệ.</div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Cập nhật">
-            </div>
-            <div class="form-group">
-                <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn-back">Quay lại trang chủ</a>
+
+            <div class="flex space-x-2 pt-2">
+                <button type="submit" 
+                        class="flex-1 py-2 bg-green-500 text-white rounded-md text-sm font-medium btn-hover hover:bg-green-600 transition duration-200">
+                    <i class="fas fa-save mr-1"></i> Lưu
+                </button>
+                <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" 
+                   class="flex-1 py-2 bg-gray-200 text-gray-700 text-center rounded-md text-sm font-medium btn-hover hover:bg-gray-300 transition duration-200">
+                    <i class="fas fa-arrow-left mr-1"></i> Quay lại
+                </a>
             </div>
         </form>
     </div>
@@ -233,6 +115,14 @@
                         event.stopPropagation();
                     }
                     form.classList.add('was-validated');
+                    form.querySelectorAll('input').forEach(input => {
+                        const feedback = input.parentElement.nextElementSibling;
+                        if (!input.checkValidity()) {
+                            feedback.classList.remove('hidden');
+                        } else {
+                            feedback.classList.add('hidden');
+                        }
+                    });
                 }, false);
             });
         })();
