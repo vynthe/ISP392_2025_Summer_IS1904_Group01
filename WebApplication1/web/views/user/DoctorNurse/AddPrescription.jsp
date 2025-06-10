@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Thêm Toa Thuốc </title>
+    <title>Thêm Thuốc</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
         
@@ -295,6 +295,84 @@
             transform: translateY(-50%) scale(1.1);
         }
 
+        /* Checkbox Group Styling */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .checkbox-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.02);
+            transform: translateY(-1px);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        .checkbox-item .checkmark {
+            position: relative;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-radius: 6px;
+            margin-right: 0.75rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkbox-item input:checked + .checkmark {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-item input:checked + .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-item .checkbox-label {
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 0.95rem;
+        }
+
+        .checkbox-item input:checked ~ .checkbox-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .checkbox-item.checked {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.05);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
         .form-actions {
             margin-top: 2.5rem;
             display: flex;
@@ -393,28 +471,6 @@
             gap: 2rem;
         }
 
-        /* Floating Labels Effect */
-        .floating-label {
-            position: relative;
-        }
-
-        .floating-label .form-input:focus + .form-label,
-        .floating-label .form-input:not(:placeholder-shown) + .form-label {
-            transform: translateY(-1.5rem) scale(0.8);
-            color: var(--primary);
-        }
-
-        .floating-label .form-label {
-            position: absolute;
-            top: 1.25rem;
-            left: 1.5rem;
-            transition: var(--transition);
-            pointer-events: none;
-            background: var(--white);
-            padding: 0 0.5rem;
-            z-index: 2;
-        }
-
         /* Progress Indicator */
         .progress-indicator {
             position: absolute;
@@ -452,6 +508,10 @@
             .form-row {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
             }
             
             .form-input,
@@ -545,13 +605,13 @@
 
         <div class="dental-content">
             <div class="form-header">
-                <h2 class="form-title">Kê Đơn Thuốc</h2>
+                <h2 class="form-title">Thêm Thuốc</h2>
                 <p class="form-description">Tạo toa thuốc chính xác và an toàn cho bệnh nhân</p>
             </div>
 
             <div class="medical-badge">
                 <span>⚕️</span>
-           
+                <span>Kê đơn thuốc an toàn</span>
             </div>
 
             <% String error = (String) request.getAttribute("error"); %>
@@ -581,10 +641,31 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="lieuDung" class="form-label required">Liều Dùng & Hướng Dẫn Sử Dụng</label>
+                        <label class="form-label required">Liều Dùng</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lieu1" name="lieuDung" value="1 lần/1 ngày">
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">1 lần/1 ngày</span>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lieu2" name="lieuDung" value="2 lần/1 ngày">
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">2 lần/1 ngày</span>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lieu3" name="lieuDung" value="3 lần/1 ngày">
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">3 lần/1 ngày</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="moTaThuoc" class="form-label required">Mô Tả Thuốc</label>
                         <div class="input-wrapper">
-                            <textarea id="lieuDung" name="lieuDung" class="form-textarea" 
-                                      placeholder="Mô tả chi tiết về liều dùng, tần suất sử dụng và lưu ý đặc biệt..." required></textarea>
+                            <textarea id="moTaThuoc" name="moTaThuoc" class="form-textarea" 
+                                      placeholder="Mô tả chi tiết về thuốc, cách sử dụng và lưu ý đặc biệt..." required></textarea>
                             <span class="input-icon">📝</span>
                         </div>
                     </div>
@@ -629,6 +710,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('prescriptionForm');
             const inputs = document.querySelectorAll('.form-input, .form-textarea');
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
             const progressBar = document.querySelector('.progress-indicator');
             const submitBtn = document.querySelector('.dental-submit');
             
@@ -640,10 +722,37 @@
             expiryDate.setDate(expiryDate.getDate() + 30);
             document.getElementById('hanSuDung').value = expiryDate.toISOString().split('T')[0];
             
+            // Handle checkbox interactions
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkboxItem = this.closest('.checkbox-item');
+                    
+                    if (this.checked) {
+                        checkboxItem.classList.add('checked');
+                        // Uncheck other checkboxes (single selection)
+                        checkboxes.forEach(cb => {
+                            if (cb !== this && cb.checked) {
+                                cb.checked = false;
+                                cb.closest('.checkbox-item').classList.remove('checked');
+                            }
+                        });
+                    } else {
+                        checkboxItem.classList.remove('checked');
+                    }
+                    
+                    updateProgress();
+                });
+            });
+            
             // Form validation and progress
             function updateProgress() {
-                const totalFields = inputs.length;
-                const filledFields = Array.from(inputs).filter(input => input.value.trim() !== '').length;
+                const totalFields = inputs.length + 1; // +1 for checkbox group
+                let filledFields = Array.from(inputs).filter(input => input.value.trim() !== '').length;
+                
+                // Check if at least one checkbox is selected
+                const hasSelectedCheckbox = Array.from(checkboxes).some(cb => cb.checked);
+                if (hasSelectedCheckbox) filledFields++;
+                
                 const progress = (filledFields / totalFields) * 100;
                 progressBar.style.width = progress + '%';
             }
@@ -668,15 +777,17 @@
                 });
             });
             
-            // Form submission
+            // Form submission validation
             form.addEventListener('submit', function(e) {
+                const hasSelectedCheckbox = Array.from(checkboxes).some(cb => cb.checked);
+                if (!hasSelectedCheckbox) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ít nhất một liều dùng.');
+                    return;
+                }
+                
                 document.body.classList.add('loading');
                 submitBtn.querySelector('.submit-text').textContent = 'Đang xử lý...';
-                
-                // Simulate loading for demo
-                setTimeout(() => {
-                    // Remove this timeout in production
-                }, 2000);
             });
             
             // Initial progress update
