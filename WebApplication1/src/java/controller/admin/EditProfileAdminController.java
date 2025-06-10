@@ -20,30 +20,23 @@ public class EditProfileAdminController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //lấy session hiện tại 
         HttpSession session = request.getSession();
-        //lấy đối tượng admin từ session
         Admins admin = (Admins) session.getAttribute("admin");
-        //kiểm tra nếu admin chưa đăng nhập 
         if (admin == null) {
-            // thì chuyển hướng về trang đăng nhập
             response.sendRedirect(request.getContextPath() + "/views/admin/login.jsp");
             return;
         }
-
-        // đặt đối tượng admin vào request để sử dụng trong jsp
         request.setAttribute("admin", admin);
-        //Chuyển tiếp yêu cầu đến trang JSP để hiển thị form chỉnh sửa hồ sơ
         request.getRequestDispatcher("/views/admin/EditProfileAdmin.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8"); // Đảm bảo hỗ trợ tiếng Việt
-        HttpSession session = request.getSession(); //session hien tai
-        Admins admin = (Admins) session.getAttribute("admin"); //lay admin tu session
+        HttpSession session = request.getSession(); 
+        Admins admin = (Admins) session.getAttribute("admin"); 
 
-        if (admin == null) {//ktra xem admin da login chua 
+        if (admin == null) {
             response.sendRedirect(request.getContextPath() + "/views/admin/login.jsp");
             return;
         }
@@ -81,8 +74,6 @@ public class EditProfileAdminController extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
         }
-
-        // Cập nhật lại thuộc tính admin trong request
         request.setAttribute("admin", session.getAttribute("admin"));
         request.getRequestDispatcher("/views/admin/EditProfileAdmin.jsp").forward(request, response);
     }

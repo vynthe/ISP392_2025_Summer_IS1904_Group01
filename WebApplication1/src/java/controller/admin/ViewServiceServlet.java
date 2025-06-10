@@ -70,7 +70,6 @@ public class ViewServiceServlet extends HttpServlet {
             request.setAttribute("error", "Lỗi khi tải danh sách dịch vụ.");
         }
 
-        // Gửi về giao diện hiển thị
         request.getRequestDispatcher("/views/admin/ViewServices.jsp").forward(request, response);
     }
 }
