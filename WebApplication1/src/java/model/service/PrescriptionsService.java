@@ -2,7 +2,6 @@ package model.service;
 
 import model.dao.PrescriptionsDAO;
 import model.entity.Prescriptions;
-
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -14,29 +13,36 @@ public class PrescriptionsService {
         this.prescriptionsDAO = new PrescriptionsDAO();
     }
 
-  
-public boolean addPrescription(int doctorId, int patientId, String prescriptionDetail, String trimmedStatus, Timestamp createdAt, int createdBy) {
-    try {
-        Prescriptions prescription = new Prescriptions();
-        // Mặc định ResultID và AppointmentID bạn có thể set = 0 hoặc null nếu chưa có
-        prescription.setResultID(0); // hoặc set từ param nếu có
-        prescription.setAppointmentID(0); // hoặc set từ param nếu có
-        prescription.setDoctorID(doctorId);
-        prescription.setPatientID(patientId);
-        prescription.setPrescriptionDetails(prescriptionDetail); // MedicationDetails nếu có thì cộng dồn vào đây
-        prescription.setStatus(trimmedStatus);
-        prescription.setCreatedBy(createdBy); // lấy từ session
-        prescription.setCreatedAt(createdAt);
-        prescription.setUpdatedAt(createdAt);
-
-        return prescriptionsDAO.addPrescription(prescription);
-    } catch (SQLException e) {
-        System.err.println("addPrescription failed: " + e.getMessage());
-        return false;
+    // Method với tham số đầy đủ
+    public boolean addPrescription(int doctorId, int patientId, String prescriptionDetails, 
+                                 String status, Timestamp createdAt, int createdBy, 
+                                 Integer resultId, Integer appointmentId) {
+        try {
+            Prescriptions prescription = new Prescriptions();
+            
+            // Set ResultID và AppointmentID
+            prescription.setResultID(resultId != null ? resultId : 0);
+            prescription.setAppointmentID(appointmentId != null ? appointmentId : 0);
+            prescription.setDoctorID(doctorId);
+            prescription.setPatientID(patientId);
+            prescription.setPrescriptionDetails(prescriptionDetails);
+            prescription.setStatus(status);
+            prescription.setCreatedBy(createdBy);
+            prescription.setCreatedAt(createdAt);
+            prescription.setUpdatedAt(createdAt);
+            
+            return prescriptionsDAO.addPrescription(prescription);
+        } catch (SQLException e) {
+            System.err.println("addPrescription failed: " + e.getMessage());
+            return false;
+        }
     }
-}
 
-
+    // Method với tham số cơ bản (backward compatibility)
+    public boolean addPrescription(int doctorId, int patientId, String prescriptionDetails, 
+                                 String status, Timestamp createdAt, int createdBy) {
+        return addPrescription(doctorId, patientId, prescriptionDetails, status, createdAt, createdBy, null, null);
+    }
 
     // Lấy toa thuốc theo ID
     public Prescriptions getPrescriptionByID(int id) {
@@ -56,17 +62,5 @@ public boolean addPrescription(int doctorId, int patientId, String prescriptionD
             System.err.println("getAllPrescriptions failed: " + e.getMessage());
             return null;
         }
-    }
-
-    public boolean addPrescription(int doctorId, int patientId, String prescriptionDetail, String medicationDetails, String trimmedStatus, Timestamp createdAt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public boolean addPrescription(int doctorId, int patientId, String prescriptionDetail, String status, Timestamp createdAt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public boolean addPrescription(Integer doctorId, Integer patientId, String prescriptionDetails, String status, Timestamp createdAt, Integer createdBy, Integer resultId, Integer appointmentId) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

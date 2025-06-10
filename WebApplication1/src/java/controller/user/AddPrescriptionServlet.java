@@ -34,50 +34,30 @@ public class AddPrescriptionServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
 
-        String doctorIdStr = request.getParameter("doctorID");
-        String patientIdStr = request.getParameter("patientID");
         String prescriptionDetails = request.getParameter("prescriptionDetails");
         String status = request.getParameter("status");
         String resultIdStr = request.getParameter("resultID");
         String appointmentIdStr = request.getParameter("appointmentID");
 
-        request.setAttribute("doctorID", doctorIdStr);
-        request.setAttribute("patientID", patientIdStr);
         request.setAttribute("prescriptionDetails", prescriptionDetails);
         request.setAttribute("status", status);
         request.setAttribute("resultID", resultIdStr);
         request.setAttribute("appointmentID", appointmentIdStr);
 
-        Integer doctorId;
-        Integer patientId;
         Integer resultId = null;
         Integer appointmentId = null;
         try {
-            doctorId = (doctorIdStr != null && !doctorIdStr.trim().isEmpty()) ? Integer.parseInt(doctorIdStr) : null;
-            patientId = (patientIdStr != null && !patientIdStr.trim().isEmpty()) ? Integer.parseInt(patientIdStr) : null;
-            if (doctorId != null && doctorId <= 0) {
-                throw new NumberFormatException("Doctor ID must be a positive integer");
-            }
-            if (patientId != null && patientId <= 0) {
-                throw new NumberFormatException("Patient ID must be a positive integer");
-            }
             if (resultIdStr != null && !resultIdStr.trim().isEmpty()) {
                 resultId = Integer.parseInt(resultIdStr);
-                if (resultId <= 0) throw new NumberFormatException("Result ID must be a positive integer");
+                if (resultId <= 0) throw new NumberFormatException("Result ID phải là số nguyên dương.");
             }
             if (appointmentIdStr != null && !appointmentIdStr.trim().isEmpty()) {
                 appointmentId = Integer.parseInt(appointmentIdStr);
-                if (appointmentId <= 0) throw new NumberFormatException("Appointment ID must be a positive integer");
+                if (appointmentId <= 0) throw new NumberFormatException("Appointment ID phải là số nguyên dương.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format: DoctorID=" + doctorIdStr + ", PatientID=" + patientIdStr + ", ResultID=" + resultIdStr + ", AppointmentID=" + appointmentIdStr + " at " + LocalDateTime.now() + " +07");
-            request.setAttribute("error", "Doctor ID, Patient ID, Result ID, và Appointment ID phải là số nguyên dương.");
-            request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
-            return;
-        }
-
-        if (doctorId == null || patientId == null) {
-            request.setAttribute("error", "Doctor ID và Patient ID là bắt buộc.");
+            System.out.println("Invalid ID format: ResultID=" + resultIdStr + ", AppointmentID=" + appointmentIdStr + " at " + LocalDateTime.now() + " +07");
+            request.setAttribute("error", "Result ID và Appointment ID phải là số nguyên dương.");
             request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
             return;
         }
@@ -91,7 +71,7 @@ public class AddPrescriptionServlet extends HttpServlet {
             String createdByStr = request.getParameter("createdBy");
             Integer createdBy = null;
             if (createdByStr == null || createdByStr.trim().isEmpty()) {
-                createdBy =1; // Default fallback
+                createdBy = 1; // Default fallback
                 System.out.println("createdBy not found in request, using default: " + createdBy + " at " + LocalDateTime.now() + " +07");
             } else {
                 try {
@@ -104,16 +84,41 @@ public class AddPrescriptionServlet extends HttpServlet {
                 }
             }
 
+            // Lấy thêm doctorId và patientId từ request
+            String doctorIdStr = request.getParameter("doctorId");
+            String patientIdStr = request.getParameter("patientId");
+            
+            Integer doctorId = 1; // Default value nếu không có
+            Integer patientId = 1; // Default value nếu không có
+            
+            if (doctorIdStr != null && !doctorIdStr.trim().isEmpty()) {
+                try {
+                    doctorId = Integer.parseInt(doctorIdStr);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid doctorId format: " + doctorIdStr + " at " + LocalDateTime.now() + " +07");
+                }
+            }
+            
+            if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
+                try {
+                    patientId = Integer.parseInt(patientIdStr);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid patientId format: " + patientIdStr + " at " + LocalDateTime.now() + " +07");
+                }
+            }
+
             prescriptionDetails = prescriptionDetails != null ? prescriptionDetails.trim() : "";
 
             Timestamp createdAt = new Timestamp(System.currentTimeMillis());
-            boolean success = prescriptionsService.addPrescription(doctorId, patientId, prescriptionDetails, status, createdAt, createdBy, resultId, appointmentId);
+            
+            // Gọi method với đúng số tham số: doctorId, patientId, prescriptionDetails, status, createdAt, createdBy
+            boolean success = prescriptionsService.addPrescription(doctorId, patientId, prescriptionDetails, status, createdAt, createdBy);
 
             if (success) {
-                System.out.println("Prescription added successfully: DoctorID=" + doctorId + ", PatientID=" + patientId + " at " + LocalDateTime.now() + " +07");
+                System.out.println("Prescription added successfully at " + LocalDateTime.now() + " +07");
                 response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet?success=Thêm toa thuốc thành công!");
             } else {
-                System.out.println("Failed to add prescription: DoctorID=" + doctorId + ", PatientID=" + patientId + " at " + LocalDateTime.now() + " +07");
+                System.out.println("Failed to add prescription at " + LocalDateTime.now() + " +07");
                 request.setAttribute("error", "Không thể thêm toa thuốc. Vui lòng thử lại.");
                 request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
             }
