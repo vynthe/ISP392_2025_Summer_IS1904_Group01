@@ -182,7 +182,7 @@
                         <c:choose>
                             <c:when test="${not empty employees}">
                                 <c:set var="page" value="${param.page != null ? param.page : 1}" />
-                                <c:set var="pageSize" value="10" />
+                                <c:set var="pageSize" value="5" />
                                 <c:set var="totalItems" value="${employees.size()}" />
                                 <c:set var="totalPages" value="${(totalItems + pageSize - 1) / pageSize}" />
                                 <c:set var="startIndex" value="${(page - 1) * pageSize}" />
