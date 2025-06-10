@@ -153,6 +153,7 @@
             <a href="#" class="btn-green">Thêm Kết Quả Khám</a>
             <a href="${pageContext.request.contextPath}/ViewPrescriptionServlet" class="btn-green">Thêm Đơn Thuốc</a>
             <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn-green">Xem Lịch Làm Việc</a>
+            <a href="${pageContext.request.contextPath}/ViewRoomServlet" class="btn-green">Xem Phong</a>
         </div>
     </div>
     <script>

@@ -171,34 +171,69 @@ public class RoomsDAO {
         }
     }
 
-    public Rooms getRoomByID(int roomID) throws SQLException {
-        String sql = "SELECT * FROM Rooms WHERE RoomID = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, roomID);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Rooms room = new Rooms();
-                    room.setRoomID(rs.getInt("RoomID"));
-                    room.setRoomName(rs.getString("RoomName"));
-                    room.setDescription(rs.getString("Description"));
-                    Integer doctorID = rs.getObject("DoctorID") != null ? rs.getInt("DoctorID") : null;
-                    Integer nurseID = rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null;
-                    room.setDoctorID(doctorID);
-                    room.setNurseID(nurseID);
-                    room.setStatus(rs.getString("Status"));
-                    room.setCreatedBy(rs.getInt("CreatedBy"));
-                    room.setCreatedAt(rs.getDate("CreatedAt"));
-                    room.setUpdatedAt(rs.getDate("UpdatedAt"));
-                    return room;
-                }
+public Rooms getRoomByID(int roomID) throws SQLException {
+    String sql = "SELECT * FROM Rooms WHERE RoomID = ?";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, roomID);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
+                room.setDoctorID(rs.getObject("DoctorID") != null ? rs.getInt("DoctorID") : null);
+                room.setNurseID(rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
+                room.setStatus(rs.getString("Status"));
+                room.setCreatedBy(rs.getInt("CreatedBy"));
+                room.setCreatedAt(rs.getDate("CreatedAt"));
+                room.setUpdatedAt(rs.getDate("UpdatedAt"));
+                return room;
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getRoomByID: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
         }
-        return null;
+    } catch (SQLException e) {
+        System.err.println("SQLException in getRoomByID: " + e.getMessage());
+        throw e;
     }
+    return null;
+}
+public List<Rooms> getRoomByID(int userId, String role) throws SQLException {
+    List<Rooms> roomList = new ArrayList<>();
+    String sql;
+
+    if ("doctor".equalsIgnoreCase(role)) {
+        sql = "SELECT * FROM Rooms WHERE DoctorID = ?";
+    } else if ("nurse".equalsIgnoreCase(role)) {
+        sql = "SELECT * FROM Rooms WHERE NurseID = ?";
+    } else {
+        return roomList; // không hỗ trợ vai trò khác
+    }
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
+                room.setDoctorID(rs.getObject("DoctorID") != null ? rs.getInt("DoctorID") : null);
+                room.setNurseID(rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
+                room.setStatus(rs.getString("Status"));
+                room.setCreatedBy(rs.getInt("CreatedBy"));
+                room.setCreatedAt(rs.getDate("CreatedAt"));
+                room.setUpdatedAt(rs.getDate("UpdatedAt"));
+                roomList.add(room);
+            }
+        }
+    }
+
+    return roomList;
+}
+
+
+
 
     public void deleteRoom(int roomID) throws SQLException {
         String sql = "DELETE FROM Rooms WHERE RoomID = ?";
