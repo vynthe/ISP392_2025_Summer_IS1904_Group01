@@ -85,9 +85,10 @@ public class UpdateServiceServlet extends HttpServlet {
             serviceName == null || serviceName.trim().isEmpty() ||
             priceStr == null || priceStr.trim().isEmpty() ||
             status == null || status.trim().isEmpty()) {
+            //Nếu thiếu trường bắt buộc, ghi log cảnh báo, đặt thông báo lỗi vào request.
             LOGGER.warning("Missing or empty required fields");
             request.setAttribute("error", "Vui lòng điền đầy đủ tất cả các trường bắt buộc.");
-            setFormAttributes(request, serviceIdParam, serviceName, description, priceStr, status);
+            setFormAttributes(request, serviceIdParam, serviceName, description, priceStr, status);//lưu lại dữ liệu form
             request.getRequestDispatcher("/views/admin/UpdateService.jsp").forward(request, response);
             return;
         }

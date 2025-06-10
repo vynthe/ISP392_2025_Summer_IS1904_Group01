@@ -150,7 +150,7 @@ public class EditProfileUserController extends HttpServlet {
 
                 case "patient":
                     if (medicalHistory == null || medicalHistory.trim().isEmpty()) {
-                        throw new ServletException("Tiền sử bệnh lý không được để trống.");
+                        throw new ServletException("Email khong duoc de trong.");
                     }
                     user.setMedicalHistory(medicalHistory.trim());
                     user.setSpecialization(null);
