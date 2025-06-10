@@ -23,7 +23,6 @@ public class ViewDetailServiceAdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setCharacterEncoding("UTF-8"); 
-        // Lấy tham số ID từ request
         String idStr = request.getParameter("id");
         try {
             // Chuyển đổi ID thành số nguyên
@@ -54,12 +53,10 @@ public class ViewDetailServiceAdminServlet extends HttpServlet {
             request.getRequestDispatcher("/views/error.jsp").forward(request, response);
         }
     }
-
-    // Xử lý POST: Chuyển hướng về GET để tránh lặp lại gửi form
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setCharacterEncoding("UTF-8"); // Thiết lập mã hóa UTF-8 cho response
+        response.setCharacterEncoding("UTF-8"); 
         // Chuyển hướng POST sang GET
         response.sendRedirect(request.getContextPath() + "/ViewDetailServiceAdminServlet");
     }

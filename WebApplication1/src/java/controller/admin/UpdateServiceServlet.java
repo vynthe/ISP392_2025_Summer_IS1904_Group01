@@ -7,13 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.entity.Services;
 import model.service.Services_Service;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Định nghĩa Servlet với 2 URL: "/UpdateServiceServlet" và "/admin/updateService"
 @WebServlet(name = "UpdateServiceServlet", urlPatterns = {"/UpdateServiceServlet", "/admin/updateService"})
 public class UpdateServiceServlet extends HttpServlet {
 
