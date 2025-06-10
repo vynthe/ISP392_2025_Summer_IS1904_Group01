@@ -1,13 +1,11 @@
 package model.dao;
 
-import model.dao.DBContext; // Đảm bảo đường dẫn này đúng
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Time;
-import java.sql.Timestamp; // Thêm import này
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,9 +48,9 @@ public class SchedulesDAO {
         return "Doctor".equals(role) || "Nurse".equals(role) || "Receptionist".equals(role);
     }
 
-    public boolean addSchedule(Schedules schedule) throws SQLException, ClassNotFoundException { // Thêm ClassNotFoundException
-        String sql = "INSERT INTO Schedules (EmployeeID, Role, StartTime, EndTime, ShiftStartTime, ShiftEndTime, DayOfWeek, RoomID, Status, CreatedBy) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+   public boolean addSchedule(Schedules schedule) throws SQLException, ClassNotFoundException {
+        String sql = "INSERT INTO Schedules (EmployeeID, Role, StartTime, EndTime, ShiftStartTime, ShiftEndTime, DayOfWeek, RoomID, Status, CreatedBy, CreatedAt, UpdatedAt) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, schedule.getEmployeeID());
@@ -65,59 +63,25 @@ public class SchedulesDAO {
             pstmt.setInt(8, schedule.getRoomID());
             pstmt.setString(9, schedule.getStatus());
             pstmt.setInt(10, schedule.getCreatedBy());
+            pstmt.setTimestamp(11, new java.sql.Timestamp(System.currentTimeMillis()));
+            pstmt.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            System.err.println("Error adding schedule to DB: " + e.getMessage());
+            System.err.println("Error adding schedule: " + e.getMessage());
             throw e;
         }
     }
 
-    public boolean isScheduleConflict(Schedules newSchedule) throws SQLException, ClassNotFoundException { // Thêm ClassNotFoundException
+  public boolean isScheduleConflict(Schedules newSchedule) throws SQLException, ClassNotFoundException {
         // SQL Server syntax for combining DATE and TIME into DATETIME for comparison
-        // Check for EmployeeID conflict first
-        String sqlEmployeeConflict = "SELECT COUNT(*) FROM Schedules " +
-                                     "WHERE EmployeeID = ? AND StartTime = ? AND " + // Same employee, same date
-                                     // Overlap condition: (StartA < EndB) AND (EndA > StartB)
-                                     "((DATEADD(hour, DATEPART(hour, ShiftStartTime), DATEADD(minute, DATEPART(minute, ShiftStartTime), CAST(StartTime AS DATETIME))) < DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))) " + // Existing start < New end
-                                     "AND (DATEADD(hour, DATEPART(hour, ShiftEndTime), DATEADD(minute, DATEPART(minute, ShiftEndTime), CAST(StartTime AS DATETIME))) > DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))))"; // Existing end > New start
+        // Check only for RoomID conflict (no employee-specific conflict check)
+        String sqlRoomConflict = "SELECT COUNT(*) FROM Schedules " +
+                                "WHERE RoomID = ? AND StartTime = ? AND " +
+                                "((DATEADD(hour, DATEPART(hour, ShiftStartTime), DATEADD(minute, DATEPART(minute, ShiftStartTime), CAST(StartTime AS DATETIME))) < DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))) " +
+                                "AND (DATEADD(hour, DATEPART(hour, ShiftEndTime), DATEADD(minute, DATEPART(minute, ShiftEndTime), CAST(StartTime AS DATETIME))) > DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))))";
 
         boolean conflictFound = false;
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmtEmployee = conn.prepareStatement(sqlEmployeeConflict)) {
-            pstmtEmployee.setInt(1, newSchedule.getEmployeeID());
-            pstmtEmployee.setDate(2, newSchedule.getStartTime());
-
-            // Parameters for new schedule's combined start/end
-            // For new end time
-            pstmtEmployee.setTime(3, newSchedule.getShiftEnd()); // Hour/Minute of new shiftEnd
-            pstmtEmployee.setTime(4, newSchedule.getShiftEnd());
-            pstmtEmployee.setDate(5, newSchedule.getStartTime()); // Date of new schedule
-
-            // For new start time
-            pstmtEmployee.setTime(6, newSchedule.getShiftStart()); // Hour/Minute of new shiftStart
-            pstmtEmployee.setTime(7, newSchedule.getShiftStart());
-            pstmtEmployee.setDate(8, newSchedule.getStartTime()); // Date of new schedule
-
-            try (ResultSet rs = pstmtEmployee.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    conflictFound = true;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error checking employee schedule conflict: " + e.getMessage());
-            throw e;
-        }
-
-        if (conflictFound) return true; // If employee conflict found, no need to check room
-
-        // Check for RoomID conflict
-        String sqlRoomConflict = "SELECT COUNT(*) FROM Schedules " +
-                                 "WHERE RoomID = ? AND StartTime = ? AND " + // Same room, same date
-                                 // Overlap condition: (StartA < EndB) AND (EndA > StartB)
-                                 "((DATEADD(hour, DATEPART(hour, ShiftStartTime), DATEADD(minute, DATEPART(minute, ShiftStartTime), CAST(StartTime AS DATETIME))) < DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))) " + // Existing start < New end
-                                 "AND (DATEADD(hour, DATEPART(hour, ShiftEndTime), DATEADD(minute, DATEPART(minute, ShiftEndTime), CAST(StartTime AS DATETIME))) > DATEADD(hour, DATEPART(hour, ?), DATEADD(minute, DATEPART(minute, ?), CAST(? AS DATETIME)))))"; // Existing end > New start
-
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmtRoom = conn.prepareStatement(sqlRoomConflict)) {
             pstmtRoom.setInt(1, newSchedule.getRoomID());
@@ -125,18 +89,18 @@ public class SchedulesDAO {
 
             // Parameters for new schedule's combined start/end
             // For new end time
-            pstmtRoom.setTime(3, newSchedule.getShiftEnd());    // Hour/Minute of new shiftEnd
+            pstmtRoom.setTime(3, newSchedule.getShiftEnd());
             pstmtRoom.setTime(4, newSchedule.getShiftEnd());
-            pstmtRoom.setDate(5, newSchedule.getStartTime());   // Date of new schedule
+            pstmtRoom.setDate(5, newSchedule.getStartTime());
 
             // For new start time
-            pstmtRoom.setTime(6, newSchedule.getShiftStart());  // Hour/Minute of new shiftStart
+            pstmtRoom.setTime(6, newSchedule.getShiftStart());
             pstmtRoom.setTime(7, newSchedule.getShiftStart());
-            pstmtRoom.setDate(8, newSchedule.getStartTime());   // Date of new schedule
+            pstmtRoom.setDate(8, newSchedule.getStartTime());
 
             try (ResultSet rs = pstmtRoom.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
-                    conflictFound = true; // If room conflict found
+                    conflictFound = true;
                 }
             }
         } catch (SQLException e) {
@@ -244,6 +208,56 @@ public class SchedulesDAO {
         }
         return schedules;
     }
+public List<Map<String, Object>> searchSchedule(String employeeName, LocalDate searchDate) throws SQLException, ClassNotFoundException {
+        List<Map<String, Object>> schedules = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT s.ScheduleID, s.EmployeeID, s.Role, s.StartTime, s.EndTime, s.DayOfWeek, s.RoomID, " +
+            "s.ShiftStartTime, s.ShiftEndTime, s.[Status], s.CreatedBy, s.CreatedAt, s.UpdatedAt, u.fullName " +
+            "FROM Schedules s LEFT JOIN Users u ON s.EmployeeID = u.userID WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+        int paramIndex = 1;
+
+        if (employeeName != null && !employeeName.trim().isEmpty()) {
+            sql.append(" AND u.fullName LIKE ?");
+            params.add("%" + employeeName.trim() + "%");
+        }
+        if (searchDate != null) {
+            sql.append(" AND s.StartTime = ?");
+            params.add(Date.valueOf(searchDate));
+        }
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(paramIndex++, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> scheduleMap = new HashMap<>();
+                    scheduleMap.put("scheduleID", rs.getInt("ScheduleID"));
+                    scheduleMap.put("employeeID", rs.getInt("EmployeeID"));
+                    scheduleMap.put("role", rs.getString("Role"));
+                    scheduleMap.put("startTime", rs.getDate("StartTime"));
+                    scheduleMap.put("endTime", rs.getDate("EndTime"));
+                    scheduleMap.put("dayOfWeek", rs.getString("DayOfWeek"));
+                    scheduleMap.put("roomID", rs.getInt("RoomID"));
+                    scheduleMap.put("shiftStart", rs.getTime("ShiftStartTime"));
+                    scheduleMap.put("shiftEnd", rs.getTime("ShiftEndTime"));
+                    scheduleMap.put("status", rs.getString("Status"));
+                    scheduleMap.put("createdBy", rs.getInt("CreatedBy"));
+                    scheduleMap.put("createdAt", rs.getDate("CreatedAt"));
+                    scheduleMap.put("updatedAt", rs.getDate("UpdatedAt"));
+                    scheduleMap.put("fullName", rs.getString("fullName") != null ? rs.getString("fullName") : "Unknown");
+                    schedules.add(scheduleMap);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in searchSchedule: " + e.getMessage());
+            throw e;
+        }
+        return schedules;
+    }
 
     public List<Schedules> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException, ClassNotFoundException {
         List<Schedules> schedules = new ArrayList<>();
@@ -336,8 +350,8 @@ public class SchedulesDAO {
         schedule.setEndTime(rs.getDate("EndTime"));
         schedule.setDayOfWeek(rs.getString("DayOfWeek"));
         schedule.setRoomID(rs.getInt("RoomID"));
-        schedule.setShiftStart(rs.getTime("ShiftStartTime")); // <-- Correctly getting Time here
-        schedule.setShiftEnd(rs.getTime("ShiftEndTime"));     // <-- Correctly getting Time here
+        schedule.setShiftStart(rs.getTime("ShiftStartTime")); 
+        schedule.setShiftEnd(rs.getTime("ShiftEndTime"));    
         schedule.setStatus(rs.getString("Status"));
         schedule.setCreatedBy(rs.getInt("CreatedBy"));
         schedule.setCreatedAt(rs.getDate("CreatedAt"));
@@ -364,4 +378,5 @@ public class SchedulesDAO {
         }
         return false;
     }
+    
 }

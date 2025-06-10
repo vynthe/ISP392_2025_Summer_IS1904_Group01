@@ -90,7 +90,6 @@
             .pagination {
                 display: flex;
                 justify-content: center;
-                /* flex-wrap: wrap; /* Bỏ hoặc kiểm soát cẩn thận nếu bạn muốn tránh xuống dòng */
                 gap: 5px;
                 margin-top: 25px;
             }
@@ -118,10 +117,18 @@
                 border-color: #4a69bd;
                 box-shadow: 0 0 0 0.25rem rgba(74, 105, 189, 0.25);
             }
-            /* Thêm CSS cho biểu tượng ellipsis nếu bạn quyết định thêm nó */
             .pagination .ellipsis {
                 padding: 8px 15px;
                 color: #555;
+            }
+            .search-container {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .search-container .form-control {
+                width: 100%;
+                max-width: 300px;
             }
         </style>
     </head>
@@ -146,11 +153,19 @@
                 </div>
 
                 <form action="${pageContext.request.contextPath}/ViewSchedulesServlet" method="get" class="mb-4">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Tìm kiếm theo Ngày trong tuần, Bác sĩ, Y tá, ID, hoặc Trạng thái..." name="searchQuery" value="${param.searchQuery}">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search me-2"></i>Tìm kiếm
-                        </button>
+                    <div class="search-container">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Tìm kiếm theo tên Bác sĩ, Y tá, Receptionist..." name="employeeName" value="${param.employeeName}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search me-2"></i>Tìm tên
+                            </button>
+                        </div>
+                        <div class="input-group">
+                            <input type="date" class="form-control" name="searchDate" value="${param.searchDate}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search me-2"></i>Tìm ngày
+                            </button>
+                        </div>
                     </div>
                 </form>
 
@@ -163,7 +178,7 @@
                             <thead class="table-light text-center">
                                 <tr>
                                     <th>Schedule ID</th>
-                                    <th>Day of Week</th>
+                                    <th>Date</th>
                                     <th>Start Time</th>
                                     <th>End Time</th>
                                     <th>Role</th>
@@ -186,7 +201,9 @@
                                 <c:forEach var="schedule" items="${schedules}" begin="${startIndex}" end="${endIndex}">
                                     <tr class="text-center">
                                         <td>${schedule["scheduleID"]}</td>
-                                        <td>${schedule["dayOfWeek"]}</td>
+                                        <td>
+                                            <fmt:formatDate value="${schedule['startTime']}" pattern="yyyy-MM-dd" />
+                                        </td>
                                         <td>
                                             <fmt:formatDate value="${schedule['shiftStart']}" pattern="HH:mm:ss" />
                                         </td>
@@ -195,10 +212,10 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${schedule['role'] == 'Doctor'}"> <%-- Đã sửa 'doctor' thành 'Doctor' --%>
+                                                <c:when test="${schedule['role'] == 'Doctor'}">
                                                     <span class="badge bg-primary">Doctor</span>
                                                 </c:when>
-                                                <c:when test="${schedule['role'] == 'Nurse'}"> <%-- Đã sửa 'nurse' thành 'Nurse' --%>
+                                                <c:when test="${schedule['role'] == 'Nurse'}">
                                                     <span class="badge bg-success">Nurse</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -208,21 +225,17 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <%-- Dựa vào logic trong SchedulesService, tên đã được gắn trực tiếp vào scheduleMap --%>
-                                                <c:when test="${schedule['role'] == 'Doctor'}">
-                                                    ${schedule.doctorName}
-                                                </c:when>
-                                                <c:when test="${schedule['role'] == 'Nurse'}">
-                                                    ${schedule.nurseName}
+                                                <c:when test="${not empty schedule['fullName'] and not empty schedule['fullName'].trim()}">
+                                                    ${schedule['fullName']}
                                                 </c:when>
                                                 <c:otherwise>
-                                                    Unknown <%-- Hoặc hiển thị tên nếu có cho các role khác --%>
+                                                    <span class="text-muted">Chưa có tên</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
                                         <td>${schedule["status"]}</td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}&searchQuery=${param.searchQuery}" class="btn btn-info btn-sm">
+                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-eye"></i> View Details
                                             </a>
                                         </td>
@@ -236,33 +249,30 @@
                                 <ul class="pagination">
                                     <c:set var="prevPage" value="${page - 1}" />
                                     <c:set var="nextPage" value="${page + 1}" />
-                                    <c:set var="maxPagesToShow" value="5" /> <%-- Số lượng trang tối đa muốn hiển thị --%>
+                                    <c:set var="maxPagesToShow" value="5" />
                                     <c:set var="halfMaxPages" value="${maxPagesToShow div 2}" />
 
                                     <li class="page-item ${page == 1 ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${prevPage}&searchQuery=${param.searchQuery}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
+                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${prevPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
                                     </li>
 
                                     <c:choose>
                                         <c:when test="${totalPages <= maxPagesToShow}">
-                                            <%-- Hiển thị tất cả các trang nếu tổng số trang ít hơn hoặc bằng maxPagesToShow --%>
                                             <c:forEach var="i" begin="1" end="${totalPages}">
                                                 <li class="page-item ${page == i ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&searchQuery=${param.searchQuery}">${i}</a>
+                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${i}</a>
                                                 </li>
                                             </c:forEach>
                                         </c:when>
                                         <c:otherwise>
-                                            <%-- Hiển thị trang đầu tiên --%>
                                             <li class="page-item ${page == 1 ? 'active' : ''}">
-                                                <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=1&searchQuery=${param.searchQuery}">1</a>
+                                                <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=1&employeeName=${param.employeeName}&searchDate=${param.searchDate}">1</a>
                                             </li>
 
                                             <c:if test="${page > halfMaxPages + 1}">
                                                 <li class="page-item disabled"><span class="page-link ellipsis">...</span></li>
-                                                </c:if>
+                                            </c:if>
 
-                                            <%-- Tính toán phạm vi trang để hiển thị xung quanh trang hiện tại --%>
                                             <c:set var="startPage" value="${page - halfMaxPages}" />
                                             <c:set var="endPage" value="${page + halfMaxPages}" />
 
@@ -273,8 +283,7 @@
                                                 <c:set var="endPage" value="${totalPages - 1}" />
                                             </c:if>
 
-                                            <%-- Điều chỉnh lại nếu bắt đầu từ trang rất nhỏ hoặc kết thúc ở trang rất lớn --%>
-                                            <c:if test="${endPage - startPage + 1 < maxPagesToShow - 2}"> <%-- -2 vì đã có trang 1 và trang cuối --%>
+                                            <c:if test="${endPage - startPage + 1 < maxPagesToShow - 2}">
                                                 <c:set var="endPage" value="${startPage + maxPagesToShow - 3}" />
                                                 <c:if test="${endPage >= totalPages}">
                                                     <c:set var="endPage" value="${totalPages - 1}" />
@@ -285,30 +294,28 @@
                                                 </c:if>
                                             </c:if>
 
-
                                             <c:forEach var="i" begin="${startPage}" end="${endPage}">
-                                                <c:if test="${i > 0 && i <= totalPages}"> <%-- Đảm bảo không hiển thị trang 1 hoặc trang cuối ở đây --%>
+                                                <c:if test="${i > 0 && i <= totalPages}">
                                                     <li class="page-item ${page == i ? 'active' : ''}">
-                                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&searchQuery=${param.searchQuery}">${i}</a>
+                                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${i}</a>
                                                     </li>
                                                 </c:if>
                                             </c:forEach>
 
                                             <c:if test="${page < totalPages - halfMaxPages}">
                                                 <li class="page-item disabled"><span class="page-link ellipsis">...</span></li>
-                                                </c:if>
+                                            </c:if>
 
-                                            <%-- Hiển thị trang cuối cùng (chỉ nếu nó không phải là trang 1 và không phải là trang hiện tại đã được hiển thị) --%>
                                             <c:if test="${totalPages > 1 && totalPages != page}">
                                                 <li class="page-item ${page == totalPages ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${totalPages}&searchQuery=${param.searchQuery}">${totalPages}</a>
+                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${totalPages}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${totalPages}</a>
                                                 </li>
                                             </c:if>
                                         </c:otherwise>
                                     </c:choose>
 
                                     <li class="page-item ${page == totalPages ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${nextPage}&searchQuery=${param.searchQuery}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
+                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${nextPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
                                     </li>
                                 </ul>
                             </nav>

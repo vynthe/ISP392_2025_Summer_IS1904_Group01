@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.service.UserService;
-import org.mindrot.jbcrypt.BCrypt; // Thêm import cho BCrypt
+import org.mindrot.jbcrypt.BCrypt;
 
 @WebServlet(name = "AddEmployeeServlet", urlPatterns = {"/AddEmployeeServlet", "/admin/viewEmployees"})
 public class AddEmployeeServlet extends HttpServlet {

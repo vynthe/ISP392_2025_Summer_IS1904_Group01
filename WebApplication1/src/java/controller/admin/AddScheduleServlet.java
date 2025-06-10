@@ -20,7 +20,6 @@ import java.sql.Time;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -95,25 +94,16 @@ public class AddScheduleServlet extends HttpServlet {
             if (weeksToCreate < 1) weeksToCreate = 1;
 
             LocalDate startDate = LocalDate.parse(startDateStr);
-            LocalDate endDate = startDate.plusWeeks(weeksToCreate).minusDays(1); // Calculate end date for the period
+            LocalDate endDate = startDate.plusWeeks(weeksToCreate).minusDays(1);
 
-            // --- KIỂM TRA TRÙNG LẶP CHO LỊCH TỰ ĐỘNG CHUNG TRƯỚC KHI TẠO ---
-            // Kiểm tra xem đã có lịch chung cho vai trò này trong khoảng thời gian đã chọn chưa
-            if (schedulesService.hasGeneralScheduleForRoleInPeriod(roleForAutoSchedule, startDate, endDate)) {
-                errors.append("Lỗi: Lịch tự động cho vai trò ").append(roleForAutoSchedule)
-                      .append(" đã được tạo trong khoảng thời gian từ ")
-                      .append(startDate.toString()).append(" đến ").append(endDate.toString()).append(".<br>");
-                overallSuccess = false;
+            // Removed hasGeneralScheduleForRoleInPeriod check to allow all IDs per role
+            Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
+
+            boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
+            if (autoScheduleCreationSuccess) {
+                messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate).append(" tuần cho vai trò ").append(roleForAutoSchedule).append(".<br>");
             } else {
-                Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
-
-                // Nếu không có lỗi trùng lặp lịch chung, tiến hành tạo lịch
-                boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
-                if (autoScheduleCreationSuccess) {
-                    messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate).append(" tuần.<br>");
-                } else {
-                    overallSuccess = false; // Một phần hoặc toàn bộ lịch tự động có vấn đề
-                }
+                overallSuccess = false;
             }
 
         } catch (NumberFormatException e) {
@@ -134,14 +124,12 @@ public class AddScheduleServlet extends HttpServlet {
             overallSuccess = false;
         }
 
-        // Đặt thông báo cuối cùng
         if (messages.length() > 0) {
             request.setAttribute("message", messages.toString());
         }
         if (errors.length() > 0) {
             request.setAttribute("error", errors.toString());
         } else if (overallSuccess && messages.length() == 0) {
-             // Trường hợp không có lỗi và cũng không có lịch nào được tạo (ví dụ: không tìm thấy người dùng)
             request.setAttribute("message", "Không có lịch nào được tạo. Vui lòng kiểm tra lại thông tin hoặc số lượng nhân viên.");
         }
 
@@ -159,11 +147,10 @@ public class AddScheduleServlet extends HttpServlet {
                 LocalTime shiftEnd = LocalTime.parse(request.getParameter("specialSchedules[" + i + "].shiftEnd"));
                 String[] days = request.getParameterValues("specialSchedules[" + i + "].days");
 
-                // Kiểm tra shiftEnd phải lớn hơn shiftStart
                 if (shiftEnd.isBefore(shiftStart)) {
                     System.err.println("Invalid special schedule for employee " + employeeId + ": Shift end (" + shiftEnd + ") is before shift start (" + shiftStart + "). Skipping this entry.");
                     i++;
-                    continue; // Bỏ qua lịch trình không hợp lệ này
+                    continue;
                 }
 
                 if (days != null && days.length > 0) {
@@ -172,7 +159,7 @@ public class AddScheduleServlet extends HttpServlet {
                             .collect(Collectors.toList());
                     specialSchedules.put(employeeId, new SpecialScheduleInfo(employeeId, role, workingDays, shiftStart, shiftEnd));
                 } else {
-                     System.err.println("Invalid special schedule for employee " + employeeId + ": No days selected. Skipping this entry.");
+                    System.err.println("Invalid special schedule for employee " + employeeId + ": No days selected. Skipping this entry.");
                 }
             } catch (NumberFormatException | NullPointerException e) {
                 System.err.println("Error parsing special schedule item at index " + i + ": " + e.getMessage());
@@ -187,23 +174,23 @@ public class AddScheduleServlet extends HttpServlet {
             throws SQLException, ClassNotFoundException {
         boolean allSuccess = true;
 
-        LocalTime defaultMorningShiftStart = LocalTime.of(7, 30);
+        LocalTime defaultMorningShiftStart = LocalTime.of(7, 0);
         LocalTime defaultMorningShiftEnd = LocalTime.of(12, 0);
-        LocalTime defaultAfternoonShiftStart = LocalTime.of(13, 30);
-        LocalTime defaultAfternoonShiftEnd = LocalTime.of(17, 30);
+        LocalTime defaultAfternoonShiftStart = LocalTime.of(13, 0);
+        LocalTime defaultAfternoonShiftEnd = LocalTime.of(17, 0);
 
         List<Users> usersToSchedule;
         try {
             usersToSchedule = userService.getUsersByRole(roleForAutoSchedule);
         } catch (ClassNotFoundException e) {
             System.err.println("ClassNotFoundException in getUsersByRole: " + e.getMessage());
-            throw e; // Re-throw to be handled by caller
+            throw e;
         }
 
         if (usersToSchedule == null || usersToSchedule.isEmpty()) {
             System.out.println("No users found for role: " + roleForAutoSchedule + ". Cannot create general schedules.");
             errors.append("Cảnh báo: Không tìm thấy nhân viên cho vai trò ").append(roleForAutoSchedule).append(". Không thể tạo lịch chung.<br>");
-            return false; // Cannot proceed if no users
+            return false;
         }
 
         List<Integer> roomIds;
@@ -211,16 +198,16 @@ public class AddScheduleServlet extends HttpServlet {
             roomIds = roomService.getAllRoomIds();
         } catch (ClassNotFoundException e) {
             System.err.println("ClassNotFoundException in getAllRoomIds: " + e.getMessage());
-            throw e; // Re-throw to be handled by caller
+            throw e;
         }
 
         if (roomIds == null || roomIds.isEmpty()) {
             System.out.println("No rooms available for scheduling.");
             errors.append("Lỗi: Không có phòng trống để tạo lịch.<br>");
-            return false; // Cannot proceed if no rooms
+            return false;
         }
 
-        int currentRoomIndex = 0; // Reset room index for each creation attempt
+        int currentRoomIndex = 0;
 
         for (int week = 0; week < weeksToCreate; week++) {
             for (int day = 0; day < 7; day++) {
@@ -229,17 +216,13 @@ public class AddScheduleServlet extends HttpServlet {
                 String dayOfWeekName = dayOfWeekEnum.toString().substring(0, 1).toUpperCase() + dayOfWeekEnum.toString().substring(1).toLowerCase();
 
                 for (Users user : usersToSchedule) {
-                    // This check is redundant if getUsersByRole already filters, but harmless.
-                    // if (!user.getRole().equalsIgnoreCase(roleForAutoSchedule)) continue;
-
                     SpecialScheduleInfo specialInfo = specialSchedules.get(user.getUserID());
 
                     if (specialInfo != null && specialInfo.workingDays.contains(dayOfWeekEnum)) {
-                        // Handle special schedule for this user on this day
                         int assignedRoomId = roomIds.get(currentRoomIndex % roomIds.size());
                         Schedules schedule = new Schedules();
                         schedule.setEmployeeID(user.getUserID());
-                        schedule.setRole(user.getRole());
+                        schedule.setRole(roleForAutoSchedule);
                         schedule.setStartTime(Date.valueOf(currentScheduleDate));
                         schedule.setEndTime(Date.valueOf(currentScheduleDate));
                         schedule.setShiftStart(Time.valueOf(specialInfo.shiftStart));
@@ -250,31 +233,25 @@ public class AddScheduleServlet extends HttpServlet {
                         schedule.setCreatedBy(createdBy);
 
                         try {
-                            if (!schedulesService.isScheduleConflict(schedule)) {
-                                if (!schedulesService.addSchedule(schedule)) {
-                                    allSuccess = false;
-                                    errors.append("Lỗi: Không thể tạo lịch đặc biệt cho nhân viên ID ").append(user.getUserID())
-                                          .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
-                                }
+                            if (schedulesService.addSchedule(schedule)) {
+                                currentRoomIndex = (currentRoomIndex + 1) % roomIds.size(); // Move to next room
                             } else {
-                                System.out.println("Conflict detected for special schedule for user " + user.getUserID() + " on " + currentScheduleDate);
-                                errors.append("Cảnh báo: Lịch trình đặc biệt cho nhân viên ID ").append(user.getUserID())
-                                      .append(" vào ngày ").append(currentScheduleDate).append(" bị trùng lặp và đã bị bỏ qua.<br>");
-                                allSuccess = false; // Mark as not entirely successful because of conflict
+                                allSuccess = false;
+                                errors.append("Lỗi: Không thể tạo lịch đặc biệt cho nhân viên ID ").append(user.getUserID())
+                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
-                        } catch (IllegalStateException e) {
-                            System.err.println("Schedule conflict for special schedule: " + e.getMessage());
-                            errors.append("Cảnh báo: ").append(e.getMessage()).append(" cho nhân viên ID ").append(user.getUserID())
-                                  .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
+                        } catch (SQLException e) {
+                            System.err.println("Database error adding special schedule: " + e.getMessage());
+                            errors.append("Lỗi cơ sở dữ liệu khi tạo lịch đặc biệt cho nhân viên ID ").append(user.getUserID())
+                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
-                        currentRoomIndex++;
                     } else if (dayOfWeekEnum != DayOfWeek.SUNDAY) {
-                        // Handle general morning shift
+                        // Morning shift
                         int assignedRoomIdMorning = roomIds.get(currentRoomIndex % roomIds.size());
                         Schedules scheduleMorning = new Schedules();
                         scheduleMorning.setEmployeeID(user.getUserID());
-                        scheduleMorning.setRole(user.getRole());
+                        scheduleMorning.setRole(roleForAutoSchedule);
                         scheduleMorning.setStartTime(Date.valueOf(currentScheduleDate));
                         scheduleMorning.setEndTime(Date.valueOf(currentScheduleDate));
                         scheduleMorning.setShiftStart(Time.valueOf(defaultMorningShiftStart));
@@ -285,31 +262,25 @@ public class AddScheduleServlet extends HttpServlet {
                         scheduleMorning.setCreatedBy(createdBy);
 
                         try {
-                            if (!schedulesService.isScheduleConflict(scheduleMorning)) {
-                                if (!schedulesService.addSchedule(scheduleMorning)) {
-                                    allSuccess = false;
-                                    errors.append("Lỗi: Không thể tạo lịch chung ca sáng cho nhân viên ID ").append(user.getUserID())
-                                          .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
-                                }
+                            if (schedulesService.addSchedule(scheduleMorning)) {
+                                currentRoomIndex = (currentRoomIndex + 1) % roomIds.size(); // Move to next room
                             } else {
-                                System.out.println("Conflict detected for morning schedule for user " + user.getUserID() + " on " + currentScheduleDate);
-                                 errors.append("Cảnh báo: Lịch trình chung ca sáng cho nhân viên ID ").append(user.getUserID())
-                                      .append(" vào ngày ").append(currentScheduleDate).append(" bị trùng lặp và đã bị bỏ qua.<br>");
                                 allSuccess = false;
+                                errors.append("Lỗi: Không thể tạo lịch chung ca sáng cho nhân viên ID ").append(user.getUserID())
+                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
-                        } catch (IllegalStateException e) {
-                            System.err.println("Schedule conflict for morning shift: " + e.getMessage());
-                            errors.append("Cảnh báo: ").append(e.getMessage()).append(" cho ca sáng nhân viên ID ").append(user.getUserID())
-                                  .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
+                        } catch (SQLException e) {
+                            System.err.println("Database error adding morning schedule: " + e.getMessage());
+                            errors.append("Lỗi cơ sở dữ liệu khi tạo lịch chung ca sáng cho nhân viên ID ").append(user.getUserID())
+                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
-                        currentRoomIndex++;
 
-                        // Handle general afternoon shift
+                        // Afternoon shift
                         int assignedRoomIdAfternoon = roomIds.get(currentRoomIndex % roomIds.size());
                         Schedules scheduleAfternoon = new Schedules();
                         scheduleAfternoon.setEmployeeID(user.getUserID());
-                        scheduleAfternoon.setRole(user.getRole());
+                        scheduleAfternoon.setRole(roleForAutoSchedule);
                         scheduleAfternoon.setStartTime(Date.valueOf(currentScheduleDate));
                         scheduleAfternoon.setEndTime(Date.valueOf(currentScheduleDate));
                         scheduleAfternoon.setShiftStart(Time.valueOf(defaultAfternoonShiftStart));
@@ -320,25 +291,19 @@ public class AddScheduleServlet extends HttpServlet {
                         scheduleAfternoon.setCreatedBy(createdBy);
 
                         try {
-                            if (!schedulesService.isScheduleConflict(scheduleAfternoon)) {
-                                if (!schedulesService.addSchedule(scheduleAfternoon)) {
-                                    allSuccess = false;
-                                    errors.append("Lỗi: Không thể tạo lịch chung ca chiều cho nhân viên ID ").append(user.getUserID())
-                                          .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
-                                }
+                            if (schedulesService.addSchedule(scheduleAfternoon)) {
+                                currentRoomIndex = (currentRoomIndex + 1) % roomIds.size(); // Move to next room
                             } else {
-                                System.out.println("Conflict detected for afternoon schedule for user " + user.getUserID() + " on " + currentScheduleDate);
-                                 errors.append("Cảnh báo: Lịch trình chung ca chiều cho nhân viên ID ").append(user.getUserID())
-                                      .append(" vào ngày ").append(currentScheduleDate).append(" bị trùng lặp và đã bị bỏ qua.<br>");
                                 allSuccess = false;
+                                errors.append("Lỗi: Không thể tạo lịch chung ca chiều cho nhân viên ID ").append(user.getUserID())
+                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
-                        } catch (IllegalStateException e) {
-                            System.err.println("Schedule conflict for afternoon shift: " + e.getMessage());
-                            errors.append("Cảnh báo: ").append(e.getMessage()).append(" cho ca chiều nhân viên ID ").append(user.getUserID())
-                                  .append(" vào ngày ").append(currentScheduleDate).append(".<br>");
+                        } catch (SQLException e) {
+                            System.err.println("Database error adding afternoon schedule: " + e.getMessage());
+                            errors.append("Lỗi cơ sở dữ liệu khi tạo lịch chung ca chiều cho nhân viên ID ").append(user.getUserID())
+                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
-                        currentRoomIndex++;
                     }
                 }
             }
@@ -349,7 +314,6 @@ public class AddScheduleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // This is important: clear previous messages/errors when loading the page
         request.removeAttribute("message");
         request.removeAttribute("error");
         request.getRequestDispatcher("/views/admin/AddSchedule.jsp").forward(request, response);

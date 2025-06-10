@@ -10,6 +10,7 @@ import java.util.Map;
 import model.entity.Schedules;
 
 public class SchedulesService {
+
     private final SchedulesDAO schedulesDAO;
 
     public SchedulesService() {
@@ -33,13 +34,9 @@ public class SchedulesService {
         }
     }
 
-    public boolean isScheduleConflict(Schedules newSchedule) throws SQLException, ClassNotFoundException {
-        try {
-            return schedulesDAO.isScheduleConflict(newSchedule);
-        } catch (SQLException | ClassNotFoundException e) {
-            System.err.println("Error in SchedulesService.isScheduleConflict: " + e.getMessage());
-            throw e;
-        }
+    // Delegates conflict check to DAO, now only checking room conflicts
+    public boolean isScheduleConflict(Schedules schedule) throws SQLException, ClassNotFoundException {
+        return schedulesDAO.isScheduleConflict(schedule);
     }
 
     public boolean updateSchedule(Map<String, Object> scheduleData) throws SQLException, ClassNotFoundException {
@@ -62,7 +59,7 @@ public class SchedulesService {
     public boolean updateScheduleWithOldParams(Map<String, Object> scheduleData) throws SQLException, ClassNotFoundException {
         Schedules entity = new Schedules();
         entity.setScheduleID((Integer) scheduleData.get("scheduleId"));
-        
+
         // Xử lý role và employeeID dựa trên tham số cũ
         if (scheduleData.containsKey("doctorId") && scheduleData.get("doctorId") != null) {
             entity.setEmployeeID((Integer) scheduleData.get("doctorId"));
@@ -74,7 +71,7 @@ public class SchedulesService {
             entity.setEmployeeID((Integer) scheduleData.get("receptionistId"));
             entity.setRole("Receptionist");
         }
-        
+
         entity.setStartTime((Date) scheduleData.get("startTime"));
         entity.setEndTime((Date) scheduleData.get("endTime"));
         entity.setDayOfWeek((String) scheduleData.get("dayOfWeek"));
@@ -108,7 +105,7 @@ public class SchedulesService {
     }
 
     public boolean createScheduleForEmployee(int employeeId, String role, Date startTime, Date endTime,
-                                            Time shiftStart, Time shiftEnd, String dayOfWeek, int roomId, int createdBy)
+            Time shiftStart, Time shiftEnd, String dayOfWeek, int roomId, int createdBy)
             throws SQLException, ClassNotFoundException {
         Schedules schedule = new Schedules();
         schedule.setEmployeeID(employeeId);
@@ -121,12 +118,12 @@ public class SchedulesService {
         schedule.setCreatedBy(createdBy);
         schedule.setShiftStart(shiftStart);
         schedule.setShiftEnd(shiftEnd);
-        
+
         return schedulesDAO.addSchedule(schedule);
     }
 
     // Phương thức kiểm tra lịch theo role trong khoảng thời gian
-    public boolean hasGeneralScheduleForRoleInPeriod(String role, LocalDate startDate, LocalDate endDate) 
+    public boolean hasGeneralScheduleForRoleInPeriod(String role, LocalDate startDate, LocalDate endDate)
             throws SQLException, ClassNotFoundException {
         // Service có thể thêm logic nghiệp vụ ở đây trước khi gọi DAO
         // Ví dụ: kiểm tra tính hợp lệ của role, startDate, endDate
@@ -139,7 +136,7 @@ public class SchedulesService {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("Start date cannot be after end date");
         }
-        
+
         return schedulesDAO.hasScheduleForRoleInPeriod(role, startDate, endDate);
     }
 
@@ -150,20 +147,38 @@ public class SchedulesService {
 
     // Phương thức validate schedule trước khi thêm/cập nhật
     public boolean validateSchedule(Schedules schedule) {
-        if (schedule == null) return false;
-        if (schedule.getEmployeeID() <= 0) return false;
-        if (schedule.getRole() == null || schedule.getRole().trim().isEmpty()) return false;
-        if (schedule.getStartTime() == null || schedule.getEndTime() == null) return false;
-        if (schedule.getShiftStart() == null || schedule.getShiftEnd() == null) return false;
-        if (schedule.getDayOfWeek() == null || schedule.getDayOfWeek().trim().isEmpty()) return false;
-        if (schedule.getRoomID() <= 0) return false;
-        
+        if (schedule == null) {
+            return false;
+        }
+        if (schedule.getEmployeeID() <= 0) {
+            return false;
+        }
+        if (schedule.getRole() == null || schedule.getRole().trim().isEmpty()) {
+            return false;
+        }
+        if (schedule.getStartTime() == null || schedule.getEndTime() == null) {
+            return false;
+        }
+        if (schedule.getShiftStart() == null || schedule.getShiftEnd() == null) {
+            return false;
+        }
+        if (schedule.getDayOfWeek() == null || schedule.getDayOfWeek().trim().isEmpty()) {
+            return false;
+        }
+        if (schedule.getRoomID() <= 0) {
+            return false;
+        }
+
         // Kiểm tra startTime không sau endTime
-        if (schedule.getStartTime().after(schedule.getEndTime())) return false;
-        
+        if (schedule.getStartTime().after(schedule.getEndTime())) {
+            return false;
+        }
+
         // Kiểm tra shiftStart không sau shiftEnd
-        if (schedule.getShiftStart().after(schedule.getShiftEnd())) return false;
-        
+        if (schedule.getShiftStart().after(schedule.getShiftEnd())) {
+            return false;
+        }
+
         return true;
     }
 
@@ -172,12 +187,12 @@ public class SchedulesService {
         if (!validateSchedule(schedule)) {
             throw new IllegalArgumentException("Invalid schedule data");
         }
-        
         // Kiểm tra conflict trước khi thêm
         if (isScheduleConflict(schedule)) {
             throw new IllegalStateException("Schedule conflict detected");
         }
-        
+
         return schedulesDAO.addSchedule(schedule);
     }
+    
 }

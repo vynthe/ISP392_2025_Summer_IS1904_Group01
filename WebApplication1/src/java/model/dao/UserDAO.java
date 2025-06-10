@@ -603,6 +603,3 @@ public boolean UpdatePatient(Users patient) throws SQLException {
         return users;
     }
 }
-
-
-

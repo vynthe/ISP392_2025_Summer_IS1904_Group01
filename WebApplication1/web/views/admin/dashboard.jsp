@@ -172,16 +172,7 @@
 </head>
 <body>
     <div class="header-bar">
-        <div class="search-container">
-            <form action="ViewEmployeeServlet" method="get" class="flex w-full">
-                <div class="relative w-full">
-                    <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên, email..."
-                           value="${keyword != null ? keyword : ''}">
-                    <span class="search-icon">🔍</span>
-                </div>
-                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-            </form>
-        </div>
+    
         <div class="user-menu-container">
             <button id="userMenuBtn" class="user-menu-btn">👤</button>
             <div id="userMenu" class="user-menu">

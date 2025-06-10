@@ -11,10 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.service.SchedulesService;
 
-/**
- *
- * @author exorc
- */
 @WebServlet(name = "UpdateSchedulesServlet", urlPatterns = {"/UpdateSchedulesServlet"})
 public class UpdateSchedulesServlet extends HttpServlet {
 

@@ -3,7 +3,6 @@
     Created on : 6 Jun 2025, 11:40:00
     Author     : exorc
 --%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -13,9 +12,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>My Schedules</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+            background: linear-gradient(135deg, #f0f2f5, #e0e7ff);
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -23,111 +23,100 @@
         }
 
         .container-wrapper {
-            position: relative;
-            min-height: 100vh;
+            padding-top: 30px;
+            padding-bottom: 30px;
         }
 
         .container {
-            background: #ffffff;
-            padding: 40px;
+            background-color: #ffffff;
             border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            margin-top: 40px;
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
-        }
-
-        .full-width-bottom-border {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
-            z-index: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 30px;
         }
 
         h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 28px;
+            color: #333;
             font-weight: 600;
-            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        .table {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .table thead th {
+            background-color: #4a69bd;
+            color: #fff;
+            font-weight: 600;
+            padding: 15px 10px;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 12px 10px;
+            color: #555;
         }
 
         .btn-primary {
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
-            border: none;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
             transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(to right, #6A1B9A, #9C27B0);
-            box-shadow: 0 5px 15px rgba(123, 31, 162, 0.3);
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+            transform: translateY(-2px);
         }
 
         .btn-info {
-            background: linear-gradient(to right, #0288D1, #4FC3F7);
-            border: none;
+            background-color: #17a2b8;
+            border-color: #17a2b8;
             transition: all 0.3s ease;
         }
 
         .btn-info:hover {
-            background: linear-gradient(to right, #0277BD, #29B6F6);
-            box-shadow: 0 5px 15px rgba(2, 136, 209, 0.3);
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #f3e5f5;
-        }
-
-        .table {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .table-light {
-            background-color: #f9fafb;
+            background-color: #138496;
+            border-color: #117a8b;
+            transform: translateY(-2px);
         }
 
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 5px;
+            margin-top: 25px;
         }
 
         .pagination .page-link {
-            color: #7B1FA2;
+            color: #4a69bd;
             background-color: #fff;
             border: 1px solid #dee2e6;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 8px 15px;
+            border-radius: 5px;
             text-decoration: none;
+            transition: all 0.3s ease;
         }
 
         .pagination .page-link:hover {
-            background-color: #f3e5f5;
-            color: #6A1B9A;
+            background-color: #e0e7ff;
+            color: #333;
+            border-color: #cdd7ee;
         }
 
         .pagination .page-item.active .page-link {
-            background-color: #7B1FA2;
+            background-color: #4a69bd;
             color: #fff;
-            border-color: #7B1FA2;
+            border-color: #4a69bd;
+            box-shadow: 0 3px 10px rgba(74, 105, 189, 0.3);
         }
 
         .alert-danger {
@@ -145,14 +134,16 @@
                 </div>
             </c:if>
 
-            <div class="d-flex justify-content-between mb-3">
-                <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" class="btn btn-primary">Home</a>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>Home
+                </a>
+                <h2 class="text-center flex-grow-1 m-0">Lịch Trình Của Tôi</h2>
             </div>
-            <h2 class="text-center mb-4">Lịch Trình Của Tôi</h2>
 
             <c:choose>
                 <c:when test="${empty schedules}">
-                    <p class="text-center">Không có lịch trình nào.</p>
+                    <p class="text-center alert alert-warning">Không có lịch trình nào.</p>
                 </c:when>
                 <c:otherwise>
                     <c:set var="page" value="${param.page != null ? param.page : 1}" />
@@ -168,32 +159,28 @@
                     <table class="table table-bordered table-hover">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>Schedule ID</th>
-                                <th>Day of Week</th>
+                                <th>Date</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
-                                <th>Doctor Name</th>
-                                <th>Nurse Name</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="schedule" items="${schedules}" begin="${startIndex}" end="${endIndex}">
                                 <tr class="text-center">
-                                    <td>${schedule.scheduleID}</td>
-                                    <td>${schedule.dayOfWeek}</td>
                                     <td>
-                                        <fmt:formatDate value="${schedule.startTime}" pattern="HH:mm" />
+                                        <fmt:formatDate value="${schedule['startTime']}" pattern="yyyy-MM-dd" />
                                     </td>
                                     <td>
-                                        <fmt:formatDate value="${schedule.endTime}" pattern="HH:mm" />
+                                        <fmt:formatDate value="${schedule['shiftStart']}" pattern="HH:mm:ss" />
                                     </td>
-                                    <td>${schedule.doctorName}</td>
-                                    <td>${schedule.nurseName}</td>
-                                    <td>${schedule.status}</td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule.scheduleID}" class="btn btn-info btn-sm">View Details</a>
+                                        <fmt:formatDate value="${schedule['shiftEnd']}" pattern="HH:mm:ss" />
+                                    </td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </a>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -222,7 +209,6 @@
                 </c:otherwise>
             </c:choose>
         </div>
-        <div class="full-width-bottom-border"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
