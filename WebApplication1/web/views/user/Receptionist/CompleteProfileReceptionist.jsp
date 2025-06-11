@@ -96,7 +96,7 @@
         .form-control::placeholder,
         .form-select:invalid {
             color: #aaa;
-            font-style: normal; /* Upright text as requested earlier */
+            font-style: normal;
         }
 
         .form-control:hover,
@@ -139,16 +139,23 @@
             text-align: center;
         }
     </style>
+    <script>
+        function trimInput(event) {
+            let input = event.target;
+            input.value = input.value.trim();
+        }
+    </script>
 </head>
 <body>
     <div class="container-wrapper">
         <div class="form-container">
             <h2>Hoàn thiện hồ sơ (Receptionist)</h2>
-            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post">
+            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post" onsubmit="trimInput(event)">
                 <input type="hidden" name="userID" value="${sessionScope.user.userID}">
                 <div class="form-group">
                     <label for="fullName" class="form-label">Họ và tên:</label>
-                    <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Nhập họ và tên" required>
+                    <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Nhập họ và tên" 
+                           maxlength="100" oninput="trimInput(event)" required>
                 </div>
                 <div class="form-group">
                     <label for="dob" class="form-label">Ngày sinh:</label>
@@ -165,11 +172,13 @@
                 </div>
                 <div class="form-group">
                     <label for="phone" class="form-label">Số điện thoại:</label>
-                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="Nhập số điện thoại (10 chữ số)" required>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="Nhập số điện thoại (10 chữ số)" 
+                           maxlength="10" oninput="trimInput(event)" required>
                 </div>
                 <div class="form-group">
                     <label for="address" class="form-label">Địa chỉ:</label>
-                    <input type="text" id="address" name="address" class="form-control" placeholder="Nhập địa chỉ" required>
+                    <input type="text" id="address" name="address" class="form-control" placeholder="Nhập địa chỉ" 
+                           maxlength="255" oninput="trimInput(event)" required>
                 </div>
                 <button type="submit">Hoàn thiện</button>
                 <c:if test="${not empty error}">

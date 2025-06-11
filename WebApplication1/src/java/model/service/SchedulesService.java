@@ -38,6 +38,10 @@ public class SchedulesService {
     public boolean isScheduleConflict(Schedules schedule) throws SQLException, ClassNotFoundException {
         return schedulesDAO.isScheduleConflict(schedule);
     }
+    public boolean checkScheduleExists(LocalDate startDate, LocalDate endDate, String role)
+            throws SQLException, ClassNotFoundException {
+        return schedulesDAO.hasScheduleForRoleInPeriod(role, startDate, endDate);
+    }
 
     public boolean updateSchedule(Map<String, Object> scheduleData) throws SQLException, ClassNotFoundException {
         Schedules entity = new Schedules();
@@ -194,5 +198,8 @@ public class SchedulesService {
 
         return schedulesDAO.addSchedule(schedule);
     }
-    
+public List<Map<String, Object>> searchSchedule(String employeeName, String role, String employeeID, LocalDate searchDate) throws SQLException, ClassNotFoundException {
+    return schedulesDAO.searchSchedule(employeeName, role, employeeID, searchDate);
 }
+}
+

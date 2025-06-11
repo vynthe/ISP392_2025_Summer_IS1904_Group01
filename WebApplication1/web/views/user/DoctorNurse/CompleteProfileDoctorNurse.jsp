@@ -118,18 +118,25 @@
             border: none;
         }
     </style>
+    <script>
+        function trimInput(event) {
+            let input = event.target;
+            input.value = input.value.trim();
+        }
+    </script>
 </head>
 <body>
     <div class="container-wrapper">
         <div class="form-container">
             <h2>Hoàn Thiện Hồ Sơ (Bác Sĩ/Y Tá)</h2>
 
-            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post">
+            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post" onsubmit="trimInput(event)">
                 <input type="hidden" name="userID" value="${sessionScope.user.userID}">
 
                 <div class="mb-3">
                     <label for="fullName" class="form-label">Họ và tên</label>
-                    <input type="text" class="form-control" id="fullName" name="fullName" value="${fullName}" placeholder="Nhập họ và tên" required>
+                    <input type="text" class="form-control" id="fullName" name="fullName" value="${fullName}" placeholder="Nhập họ và tên" 
+                           maxlength="100" oninput="trimInput(event)" required>
                 </div>
 
                 <div class="mb-3">
@@ -149,7 +156,8 @@
 
                 <div class="mb-3">
                     <label for="phone" class="form-label">Số điện thoại</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" value="${phone}" placeholder="Nhập số điện thoại (10 chữ số)" required>
+                    <input type="tel" class="form-control" id="phone" name="phone" value="${phone}" placeholder="Nhập số điện thoại (10 chữ số)" 
+                           maxlength="10" oninput="trimInput(event)" required>
                 </div>
 
                 <div class="mb-3">

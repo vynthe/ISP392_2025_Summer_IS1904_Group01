@@ -43,11 +43,11 @@
                 </div>
                 <form action="${pageContext.request.contextPath}/login" method="post">
                     <div class="input-box">
-                        <input type="text" class="input-field" name="emailOrUsername" placeholder="Email hoặc Username" required>
+                        <input type="text" class="input-field" name="emailOrUsername" placeholder="Email hoặc Username" maxlength="50" required>
                         <i class="bx bx-user"></i>
                     </div>
                     <div class="input-box">
-                        <input type="password" class="input-field" name="password" placeholder="Mật khẩu" required>
+                        <input type="password" class="input-field" name="password" placeholder="Mật khẩu" maxlength="20" required>
                         <i class="bx bx-lock-alt"></i>
                     </div>
                     <div class="input-box">
@@ -86,17 +86,17 @@
                     <span>Có tài khoản? <a href="javascript:void(0)" onclick="login()">Sign In</a></span>
                     <header>Sign Up</header>
                 </div>
-                <form action="${pageContext.request.contextPath}/RegistrationServlet" method="post">
+                <form action="${pageContext.request.contextPath}/RegistrationServlet" method="post" id="registerForm">
                     <div class="input-box">
-                        <input type="text" class="input-field" name="username" value="${requestScope.username}" placeholder="Username" required>
+                        <input type="text" class="input-field" name="username" value="${requestScope.username}" placeholder="Username" maxlength="20" required>
                         <i class="bx bx-user"></i>
                     </div>
                     <div class="input-box">        
-                        <input type="email" class="input-field" name="email" value="${requestScope.email}" placeholder="Email" required>
+                        <input type="email" class="input-field" name="email" value="${requestScope.email}" placeholder="Email" maxlength="50" required>
                         <i class="bx bx-envelope"></i>
                     </div>
                     <div class="input-box">
-                        <input type="password" class="input-field" name="password" placeholder="Password" required>   
+                        <input type="password" class="input-field" name="password" placeholder="Password" maxlength="20" required>   
                         <i class="bx bx-lock-alt"></i>
                     </div>
                     <div class="input-box">
@@ -142,6 +142,14 @@
             // Add event listeners to navigation buttons
             document.getElementById('loginBtn').addEventListener('click', login);
             document.getElementById('registerBtn').addEventListener('click', register);
+
+            // Trim whitespace for registration form inputs
+            document.getElementById('registerForm').addEventListener('submit', function(event) {
+                const inputs = this.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+                inputs.forEach(input => {
+                    input.value = input.value.trim();
+                });
+            });
         </script>
     </body>
 </html>

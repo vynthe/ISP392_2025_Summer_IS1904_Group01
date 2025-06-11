@@ -96,14 +96,21 @@ public class AddScheduleServlet extends HttpServlet {
             LocalDate startDate = LocalDate.parse(startDateStr);
             LocalDate endDate = startDate.plusWeeks(weeksToCreate).minusDays(1);
 
-            // Removed hasGeneralScheduleForRoleInPeriod check to allow all IDs per role
-            Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
-
-            boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
-            if (autoScheduleCreationSuccess) {
-                messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate).append(" tuần cho vai trò ").append(roleForAutoSchedule).append(".<br>");
+            // Kiểm tra xem lịch đã tồn tại cho khoảng thời gian và vai trò này chưa
+            boolean scheduleExists = schedulesService.checkScheduleExists(startDate, endDate, roleForAutoSchedule);
+            if (scheduleExists) {
+                messages.append("Lịch đã được tạo cho vai trò ").append(roleForAutoSchedule)
+                        .append(" từ ngày ").append(startDate).append(" đến ").append(endDate)
+                        .append(" (").append(weeksToCreate).append(" tuần). Không tạo lại lịch.<br>");
             } else {
-                overallSuccess = false;
+                Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
+                boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
+                if (autoScheduleCreationSuccess) {
+                    messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate)
+                            .append(" tuần cho vai trò ").append(roleForAutoSchedule).append(".<br>");
+                } else {
+                    overallSuccess = false;
+                }
             }
 
         } catch (NumberFormatException e) {

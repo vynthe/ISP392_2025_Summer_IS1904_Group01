@@ -12,6 +12,7 @@ import model.service.SchedulesService;
 import model.service.UserService;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,18 @@ public class ViewSchedulesServlet extends HttpServlet {
             return;
         }
 
+        // Lấy message và error từ session (nếu có) và xóa sau khi lấy
+        String message = (String) session.getAttribute("message");
+        String error = (String) session.getAttribute("error");
+        if (message != null) {
+            request.setAttribute("message", message);
+            session.removeAttribute("message");
+        }
+        if (error != null) {
+            request.setAttribute("error", error);
+            session.removeAttribute("error");
+        }
+
         Admins admin = (Admins) session.getAttribute("admin");
         Users user = (Users) session.getAttribute("user");
 
@@ -64,8 +77,19 @@ public class ViewSchedulesServlet extends HttpServlet {
             Map<Integer, String> employeeMap = userService.getEmployeeNameMap();
             System.out.println("Employee Map Size: " + (employeeMap != null ? employeeMap.size() : 0));
 
+            // Lấy tham số tìm kiếm từ request
+            String employeeName = request.getParameter("employeeName");
+            String searchRole = request.getParameter("role"); // Thêm tham số role
+            String employeeID = request.getParameter("employeeID"); // Thêm tham số employeeID
+            String searchDateStr = request.getParameter("searchDate");
+            LocalDate searchDate = searchDateStr != null && !searchDateStr.isEmpty() ? LocalDate.parse(searchDateStr) : null;
+
             if ("admin".equalsIgnoreCase(role) || "receptionist".equalsIgnoreCase(role)) {
-                schedules = scheduleService.getAllSchedules();
+                if (employeeName != null || searchRole != null || employeeID != null || searchDate != null) {
+                    schedules = scheduleService.searchSchedule(employeeName, searchRole, employeeID, searchDate); // Cập nhật phương thức searchSchedule
+                } else {
+                    schedules = scheduleService.getAllSchedules();
+                }
                 request.setAttribute("schedules", schedules);
                 request.setAttribute("employeeMap", employeeMap);
                 request.getRequestDispatcher("/views/admin/ViewSchedules.jsp").forward(request, response);

@@ -208,56 +208,64 @@ public class SchedulesDAO {
         }
         return schedules;
     }
-public List<Map<String, Object>> searchSchedule(String employeeName, LocalDate searchDate) throws SQLException, ClassNotFoundException {
-        List<Map<String, Object>> schedules = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-            "SELECT s.ScheduleID, s.EmployeeID, s.Role, s.StartTime, s.EndTime, s.DayOfWeek, s.RoomID, " +
-            "s.ShiftStartTime, s.ShiftEndTime, s.[Status], s.CreatedBy, s.CreatedAt, s.UpdatedAt, u.fullName " +
-            "FROM Schedules s LEFT JOIN Users u ON s.EmployeeID = u.userID WHERE 1=1"
-        );
-        List<Object> params = new ArrayList<>();
-        int paramIndex = 1;
+public List<Map<String, Object>> searchSchedule(String employeeName, String role, String employeeID, LocalDate searchDate) throws SQLException, ClassNotFoundException {
+    List<Map<String, Object>> schedules = new ArrayList<>();
+    StringBuilder sql = new StringBuilder(
+        "SELECT s.ScheduleID, s.EmployeeID, s.Role, s.StartTime, s.EndTime, s.DayOfWeek, s.RoomID, " +
+        "s.ShiftStartTime, s.ShiftEndTime, s.[Status], s.CreatedBy, s.CreatedAt, s.UpdatedAt, u.fullName " +
+        "FROM Schedules s LEFT JOIN Users u ON s.EmployeeID = u.userID WHERE 1=1"
+    );
+    List<Object> params = new ArrayList<>();
+    int paramIndex = 1;
 
-        if (employeeName != null && !employeeName.trim().isEmpty()) {
-            sql.append(" AND u.fullName LIKE ?");
-            params.add("%" + employeeName.trim() + "%");
-        }
-        if (searchDate != null) {
-            sql.append(" AND s.StartTime = ?");
-            params.add(Date.valueOf(searchDate));
-        }
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(paramIndex++, params.get(i));
-            }
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> scheduleMap = new HashMap<>();
-                    scheduleMap.put("scheduleID", rs.getInt("ScheduleID"));
-                    scheduleMap.put("employeeID", rs.getInt("EmployeeID"));
-                    scheduleMap.put("role", rs.getString("Role"));
-                    scheduleMap.put("startTime", rs.getDate("StartTime"));
-                    scheduleMap.put("endTime", rs.getDate("EndTime"));
-                    scheduleMap.put("dayOfWeek", rs.getString("DayOfWeek"));
-                    scheduleMap.put("roomID", rs.getInt("RoomID"));
-                    scheduleMap.put("shiftStart", rs.getTime("ShiftStartTime"));
-                    scheduleMap.put("shiftEnd", rs.getTime("ShiftEndTime"));
-                    scheduleMap.put("status", rs.getString("Status"));
-                    scheduleMap.put("createdBy", rs.getInt("CreatedBy"));
-                    scheduleMap.put("createdAt", rs.getDate("CreatedAt"));
-                    scheduleMap.put("updatedAt", rs.getDate("UpdatedAt"));
-                    scheduleMap.put("fullName", rs.getString("fullName") != null ? rs.getString("fullName") : "Unknown");
-                    schedules.add(scheduleMap);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in searchSchedule: " + e.getMessage());
-            throw e;
-        }
-        return schedules;
+    if (employeeName != null && !employeeName.trim().isEmpty()) {
+        sql.append(" AND u.fullName LIKE ?");
+        params.add("%" + employeeName.trim() + "%");
     }
+    if (role != null && !role.trim().isEmpty()) {
+        sql.append(" AND s.Role = ?");
+        params.add(role.trim());
+    }
+    if (employeeID != null && !employeeID.trim().isEmpty()) {
+        sql.append(" AND s.EmployeeID = ?");
+        params.add(Integer.parseInt(employeeID.trim())); // Giả sử employeeID là số nguyên
+    }
+    if (searchDate != null) {
+        sql.append(" AND s.StartTime = ?");
+        params.add(Date.valueOf(searchDate));
+    }
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+        for (int i = 0; i < params.size(); i++) {
+            stmt.setObject(paramIndex++, params.get(i));
+        }
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> scheduleMap = new HashMap<>();
+                scheduleMap.put("scheduleID", rs.getInt("ScheduleID"));
+                scheduleMap.put("employeeID", rs.getInt("EmployeeID"));
+                scheduleMap.put("role", rs.getString("Role"));
+                scheduleMap.put("startTime", rs.getDate("StartTime"));
+                scheduleMap.put("endTime", rs.getDate("EndTime"));
+                scheduleMap.put("dayOfWeek", rs.getString("DayOfWeek"));
+                scheduleMap.put("roomID", rs.getInt("RoomID"));
+                scheduleMap.put("shiftStart", rs.getTime("ShiftStartTime"));
+                scheduleMap.put("shiftEnd", rs.getTime("ShiftEndTime"));
+                scheduleMap.put("status", rs.getString("Status"));
+                scheduleMap.put("createdBy", rs.getInt("CreatedBy"));
+                scheduleMap.put("createdAt", rs.getDate("CreatedAt"));
+                scheduleMap.put("updatedAt", rs.getDate("UpdatedAt"));
+                scheduleMap.put("fullName", rs.getString("fullName") != null ? rs.getString("fullName") : "Unknown");
+                schedules.add(scheduleMap);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in searchSchedule: " + e.getMessage());
+        throw e;
+    }
+    return schedules;
+}
 
     public List<Schedules> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException, ClassNotFoundException {
         List<Schedules> schedules = new ArrayList<>();

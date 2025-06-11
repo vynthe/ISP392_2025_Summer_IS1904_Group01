@@ -82,6 +82,26 @@
                 border-color: #117a8b;
                 transform: translateY(-2px);
             }
+            .btn-danger {
+                background-color: #dc3545;
+                border-color: #dc3545;
+                transition: all 0.3s ease;
+            }
+            .btn-danger:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+                transform: translateY(-2px);
+            }
+            .btn-warning {
+                background-color: #ffc107;
+                border-color: #ffc107;
+                transition: all 0.3s ease;
+            }
+            .btn-warning:hover {
+                background-color: #e0a800;
+                border-color: #d39e00;
+                transform: translateY(-2px);
+            }
             .debug-info {
                 color: #dc3545;
                 font-size: 0.8em;
@@ -141,6 +161,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${not empty message}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">
@@ -156,14 +182,24 @@
                     <div class="search-container">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Tìm kiếm theo tên Bác sĩ, Y tá, Receptionist..." name="employeeName" value="${param.employeeName}">
-                            <button class="btn btn-primary" type="submit">
-                                <i class="fas fa-search me-2"></i>Tìm tên
-                            </button>
                         </div>
                         <div class="input-group">
                             <input type="date" class="form-control" name="searchDate" value="${param.searchDate}">
+                        </div>
+                        <div class="input-group">
+                            <select class="form-control" name="role">
+                                <option value="">Tất cả</option>
+                                <option value="Doctor" ${param.role == 'Doctor' ? 'selected' : ''}>Doctor</option>
+                                <option value="Nurse" ${param.role == 'Nurse' ? 'selected' : ''}>Nurse</option>
+                                <option value="Receptionist" ${param.role == 'Receptionist' ? 'selected' : ''}>Receptionist</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Tìm theo Employee ID" name="employeeID" value="${param.employeeID}">
+                        </div>
+                        <div class="input-group">
                             <button class="btn btn-primary" type="submit">
-                                <i class="fas fa-search me-2"></i>Tìm ngày
+                                <i class="fas fa-search me-2"></i>Tìm kiếm
                             </button>
                         </div>
                     </div>
@@ -178,6 +214,7 @@
                             <thead class="table-light text-center">
                                 <tr>
                                     <th>Schedule ID</th>
+                                    <th>Employee ID</th>
                                     <th>Date</th>
                                     <th>Start Time</th>
                                     <th>End Time</th>
@@ -201,6 +238,7 @@
                                 <c:forEach var="schedule" items="${schedules}" begin="${startIndex}" end="${endIndex}">
                                     <tr class="text-center">
                                         <td>${schedule["scheduleID"]}</td>
+                                        <td>${schedule["employeeID"]}</td>
                                         <td>
                                             <fmt:formatDate value="${schedule['startTime']}" pattern="yyyy-MM-dd" />
                                         </td>
@@ -235,8 +273,14 @@
                                         </td>
                                         <td>${schedule["status"]}</td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> View Details
+                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/views/admin/UpdateSchedule.jsp?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-warning btn-sm ms-2">
+                                                <i class="fas fa-edit"></i> Update
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/DeleteSchedulesServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Bạn có chắc muốn xóa lịch trình này?');">
+                                                <i class="fas fa-trash"></i> Delete
                                             </a>
                                         </td>
                                     </tr>
@@ -253,20 +297,20 @@
                                     <c:set var="halfMaxPages" value="${maxPagesToShow div 2}" />
 
                                     <li class="page-item ${page == 1 ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${prevPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
+                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${prevPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
                                     </li>
 
                                     <c:choose>
                                         <c:when test="${totalPages <= maxPagesToShow}">
                                             <c:forEach var="i" begin="1" end="${totalPages}">
                                                 <li class="page-item ${page == i ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${i}</a>
+                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${i}</a>
                                                 </li>
                                             </c:forEach>
                                         </c:when>
                                         <c:otherwise>
                                             <li class="page-item ${page == 1 ? 'active' : ''}">
-                                                <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=1&employeeName=${param.employeeName}&searchDate=${param.searchDate}">1</a>
+                                                <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=1&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">1</a>
                                             </li>
 
                                             <c:if test="${page > halfMaxPages + 1}">
@@ -297,7 +341,7 @@
                                             <c:forEach var="i" begin="${startPage}" end="${endPage}">
                                                 <c:if test="${i > 0 && i <= totalPages}">
                                                     <li class="page-item ${page == i ? 'active' : ''}">
-                                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${i}</a>
+                                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${i}</a>
                                                     </li>
                                                 </c:if>
                                             </c:forEach>
@@ -308,14 +352,14 @@
 
                                             <c:if test="${totalPages > 1 && totalPages != page}">
                                                 <li class="page-item ${page == totalPages ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${totalPages}&employeeName=${param.employeeName}&searchDate=${param.searchDate}">${totalPages}</a>
+                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${totalPages}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${totalPages}</a>
                                                 </li>
                                             </c:if>
                                         </c:otherwise>
                                     </c:choose>
 
                                     <li class="page-item ${page == totalPages ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${nextPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
+                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${nextPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
                                     </li>
                                 </ul>
                             </nav>
