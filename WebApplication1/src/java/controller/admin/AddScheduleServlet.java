@@ -79,69 +79,85 @@ public class AddScheduleServlet extends HttpServlet {
         }
     }
 
-    private void handleAutoScheduleCreation(HttpServletRequest request, HttpServletResponse response, Integer createdBy)
-            throws ServletException, IOException, SQLException, ClassNotFoundException {
+  private void handleAutoScheduleCreation(HttpServletRequest request, HttpServletResponse response, Integer createdBy)
+        throws ServletException, IOException, SQLException, ClassNotFoundException {
 
-        StringBuilder messages = new StringBuilder();
-        StringBuilder errors = new StringBuilder();
-        boolean overallSuccess = true;
+    StringBuilder messages = new StringBuilder();
+    StringBuilder errors = new StringBuilder();
+    boolean overallSuccess = true;
 
-        try {
-            String startDateStr = request.getParameter("startDate");
-            int weeksToCreate = Integer.parseInt(request.getParameter("weeks"));
-            String roleForAutoSchedule = request.getParameter("role");
+    try {
+        String startDateStr = request.getParameter("startDate");
+        int weeksToCreate = Integer.parseInt(request.getParameter("weeks"));
+        String roleForAutoSchedule = request.getParameter("role");
 
-            if (weeksToCreate < 1) weeksToCreate = 1;
+        if (weeksToCreate < 1) {
+            weeksToCreate = 1;
+        }
 
-            LocalDate startDate = LocalDate.parse(startDateStr);
-            LocalDate endDate = startDate.plusWeeks(weeksToCreate).minusDays(1);
+        LocalDate startDate = LocalDate.parse(startDateStr);
+        LocalDate endDate = startDate.plusWeeks(weeksToCreate).minusDays(1);
+        LocalDate today = LocalDate.now();
 
-            // Kiểm tra xem lịch đã tồn tại cho khoảng thời gian và vai trò này chưa
-            boolean scheduleExists = schedulesService.checkScheduleExists(startDate, endDate, roleForAutoSchedule);
-            if (scheduleExists) {
-                messages.append("Lịch đã được tạo cho vai trò ").append(roleForAutoSchedule)
-                        .append(" từ ngày ").append(startDate).append(" đến ").append(endDate)
-                        .append(" (").append(weeksToCreate).append(" tuần). Không tạo lại lịch.<br>");
-            } else {
-                Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
-                boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
-                if (autoScheduleCreationSuccess) {
-                    messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate)
-                            .append(" tuần cho vai trò ").append(roleForAutoSchedule).append(".<br>");
-                } else {
-                    overallSuccess = false;
-                }
-            }
-
-        } catch (NumberFormatException e) {
-            errors.append("Lỗi: Dữ liệu nhập vào không hợp lệ (số tuần, ID nhân viên).<br>");
-            overallSuccess = false;
-        } catch (IllegalArgumentException e) {
-            System.err.println("Validation Error during auto schedule creation: " + e.getMessage());
-            errors.append("Lỗi validation: ").append(e.getMessage()).append(".<br>");
-            overallSuccess = false;
-        } catch (SQLException | ClassNotFoundException e) {
-            System.err.println("Database Error during auto schedule creation: " + e.getMessage());
-            e.printStackTrace();
-            errors.append("Lỗi cơ sở dữ liệu khi tạo lịch: ").append(e.getMessage()).append(".<br>");
-            overallSuccess = false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            errors.append("Lỗi không mong muốn khi tạo lịch tự động: ").append(e.getMessage()).append(".<br>");
+        // Validate ngày bắt đầu không được trong quá khứ
+        if (startDate.isBefore(today)) {
+            errors.append("Lỗi: Không thể tạo lịch trong quá khứ. Ngày bắt đầu phải từ hiện tại trở đi.<br>");
             overallSuccess = false;
         }
 
-        if (messages.length() > 0) {
-            request.setAttribute("message", messages.toString());
-        }
+        // Nếu có lỗi validate thì trả về luôn, không xử lý tiếp
         if (errors.length() > 0) {
             request.setAttribute("error", errors.toString());
-        } else if (overallSuccess && messages.length() == 0) {
-            request.setAttribute("message", "Không có lịch nào được tạo. Vui lòng kiểm tra lại thông tin hoặc số lượng nhân viên.");
+            request.getRequestDispatcher("/views/admin/AddSchedule.jsp").forward(request, response);
+            return;
         }
 
-        request.getRequestDispatcher("/views/admin/AddSchedule.jsp").forward(request, response);
+        // Kiểm tra lịch đã tồn tại
+        boolean scheduleExists = schedulesService.checkScheduleExists(startDate, endDate, roleForAutoSchedule);
+        if (scheduleExists) {
+            errors.append("Lịch đã được tạo cho vai trò ").append(roleForAutoSchedule)
+                    .append(" từ ngày ").append(startDate).append(" đến ").append(endDate)
+                    .append(" (").append(weeksToCreate).append(" tuần). Không tạo lại lịch.<br>");
+            overallSuccess = false;
+        } else {
+            Map<Integer, SpecialScheduleInfo> specialSchedules = parseSpecialSchedules(request);
+            boolean autoScheduleCreationSuccess = createAutoSchedules(startDate, weeksToCreate, createdBy, specialSchedules, roleForAutoSchedule, errors);
+            if (autoScheduleCreationSuccess) {
+                messages.append("Tạo lịch tự động thành công cho ").append(weeksToCreate)
+                        .append(" tuần cho vai trò ").append(roleForAutoSchedule).append(".<br>");
+            } else {
+                overallSuccess = false;
+            }
+        }
+    } catch (NumberFormatException e) {
+        errors.append("Lỗi: Dữ liệu nhập vào không hợp lệ (số tuần, ID nhân viên).<br>");
+        overallSuccess = false;
+    } catch (IllegalArgumentException e) {
+        System.err.println("Validation Error during auto schedule creation: " + e.getMessage());
+        errors.append("Lỗi validation: ").append(e.getMessage()).append(".<br>");
+        overallSuccess = false;
+    } catch (SQLException | ClassNotFoundException e) {
+        System.err.println("Database Error during auto schedule creation: " + e.getMessage());
+        e.printStackTrace();
+        errors.append("Lỗi cơ sở dữ liệu khi tạo lịch: ").append(e.getMessage()).append(".<br>");
+        overallSuccess = false;
+    } catch (Exception e) {
+        e.printStackTrace();
+        errors.append("Lỗi không mong muốn khi tạo lịch tự động: ").append(e.getMessage()).append(".<br>");
+        overallSuccess = false;
     }
+
+    if (messages.length() > 0) {
+        request.setAttribute("message", messages.toString());
+    }
+    if (errors.length() > 0) {
+        request.setAttribute("error", errors.toString());
+    } else if (overallSuccess && messages.length() == 0) {
+        request.setAttribute("message", "Không có lịch nào được tạo. Vui lòng kiểm tra lại thông tin hoặc số lượng nhân viên.");
+    }
+
+    request.getRequestDispatcher("/views/admin/AddSchedule.jsp").forward(request, response);
+}
 
     private Map<Integer, SpecialScheduleInfo> parseSpecialSchedules(HttpServletRequest request) {
         Map<Integer, SpecialScheduleInfo> specialSchedules = new HashMap<>();
@@ -177,7 +193,7 @@ public class AddScheduleServlet extends HttpServlet {
     }
 
     private boolean createAutoSchedules(LocalDate startDate, int weeksToCreate, Integer createdBy,
-            Map<Integer, SpecialScheduleInfo> specialSchedules, String roleForAutoSchedule, StringBuilder errors) 
+            Map<Integer, SpecialScheduleInfo> specialSchedules, String roleForAutoSchedule, StringBuilder errors)
             throws SQLException, ClassNotFoundException {
         boolean allSuccess = true;
 
@@ -187,12 +203,7 @@ public class AddScheduleServlet extends HttpServlet {
         LocalTime defaultAfternoonShiftEnd = LocalTime.of(17, 0);
 
         List<Users> usersToSchedule;
-        try {
-            usersToSchedule = userService.getUsersByRole(roleForAutoSchedule);
-        } catch (ClassNotFoundException e) {
-            System.err.println("ClassNotFoundException in getUsersByRole: " + e.getMessage());
-            throw e;
-        }
+        usersToSchedule = userService.getUsersByRole(roleForAutoSchedule);
 
         if (usersToSchedule == null || usersToSchedule.isEmpty()) {
             System.out.println("No users found for role: " + roleForAutoSchedule + ". Cannot create general schedules.");
@@ -245,12 +256,12 @@ public class AddScheduleServlet extends HttpServlet {
                             } else {
                                 allSuccess = false;
                                 errors.append("Lỗi: Không thể tạo lịch đặc biệt cho nhân viên ID ").append(user.getUserID())
-                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
+                                        .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
                         } catch (SQLException e) {
                             System.err.println("Database error adding special schedule: " + e.getMessage());
                             errors.append("Lỗi cơ sở dữ liệu khi tạo lịch đặc biệt cho nhân viên ID ").append(user.getUserID())
-                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
+                                    .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
                     } else if (dayOfWeekEnum != DayOfWeek.SUNDAY) {
@@ -274,12 +285,12 @@ public class AddScheduleServlet extends HttpServlet {
                             } else {
                                 allSuccess = false;
                                 errors.append("Lỗi: Không thể tạo lịch chung ca sáng cho nhân viên ID ").append(user.getUserID())
-                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
+                                        .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
                         } catch (SQLException e) {
                             System.err.println("Database error adding morning schedule: " + e.getMessage());
                             errors.append("Lỗi cơ sở dữ liệu khi tạo lịch chung ca sáng cho nhân viên ID ").append(user.getUserID())
-                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
+                                    .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
 
@@ -303,12 +314,12 @@ public class AddScheduleServlet extends HttpServlet {
                             } else {
                                 allSuccess = false;
                                 errors.append("Lỗi: Không thể tạo lịch chung ca chiều cho nhân viên ID ").append(user.getUserID())
-                                      .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
+                                        .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(".<br>");
                             }
                         } catch (SQLException e) {
                             System.err.println("Database error adding afternoon schedule: " + e.getMessage());
                             errors.append("Lỗi cơ sở dữ liệu khi tạo lịch chung ca chiều cho nhân viên ID ").append(user.getUserID())
-                                  .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
+                                    .append(" (vai trò ").append(roleForAutoSchedule).append(") vào ngày ").append(currentScheduleDate).append(": ").append(e.getMessage()).append(".<br>");
                             allSuccess = false;
                         }
                     }
@@ -327,6 +338,7 @@ public class AddScheduleServlet extends HttpServlet {
     }
 
     private static class SpecialScheduleInfo {
+
         int employeeId;
         String role;
         List<DayOfWeek> workingDays;

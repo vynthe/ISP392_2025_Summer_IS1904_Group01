@@ -179,9 +179,6 @@ public class Medication {
         this.dosageForm = dosageForm;
     }
 
-    /**
-     * Helper method: Tự động set MedicationName từ GenericName hoặc BrandName
-     */
     public void autoSetMedicationName() {
         if (this.medicationName == null || this.medicationName.trim().isEmpty()) {
             if (this.brandName != null && !this.brandName.trim().isEmpty()) {
@@ -192,9 +189,6 @@ public class Medication {
         }
     }
 
-    /**
-     * Helper method: Parse dosage từ API string
-     */
     public void parseDosageFromApi(String apiDosage) {
         if (apiDosage != null && !apiDosage.trim().isEmpty()) {
             // Ví dụ: "500 mg" -> defaultDosage = "500", defaultDosageUnit = "mg"

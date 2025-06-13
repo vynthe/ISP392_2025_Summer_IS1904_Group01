@@ -119,9 +119,21 @@
         }
     </style>
     <script>
-        function trimInput(event) {
+        // Function to trim value when input loses focus
+        function trimOnBlur(event) {
             let input = event.target;
             input.value = input.value.trim();
+        }
+
+        // Function to trim all text inputs before form submission
+        function trimAllInputsOnSubmit(event) {
+            const form = event.target;
+            const textInputs = form.querySelectorAll('input[type="text"], input[type="tel"]'); // Select relevant input types
+
+            textInputs.forEach(input => {
+                input.value = input.value.trim();
+            });
+            // You can add more logic here if needed before submitting
         }
     </script>
 </head>
@@ -130,13 +142,13 @@
         <div class="form-container">
             <h2>Hoàn Thiện Hồ Sơ (Bác Sĩ/Y Tá)</h2>
 
-            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post" onsubmit="trimInput(event)">
+            <form action="${pageContext.request.contextPath}/CompleteProfileController" method="post" onsubmit="trimAllInputsOnSubmit(event)">
                 <input type="hidden" name="userID" value="${sessionScope.user.userID}">
 
                 <div class="mb-3">
                     <label for="fullName" class="form-label">Họ và tên</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" value="${fullName}" placeholder="Nhập họ và tên" 
-                           maxlength="100" oninput="trimInput(event)" required>
+                           maxlength="100" onblur="trimOnBlur(event)" required>
                 </div>
 
                 <div class="mb-3">
@@ -157,7 +169,7 @@
                 <div class="mb-3">
                     <label for="phone" class="form-label">Số điện thoại</label>
                     <input type="tel" class="form-control" id="phone" name="phone" value="${phone}" placeholder="Nhập số điện thoại (10 chữ số)" 
-                           maxlength="10" oninput="trimInput(event)" required>
+                           maxlength="10" onblur="trimOnBlur(event)" required>
                 </div>
 
                 <div class="mb-3">
