@@ -1,80 +1,58 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.entity;
- import java.sql.Date;
-import java.sql.Timestamp;
-/**
- *
- * @author exorc
- */
+
+import java.time.LocalDateTime;
+
 public class Prescriptions {
-    private int prescriptionID;
-    private int resultID;
-    private int appointmentID;
-    private int doctorID;
-    private int patientID;
+    private int prescriptionId;
+    private int patientId;
+    private int doctorId;
+    private int resultId;
+    private int appointmentId;
     private String prescriptionDetails;
     private String status;
     private int createdBy;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public Prescriptions() {
+    // Getter và Setter
+    public int getPrescriptionId() {
+        return prescriptionId;
     }
 
-    public Prescriptions(int prescriptionID, int resultID, int appointmentID, int doctorID, int patientID, String prescriptionDetails, String status, int createdBy, Date createdAt, Date updatedAt) {
-        this.prescriptionID = prescriptionID;
-        this.resultID = resultID;
-        this.appointmentID = appointmentID;
-        this.doctorID = doctorID;
-        this.patientID = patientID;
-        this.prescriptionDetails = prescriptionDetails;
-        this.status = status;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    public void setPrescriptionId(int prescriptionId) {
+        this.prescriptionId = prescriptionId;
     }
 
-    public int getPrescriptionID() {
-        return prescriptionID;
+    public int getPatientId() {
+        return patientId;
     }
 
-    public void setPrescriptionID(int prescriptionID) {
-        this.prescriptionID = prescriptionID;
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
     }
 
-    public int getResultID() {
-        return resultID;
+    public int getDoctorId() {
+        return doctorId;
     }
 
-    public void setResultID(int resultID) {
-        this.resultID = resultID;
+    public void setDoctorId(int doctorId) {
+        this.doctorId = doctorId;
     }
 
-    public int getAppointmentID() {
-        return appointmentID;
+    public int getResultId() {
+        return resultId;
     }
 
-    public void setAppointmentID(int appointmentID) {
-        this.appointmentID = appointmentID;
+    public void setResultId(int resultId) {
+        this.resultId = resultId;
     }
 
-    public int getDoctorID() {
-        return doctorID;
+    public int getAppointmentId() {
+        return appointmentId;
     }
 
-    public void setDoctorID(int doctorID) {
-        this.doctorID = doctorID;
-    }
-
-    public int getPatientID() {
-        return patientID;
-    }
-
-    public void setPatientID(int patientID) {
-        this.patientID = patientID;
+    public void setAppointmentId(int appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     public String getPrescriptionDetails() {
@@ -101,32 +79,19 @@ public class Prescriptions {
         this.createdBy = createdBy;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Prescriptions{" + "prescriptionID=" + prescriptionID + ", resultID=" + resultID + ", appointmentID=" + appointmentID + ", doctorID=" + doctorID + ", patientID=" + patientID + ", prescriptionDetails=" + prescriptionDetails + ", status=" + status + ", createdBy=" + createdBy + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setUpdatedAt(Timestamp createdAt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

@@ -204,10 +204,11 @@
     </style>
 </head>
 <body>
+    <form acction="ViewMedicationsServlet" method="get">
 <div class="container">
     <div class="header">
         <h2>Danh Sách Toa Thuốc</h2>
-        <a href="${pageContext.request.contextPath}/AddPrescriptionServlet" class="add-button">Thêm Thuốc</a>
+        <a href="${pageContext.request.contextPath}/AddMedicationsServlet" class="add-button">Thêm Thuốc</a>
     </div>
 
     <%
@@ -257,5 +258,6 @@
         </tbody>
     </table>
 </div>
+    </form>
 </body>
 </html>

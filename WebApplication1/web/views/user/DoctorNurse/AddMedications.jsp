@@ -619,9 +619,9 @@
                 <div class="error-message"><%= error %></div>
             <% } %>
 
-            <form action="${pageContext.request.contextPath}/AddPrescriptionServlet" method="post" id="prescriptionForm">
-                <div class="form-grid">
-                    
+            <form action="${pageContext.request.contextPath}/AddMedicationsServlet" method="post" id="prescriptionForm">
+                    <input type="hidden" name="resultId" value="${resultId}" />
+                   <div class="form-grid">
                     <div class="form-group">
                         <label for="tenThuoc" class="form-label required">Tên Thuốc</label>
                         <div class="input-wrapper">
@@ -698,7 +698,7 @@
             </form>
 
             <div class="dental-nav">
-                <a href="${pageContext.request.contextPath}/ViewPrescriptionServlet" class="dental-link">
+                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet" class="dental-link">
                     <span>←</span>
                     <span>Quay lại danh sách toa thuốc</span>
                 </a>
