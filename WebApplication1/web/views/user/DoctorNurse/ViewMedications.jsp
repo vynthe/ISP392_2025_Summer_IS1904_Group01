@@ -1,10 +1,10 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.List" %>
-<%@ page import="model.entity.Prescriptions" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
-    <title>Danh Sách Toa Thuốc</title>
+    <title>Danh Sách Thuốc</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <style>
         :root {
             --primary-purple: #6b48ff;
@@ -28,8 +28,6 @@
             align-items: center;
             min-height: 100vh;
             color: var(--dark-text);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
@@ -39,7 +37,6 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: var(--shadow);
-            position: relative;
             animation: fadeIn 0.6s ease-out;
         }
 
@@ -62,7 +59,6 @@
             margin: 0;
             font-size: 32px;
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
         .add-button {
@@ -76,16 +72,11 @@
             font-weight: 500;
             text-decoration: none;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 3px 10px rgba(107, 72, 255, 0.3);
         }
 
         .add-button:hover {
             background-color: #5a3de6;
             transform: translateY(-2px);
-        }
-
-        .add-button:active {
-            transform: translateY(0);
         }
 
         table {
@@ -95,7 +86,6 @@
             background-color: var(--white);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         th {
@@ -105,7 +95,6 @@
             text-transform: uppercase;
             padding: 15px;
             text-align: left;
-            border-bottom: 2px solid var(--border-color);
         }
 
         td {
@@ -116,17 +105,12 @@
             font-size: 14px;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
-
         tr:nth-child(even) {
             background-color: #fafafa;
         }
 
         tr:hover {
             background-color: #f5f7ff;
-            transition: background-color 0.2s ease;
         }
 
         .error {
@@ -137,7 +121,6 @@
             background-color: rgba(255, 68, 68, 0.1);
             border-left: 5px solid var(--error-red);
             border-radius: 5px;
-            text-align: left;
         }
 
         .no-data {
@@ -148,7 +131,16 @@
             font-size: 16px;
         }
 
-        /* Responsive Design */
+        .action-button {
+            color: var(--primary-purple);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .container {
                 width: 95%;
@@ -194,70 +186,87 @@
                 color: var(--dark-text);
                 text-align: left;
             }
-            td:last-child {
-                border-bottom: 0;
-            }
-            .no-data {
-                padding: 15px;
-            }
         }
     </style>
 </head>
 <body>
-    <form acction="ViewMedicationsServlet" method="get">
 <div class="container">
     <div class="header">
-        <h2>Danh Sách Toa Thuốc</h2>
+        <h2>Danh Sách Thuốc</h2>
         <a href="${pageContext.request.contextPath}/AddMedicationsServlet" class="add-button">Thêm Thuốc</a>
     </div>
 
-    <%
-        String error = (String) request.getAttribute("error");
-        if (error != null) {
-    %>
-        <p class="error"><%= error %></p>
-    <%
-        }
-    %>
+    <div id="error-message" class="error" style="display: none;"></div>
 
-    <table>
+    <table id="medicationTable" class="display">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>STT</th>
                 <th>Tên Thuốc</th>
-                <th>Số Lượng</th>
-                <th>Liều Dùng/Cách Dùng</th>
-                <th>Ngày Kê Toa</th>
-                <th>Hạn Sử Dụng</th>
+                <th>Hoạt Chất</th>
+                <th>Hàm Lượng</th>
+                <th>Dạng Bào Chế</th>
+                <th>Nhà Sản Xuất</th>
+                <th>Hành Động</th>
             </tr>
         </thead>
         <tbody>
-            <%
-                List<Prescriptions> list = (List<Prescriptions>) request.getAttribute("medicines");
-                if (list != null && !list.isEmpty()) {
-                    for (Prescriptions p : list) {
-            %>
-            <tr>
-                <td data-label="ID"><%= p.getPrescriptionID() %></td>
-                <td data-label="Tên Thuốc"><%= p.getPrescriptionDetails() != null ? p.getPrescriptionDetails() : "N/A" %></td>
-                <td data-label="Số Lượng"><%= p.getStatus() != null ? p.getStatus() : "N/A" %></td>
-                <td data-label="Liều Dùng/Cách Dùng"><%= p.getCreatedAt() != null ? p.getCreatedAt() : "N/A" %></td>
-                <td data-label="Ngày Kê Toa"><%= p.getCreatedAt() != null ? p.getCreatedAt() : "N/A" %></td>
-                <td data-label="Hạn Sử Dụng"><%= p.getUpdatedAt() != null ? p.getUpdatedAt() : "N/A" %></td>
-            </tr>
-            <%
-                    }
-                } else {
-            %>
-            <tr>
-                <td colspan="6" class="no-data">Không có dữ liệu toa thuốc.</td>
-            </tr>
-            <%
-                }
-            %>
         </tbody>
     </table>
 </div>
-    </form>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const table = $('#medicationTable').DataTable({
+            language: {
+                search: "Tìm kiếm:",
+                lengthMenu: "Hiển thị _MENU_ bản ghi",
+                info: "Hiển thị _START_ đến _END_ của _TOTAL_ bản ghi",
+                paginate: {
+                    first: "Đầu",
+                    last: "Cuối",
+                    next: "Tiếp",
+                    previous: "Trước"
+                },
+                emptyTable: "Không có dữ liệu thuốc."
+            },
+            columns: [
+                { data: null, render: (data, type, row, meta) => meta.row + 1 },
+                { data: 'brandName' },
+                { data: 'genericName' },
+                { data: 'strength' },
+                { data: 'dosageForm' },
+                { data: 'manufacturer' },
+                {
+                    data: null,
+                    render: (data, type, row) => 
+                        `<a href="${pageContext.request.contextPath}/MedicationDetailServlet?id=${row.id}" class="action-button">🔍 Xem chi tiết</a>`
+                }
+            ]
+        });
+
+        function fetchMedications() {
+            $.ajax({
+                url: '${pageContext.request.contextPath}/api/medications',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data && Array.isArray(data)) {
+                        table.clear().rows.add(data).draw();
+                    } else {
+                        $('#error-message').text('Dữ liệu không hợp lệ từ server.').show();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#error-message').text('Lỗi khi tải dữ liệu: ' + (xhr.responseText || error)).show();
+                }
+            });
+        }
+
+        fetchMedications();
+    });
+</script>
 </body>
 </html>

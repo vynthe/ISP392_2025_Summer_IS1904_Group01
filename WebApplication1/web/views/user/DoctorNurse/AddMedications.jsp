@@ -72,8 +72,7 @@
         }
 
         .dental-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-2xl);
@@ -196,7 +195,7 @@
             font-size: 0.875rem;
             font-weight: 600;
             margin-bottom: 2rem;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16,173,129,0.2);
             position: relative;
             overflow: hidden;
         }
@@ -249,7 +248,8 @@
         }
 
         .form-input,
-        .form-textarea {
+        .form-textarea,
+        .form-select {
             width: 100%;
             padding: 1.25rem 1.5rem;
             border: 2px solid var(--gray-200);
@@ -264,7 +264,8 @@
         }
 
         .form-input:focus,
-        .form-textarea:focus {
+        .form-textarea:focus,
+        .form-select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
@@ -276,6 +277,14 @@
             resize: vertical;
             font-family: inherit;
             line-height: 1.6;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%236b7280' class='w-6 h-6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            background-size: 1.5em;
         }
 
         .input-icon {
@@ -290,87 +299,38 @@
         }
 
         .form-input:focus + .input-icon,
-        .form-textarea:focus + .input-icon {
+        .form-textarea:focus + .input-icon,
+        .form-select:focus + .input-icon {
             opacity: 1;
             transform: translateY(-50%) scale(1.1);
         }
 
-        /* Checkbox Group Styling */
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 0.75rem;
-        }
-
-        .checkbox-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 1rem 1.25rem;
-            background: var(--white);
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-            user-select: none;
-        }
-
-        .checkbox-item:hover {
-            border-color: var(--primary);
-            background: rgba(102, 126, 234, 0.02);
-            transform: translateY(-1px);
-        }
-
-        .checkbox-item input[type="checkbox"] {
+        .autocomplete-suggestions {
             position: absolute;
-            opacity: 0;
-            cursor: pointer;
+            background: #ffffff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            max-height: 300px;
+            overflow-y: auto;
             width: 100%;
-            height: 100%;
-            margin: 0;
+            z-index: 10;
+            display: none;
         }
 
-        .checkbox-item .checkmark {
-            position: relative;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--gray-300);
-            border-radius: 6px;
-            margin-right: 0.75rem;
+        .autocomplete-suggestion {
+            padding: 1rem;
+            cursor: pointer;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-bottom: 1px solid var(--gray-200);
         }
 
-        .checkbox-item input:checked + .checkmark {
-            background: var(--primary);
-            border-color: var(--primary);
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
         }
 
-        .checkbox-item input:checked + .checkmark::after {
-            content: '✓';
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .checkbox-item .checkbox-label {
-            font-weight: 500;
-            color: var(--gray-700);
-            font-size: 0.95rem;
-        }
-
-        .checkbox-item input:checked ~ .checkbox-label {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .checkbox-item.checked {
-            border-color: var(--primary);
-            background: rgba(102, 126, 234, 0.05);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        .autocomplete-suggestion:hover {
+            background: var(--gray-100);
         }
 
         .form-actions {
@@ -464,25 +424,6 @@
             font-size: 1.25rem;
         }
 
-        /* Enhanced Form Grid Layout */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        /* Progress Indicator */
-        .progress-indicator {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: var(--gradient-accent);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
             body {
@@ -505,17 +446,9 @@
                 padding: 2rem 1.5rem;
             }
             
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .checkbox-group {
-                grid-template-columns: 1fr;
-            }
-            
             .form-input,
-            .form-textarea {
+            .form-textarea,
+            .form-select {
                 padding: 1rem 1.25rem;
             }
             
@@ -554,17 +487,28 @@
             }
         }
 
-        /* Success State */
-        .form-input.valid {
+        .form-input.valid,
+        .form-select.valid {
             border-color: var(--success);
             background: rgba(16, 185, 129, 0.02);
         }
 
-        .form-input.valid + .input-icon {
+        .form-input.invalid,
+        .form-select.invalid {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .form-input.valid + .input-icon,
+        .form-select.valid + .input-icon {
             color: var(--success);
         }
 
-        /* Loading State */
+        .form-input.invalid + .input-icon,
+        .form-select.invalid + .input-icon {
+            color: var(--error);
+        }
+
         .loading .dental-submit {
             background: var(--gray-400);
             cursor: not-allowed;
@@ -606,7 +550,7 @@
         <div class="dental-content">
             <div class="form-header">
                 <h2 class="form-title">Thêm Thuốc</h2>
-                <p class="form-description">Tạo toa thuốc chính xác và an toàn cho bệnh nhân</p>
+                <p class="form-description">Nhập thông tin thuốc và kiểm tra thông tin từ cơ sở dữ liệu thuốc</p>
             </div>
 
             <div class="medical-badge">
@@ -619,80 +563,68 @@
                 <div class="error-message"><%= error %></div>
             <% } %>
 
-            <form action="${pageContext.request.contextPath}/AddMedicationsServlet" method="post" id="prescriptionForm">
-                    <input type="hidden" name="resultId" value="${resultId}" />
-                   <div class="form-grid">
+            <form action="${pageContext.request.contextPath}/AddMedicationsServlet" method="post" id="medicationForm">
+                <div class="form-grid">
                     <div class="form-group">
-                        <label for="tenThuoc" class="form-label required">Tên Thuốc</label>
+                        <label for="drugName" class="form-label required">Tên Thuốc</label>
                         <div class="input-wrapper">
-                            <input type="text" id="tenThuoc" name="tenThuoc" class="form-input" 
-                                   placeholder="Nhập tên thuốc cần kê..." required>
+                            <input type="text" id="drugName" name="drugName" class="form-input" 
+                                   placeholder="Nhập tên thuốc (generic name)..." required 
+                                   value="<%= request.getAttribute("formDrugName") != null ? request.getAttribute("formDrugName") : "" %>"
+                                   autocomplete="off">
                             <span class="input-icon">💊</span>
+                            <div class="autocomplete-suggestions" id="suggestions"></div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="soLuong" class="form-label required">Số Lượng</label>
+                        <label for="manufacturingDate" class="form-label required">Ngày Sản Xuất</label>
                         <div class="input-wrapper">
-                            <input type="number" id="soLuong" name="soLuong" class="form-input" 
-                                   min="1" placeholder="Số lượng thuốc cần kê" required>
+                            <input type="date" id="manufacturingDate" name="manufacturingDate" class="form-input" 
+                                   value="<%= request.getAttribute("formManufacturingDate") != null ? request.getAttribute("formManufacturingDate") : "" %>"
+                                   max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
+                                   required>
+                            <span class="input-icon">📅</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expiryDate" class="form-label required">Ngày Hết Hạn</label>
+                        <div class="input-wrapper">
+                            <input type="date" id="expiryDate" name="expiryDate" class="form-input" 
+                                   value="<%= request.getAttribute("formExpiryDate") != null ? request.getAttribute("formExpiryDate") : "" %>"
+                                   required>
+                            <span class="input-icon">⏳</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity" class="form-label required">Số Lượng</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="quantity" name="quantity" class="form-input" 
+                                   placeholder="Nhập số lượng..." required 
+                                   value="<%= request.getAttribute("formQuantity") != null ? request.getAttribute("formQuantity") : "" %>"
+                                   min="0">
                             <span class="input-icon">📦</span>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label required">Liều Dùng</label>
+                        <label class="form-label">Lưu Vào Database</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="lieu1" name="lieuDung" value="1 lần/1 ngày">
+                                <input type="checkbox" id="save" name="save" value="true" 
+                                       <%= "true".equals(request.getParameter("save")) ? "checked" : "" %>>
                                 <span class="checkmark"></span>
-                                <span class="checkbox-label">1 lần/1 ngày</span>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="lieu2" name="lieuDung" value="2 lần/1 ngày">
-                                <span class="checkmark"></span>
-                                <span class="checkbox-label">2 lần/1 ngày</span>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="lieu3" name="lieuDung" value="3 lần/1 ngày">
-                                <span class="checkmark"></span>
-                                <span class="checkbox-label">3 lần/1 ngày</span>
+                                <span class="checkbox-label">Lưu thông tin vào database</span>
                             </div>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="moTaThuoc" class="form-label required">Mô Tả Thuốc</label>
-                        <div class="input-wrapper">
-                            <textarea id="moTaThuoc" name="moTaThuoc" class="form-textarea" 
-                                      placeholder="Mô tả chi tiết về thuốc, cách sử dụng và lưu ý đặc biệt..." required></textarea>
-                            <span class="input-icon">📝</span>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ngayKeToa" class="form-label required">Ngày Kê Toa</label>
-                            <div class="input-wrapper">
-                                <input type="date" id="ngayKeToa" name="ngayKeToa" class="form-input" required>
-                                <span class="input-icon">📅</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hanSuDung" class="form-label required">Hạn Sử Dụng</label>
-                            <div class="input-wrapper">
-                                <input type="date" id="hanSuDung" name="hanSuDung" class="form-input" required>
-                                <span class="input-icon">⏰</span>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div class="form-actions">
                     <button type="submit" class="dental-submit">
-                        <span class="submit-text">Tạo Toa Thuốc</span>
+                        <span class="submit-text">Thêm Thuốc</span>
                     </button>
                 </div>
             </form>
@@ -700,114 +632,143 @@
             <div class="dental-nav">
                 <a href="${pageContext.request.contextPath}/ViewMedicationsServlet" class="dental-link">
                     <span>←</span>
-                    <span>Quay lại danh sách toa thuốc</span>
+                    <span>Quay lại danh sách thuốc</span>
                 </a>
             </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('prescriptionForm');
-            const inputs = document.querySelectorAll('.form-input, .form-textarea');
+            const form = document.getElementById('medicationForm');
+            const drugNameInput = document.getElementById('drugName');
+            const suggestionsDiv = document.getElementById('suggestions');
+            const inputs = document.querySelectorAll('.form-input');
             const checkboxes = document.querySelectorAll('input[type="checkbox"]');
             const progressBar = document.querySelector('.progress-indicator');
             const submitBtn = document.querySelector('.dental-submit');
-            
-            // Auto-fill dates
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('ngayKeToa').value = today;
-            
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            document.getElementById('hanSuDung').value = expiryDate.toISOString().split('T')[0];
-            
-            // Handle checkbox interactions
+
+            drugNameInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length < 3) {
+                    suggestionsDiv.style.display = 'none';
+                    drugNameInput.classList.remove('valid', 'invalid');
+                    return;
+                }
+                $.ajax({
+                    url: 'https://api.fda.gov/drug/label.json',
+                    data: {
+                        search: 'generic_name:' + encodeURIComponent(query),
+                        limit: 5
+                    },
+                    success: function(response) {
+                        suggestionsDiv.innerHTML = '';
+                        if (response.results && response.results.length > 0) {
+                            response.results.forEach(function(drug) {
+                                const genericName = drug.openfda && drug.openfda.generic_name 
+                                    ? drug.openfda.generic_name[0] 
+                                    : drug.active_ingredient 
+                                    ? drug.active_ingredient[0] 
+                                    : query;
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-suggestion';
+                                div.textContent = genericName;
+                                div.addEventListener('click', function() {
+                                    drugNameInput.value = genericName;
+                                    drugNameInput.classList.add('valid');
+                                    drugNameInput.classList.remove('invalid');
+                                    suggestionsDiv.style.display = 'none';
+                                    updateProgress();
+                                });
+                                suggestionsDiv.appendChild(div);
+                            });
+                            suggestionsDiv.style.display = 'block';
+                        } else {
+                            suggestionsDiv.style.display = 'none';
+                            drugNameInput.classList.add('invalid');
+                            drugNameInput.classList.remove('valid');
+                        }
+                    },
+                    error: function() {
+                        suggestionsDiv.style.display = 'none';
+                        drugNameInput.classList.add('invalid');
+                        drugNameInput.classList.remove('valid');
+                    }
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!suggestionsDiv.contains(e.target) && e.target !== drugNameInput) {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const checkboxItem = this.closest('.checkbox-item');
-                    
                     if (this.checked) {
                         checkboxItem.classList.add('checked');
-                        // Uncheck other checkboxes (single selection)
-                        checkboxes.forEach(cb => {
-                            if (cb !== this && cb.checked) {
-                                cb.checked = false;
-                                cb.closest('.checkbox-item').classList.remove('checked');
-                            }
-                        });
                     } else {
                         checkboxItem.classList.remove('checked');
                     }
-                    
                     updateProgress();
                 });
             });
-            
-            // Form validation and progress
+
             function updateProgress() {
-                const totalFields = inputs.length + 1; // +1 for checkbox group
+                const totalFields = inputs.length + 1;
                 let filledFields = Array.from(inputs).filter(input => input.value.trim() !== '').length;
-                
-                // Check if at least one checkbox is selected
                 const hasSelectedCheckbox = Array.from(checkboxes).some(cb => cb.checked);
                 if (hasSelectedCheckbox) filledFields++;
-                
                 const progress = (filledFields / totalFields) * 100;
                 progressBar.style.width = progress + '%';
             }
-            
+
             inputs.forEach(input => {
-                input.addEventListener('input', updateProgress);
-                
-                input.addEventListener('blur', function() {
-                    if (this.value.trim() !== '') {
-                        this.classList.add('valid');
+                input.addEventListener('input', function() {
+                    updateProgress();
+                    if (input.value.trim() !== '') {
+                        input.classList.add('valid');
+                        input.classList.remove('invalid');
                     } else {
-                        this.classList.remove('valid');
+                        input.classList.remove('valid');
+                        input.classList.add('invalid');
                     }
                 });
-
                 input.addEventListener('focus', function() {
                     this.parentElement.style.transform = 'scale(1.02)';
                 });
-                
                 input.addEventListener('blur', function() {
                     this.parentElement.style.transform = 'scale(1)';
                 });
             });
-            
-            // Form submission validation
+
             form.addEventListener('submit', function(e) {
-                const hasSelectedCheckbox = Array.from(checkboxes).some(cb => cb.checked);
-                if (!hasSelectedCheckbox) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ít nhất một liều dùng.');
+                e.preventDefault();
+                const drugName = document.getElementById('drugName').value.trim();
+                const manufacturingDate = document.getElementById('manufacturingDate').value;
+                const expiryDate = document.getElementById('expiryDate').value;
+                const quantity = document.getElementById('quantity').value;
+
+                if (!drugName || !manufacturingDate || !expiryDate || !quantity) {
+                    alert('Vui lòng điền đầy đủ thông tin bắt buộc.');
                     return;
                 }
-                
+
+                if (parseInt(quantity) < 0) {
+                    alert('Số lượng phải lớn hơn hoặc bằng 0.');
+                    return;
+                }
+
+                if (manufacturingDate > expiryDate) {
+                    alert('Ngày sản xuất không được sau ngày hết hạn.');
+                    return;
+                }
+
                 document.body.classList.add('loading');
                 submitBtn.querySelector('.submit-text').textContent = 'Đang xử lý...';
-            });
-            
-            // Initial progress update
-            updateProgress();
-            
-            // Add smooth animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            });
-            
-            document.querySelectorAll('.form-group').forEach(group => {
-                group.style.opacity = '0';
-                group.style.transform = 'translateY(20px)';
-                group.style.transition = 'all 0.6s ease';
-                observer.observe(group);
+                form.submit();
             });
         });
     </script>

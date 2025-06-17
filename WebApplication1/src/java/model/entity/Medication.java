@@ -1,6 +1,7 @@
 package model.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Medication {
@@ -11,17 +12,17 @@ public class Medication {
     private String genericName;
     private String brandName;
     private String description;
-    private String defaultDosage;
-    private String defaultDosageUnit;
-    private Integer defaultDosagePerDay;
-    private Integer defaultDurationDays;
+    private String dosage;              // Thay thế defaultDosage, phân tích từ API
     private BigDecimal sellingPrice;
     private String status;
+    private LocalDate manufacturingDate; // Di chuyển từ API
+    private LocalDate expiryDate;       // Di chuyển từ API
+    private Integer quantity;           // Di chuyển từ API
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer createdBy;
 
-    // API fields (tạm thời lưu trữ data từ API)
+    // API fields (chỉ dùng tạm thời để lấy dữ liệu)
     private String manufacturer;
     private String ndc;
     private String dosageForm;
@@ -82,36 +83,12 @@ public class Medication {
         this.description = description;
     }
 
-    public String getDefaultDosage() {
-        return defaultDosage;
+    public String getDosage() {
+        return dosage;
     }
 
-    public void setDefaultDosage(String defaultDosage) {
-        this.defaultDosage = defaultDosage;
-    }
-
-    public String getDefaultDosageUnit() {
-        return defaultDosageUnit;
-    }
-
-    public void setDefaultDosageUnit(String defaultDosageUnit) {
-        this.defaultDosageUnit = defaultDosageUnit;
-    }
-
-    public Integer getDefaultDosagePerDay() {
-        return defaultDosagePerDay;
-    }
-
-    public void setDefaultDosagePerDay(Integer defaultDosagePerDay) {
-        this.defaultDosagePerDay = defaultDosagePerDay;
-    }
-
-    public Integer getDefaultDurationDays() {
-        return defaultDurationDays;
-    }
-
-    public void setDefaultDurationDays(Integer defaultDurationDays) {
-        this.defaultDurationDays = defaultDurationDays;
+    public void setDosage(String dosage) {
+        this.dosage = dosage;
     }
 
     public BigDecimal getSellingPrice() {
@@ -128,6 +105,30 @@ public class Medication {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getManufacturingDate() {
+        return manufacturingDate;
+    }
+
+    public void setManufacturingDate(LocalDate manufacturingDate) {
+        this.manufacturingDate = manufacturingDate;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -179,25 +180,13 @@ public class Medication {
         this.dosageForm = dosageForm;
     }
 
-    public void autoSetMedicationName() {
-        if (this.medicationName == null || this.medicationName.trim().isEmpty()) {
-            if (this.brandName != null && !this.brandName.trim().isEmpty()) {
-                this.medicationName = this.brandName;
-            } else if (this.genericName != null && !this.genericName.trim().isEmpty()) {
-                this.medicationName = this.genericName;
-            }
-        }
-    }
-
     public void parseDosageFromApi(String apiDosage) {
         if (apiDosage != null && !apiDosage.trim().isEmpty()) {
-            // Ví dụ: "500 mg" -> defaultDosage = "500", defaultDosageUnit = "mg"
             String[] parts = apiDosage.trim().split("\\s+");
             if (parts.length >= 2) {
-                this.defaultDosage = parts[0];
-                this.defaultDosageUnit = parts[1];
+                this.dosage = apiDosage; // Lưu toàn bộ dosage, có thể phân tích thêm nếu cần
             } else {
-                this.defaultDosage = apiDosage;
+                this.dosage = apiDosage;
             }
         }
     }
@@ -209,10 +198,16 @@ public class Medication {
                 + ", medicationName='" + medicationName + '\''
                 + ", genericName='" + genericName + '\''
                 + ", brandName='" + brandName + '\''
-                + ", defaultDosage='" + defaultDosage + '\''
-                + ", defaultDosageUnit='" + defaultDosageUnit + '\''
+                + ", description='" + description + '\''
+                + ", dosage='" + dosage + '\''
                 + ", sellingPrice=" + sellingPrice
                 + ", status='" + status + '\''
+                + ", manufacturer='" + manufacturer + '\''
+                + ", ndc='" + ndc + '\''
+                + ", dosageForm='" + dosageForm + '\''
+                + ", manufacturingDate=" + manufacturingDate
+                + ", expiryDate=" + expiryDate
+                + ", quantity=" + quantity
                 + '}';
     }
 }
