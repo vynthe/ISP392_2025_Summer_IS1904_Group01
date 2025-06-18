@@ -1,10 +1,10 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
     <title>Danh Sách Thuốc</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <style>
         :root {
             --primary-purple: #6b48ff;
@@ -141,6 +141,68 @@
             text-decoration: underline;
         }
 
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination-info {
+            color: var(--light-text);
+            font-size: 14px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            min-width: 35px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .pagination a {
+            color: var(--primary-purple);
+            background-color: var(--white);
+        }
+
+        .pagination a:hover {
+            background-color: var(--light-purple);
+            border-color: var(--primary-purple);
+            transform: translateY(-1px);
+        }
+
+        .pagination .current {
+            background-color: var(--primary-purple);
+            color: var(--white);
+            border-color: var(--primary-purple);
+        }
+
+        .pagination .disabled {
+            color: #ccc;
+            background-color: #f8f8f8;
+            border-color: #e8e8e8;
+            cursor: not-allowed;
+        }
+
+        .pagination .dots {
+            border: none;
+            background: none;
+            color: var(--light-text);
+        }
+
         @media (max-width: 768px) {
             .container {
                 width: 95%;
@@ -157,6 +219,17 @@
                 width: 100%;
                 text-align: center;
             }
+            
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
             table, thead, tbody, th, td, tr {
                 display: block;
             }
@@ -187,6 +260,26 @@
                 text-align: left;
             }
         }
+
+        .success {
+            color: #28a745;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+        }
+
+        .failure {
+            color: #dc3545;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 5px solid #dc3545;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -196,14 +289,27 @@
         <a href="${pageContext.request.contextPath}/AddMedicationsServlet" class="add-button">Thêm Thuốc</a>
     </div>
 
-    <div id="error-message" class="error" style="display: none;"></div>
+    <c:if test="${not empty sessionScope.statusMessage}">
+        <c:choose>
+            <c:when test="${sessionScope.statusMessage == 'Tạo thành công'}">
+                <div class="success">${sessionScope.statusMessage}</div>
+            </c:when>
+            <c:otherwise>
+                <div class="failure">${sessionScope.statusMessage}</div>
+            </c:otherwise>
+        </c:choose>
+        <c:remove var="statusMessage" scope="session"/>
+    </c:if>
 
-    <table id="medicationTable" class="display">
+    <c:if test="${not empty errorMessage}">
+        <div class="error">${errorMessage}</div>
+    </c:if>
+
+    <table>
         <thead>
             <tr>
                 <th>STT</th>
                 <th>Tên Thuốc</th>
-                <th>Hoạt Chất</th>
                 <th>Hàm Lượng</th>
                 <th>Dạng Bào Chế</th>
                 <th>Nhà Sản Xuất</th>
@@ -211,62 +317,97 @@
             </tr>
         </thead>
         <tbody>
+            <c:choose>
+                <c:when test="${empty medications}">
+                    <tr>
+                        <td colspan="6" class="no-data">Không có dữ liệu thuốc.</td>
+                    </tr>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach var="medication" items="${medications}" varStatus="status">
+                        <tr>
+                            <td data-label="STT">${(currentPage - 1) * 10 + status.count}</td>
+                            <td data-label="Tên Thuốc">${medication.name}</td>
+                            <td data-label="Hàm Lượng">
+                                <c:choose>
+                                    <c:when test="${not empty medication.dosage and medication.dosage.length() > 50}">
+                                        <span title="${medication.dosage}">${medication.dosage.substring(0, 50)}...</span>
+                                    </c:when>
+                                    <c:otherwise>${medication.dosage}</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td data-label="Dạng Bào Chế">${medication.dosageForm}</td>
+                            <td data-label="Nhà Sản Xuất">${medication.manufacturer}</td>
+                            <td data-label="Hành Động">
+                                <a href="${pageContext.request.contextPath}/MedicationDetailServlet?id=${medication.medicationID}" class="action-button">🔍 Xem chi tiết</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
         </tbody>
     </table>
+
+    <c:if test="${not empty medications and totalPages > 1}">
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Hiển thị ${(currentPage - 1) * 10 + 1} - ${currentPage * 10 > totalRecords ? totalRecords : currentPage * 10} 
+                trong tổng số ${totalRecords} thuốc
+            </div>
+            
+            <div class="pagination">
+                <c:choose>
+                    <c:when test="${currentPage > 1}">
+                        <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=1">❮❮</a>
+                        <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage - 1}">❮</a>
+                    </c:when>
+                    <c:otherwise>
+                        <span class="disabled">❮❮</span>
+                        <span class="disabled">❮</span>
+                    </c:otherwise>
+                </c:choose>
+
+                <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
+                <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
+
+                <c:if test="${startPage > 1}">
+                    <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=1">1</a>
+                    <c:if test="${startPage > 2}">
+                        <span class="dots">...</span>
+                    </c:if>
+                </c:if>
+
+                <c:forEach var="i" begin="${startPage}" end="${endPage}">
+                    <c:choose>
+                        <c:when test="${i == currentPage}">
+                            <span class="current">${i}</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${i}">${i}</a>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+
+                <c:if test="${endPage < totalPages}">
+                    <c:if test="${endPage < totalPages - 1}">
+                        <span class="dots">...</span>
+                    </c:if>
+                    <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${totalPages}">${totalPages}</a>
+                </c:if>
+
+                <c:choose>
+                    <c:when test="${currentPage < totalPages}">
+                        <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage + 1}">❯</a>
+                        <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${totalPages}">❯❯</a>
+                    </c:when>
+                    <c:otherwise>
+                        <span class="disabled">❯</span>
+                        <span class="disabled">❯❯</span>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </c:if>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script>
-    $(document).ready(function() {
-        const table = $('#medicationTable').DataTable({
-            language: {
-                search: "Tìm kiếm:",
-                lengthMenu: "Hiển thị _MENU_ bản ghi",
-                info: "Hiển thị _START_ đến _END_ của _TOTAL_ bản ghi",
-                paginate: {
-                    first: "Đầu",
-                    last: "Cuối",
-                    next: "Tiếp",
-                    previous: "Trước"
-                },
-                emptyTable: "Không có dữ liệu thuốc."
-            },
-            columns: [
-                { data: null, render: (data, type, row, meta) => meta.row + 1 },
-                { data: 'brandName' },
-                { data: 'genericName' },
-                { data: 'strength' },
-                { data: 'dosageForm' },
-                { data: 'manufacturer' },
-                {
-                    data: null,
-                    render: (data, type, row) => 
-                        `<a href="${pageContext.request.contextPath}/MedicationDetailServlet?id=${row.id}" class="action-button">🔍 Xem chi tiết</a>`
-                }
-            ]
-        });
-
-        function fetchMedications() {
-            $.ajax({
-                url: '${pageContext.request.contextPath}/api/medications',
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data && Array.isArray(data)) {
-                        table.clear().rows.add(data).draw();
-                    } else {
-                        $('#error-message').text('Dữ liệu không hợp lệ từ server.').show();
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#error-message').text('Lỗi khi tải dữ liệu: ' + (xhr.responseText || error)).show();
-                }
-            });
-        }
-
-        fetchMedications();
-    });
-</script>
 </body>
 </html>

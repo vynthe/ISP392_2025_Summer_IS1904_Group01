@@ -1,4 +1,6 @@
+```jsp
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
     <title>Thêm Thuốc</title>
@@ -25,11 +27,8 @@
             --gray-800: #1f2937;
             --gray-900: #111827;
             --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             --gradient-surface: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -47,54 +46,28 @@
 
         body {
             font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--gradient-bg);
+            background-color: #f4f7fa;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 2rem;
             position: relative;
             overflow-x: hidden;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
         .dental-container {
             background: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #e5e7eb;
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-2xl);
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
+            margin: 0 auto;
             position: relative;
             overflow: hidden;
         }
 
-        .dental-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-        }
-
         .dental-header {
             background: var(--gradient-primary);
-            padding: 3rem 3rem 2rem;
+            padding: 2rem 3rem 1.5rem;
             position: relative;
             overflow: hidden;
         }
@@ -110,17 +83,6 @@
             border-radius: 50%;
         }
 
-        .dental-header::after {
-            content: '';
-            position: absolute;
-            bottom: -40%;
-            left: -15%;
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
         .header-content {
             position: relative;
             z-index: 2;
@@ -128,51 +90,51 @@
         }
 
         .dental-logo {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 1rem;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .dental-logo::before {
             content: '🦷';
-            font-size: 2rem;
+            font-size: 1.5rem;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .dental-title {
             color: var(--white);
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             letter-spacing: -0.025em;
         }
 
         .dental-subtitle {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 400;
             opacity: 0.9;
         }
 
         .dental-content {
-            padding: 3rem;
+            padding: 2.5rem 3rem 3rem;
         }
 
         .form-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-title {
-            font-size: 1.875rem;
+            font-size: 1.75rem;
             font-weight: 600;
             color: var(--gray-900);
             margin-bottom: 0.5rem;
@@ -184,40 +146,11 @@
             font-size: 1rem;
         }
 
-        .medical-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
-            color: var(--success);
-            padding: 0.75rem 1.25rem;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(16,173,129,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .medical-badge::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .medical-badge:hover::before {
-            left: 100%;
-        }
-
         .form-grid {
             display: grid;
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-group {
@@ -228,8 +161,8 @@
             display: block;
             font-weight: 600;
             color: var(--gray-900);
-            margin-bottom: 0.75rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             position: relative;
@@ -244,14 +177,12 @@
 
         .input-wrapper {
             position: relative;
-            group: true;
         }
 
         .form-input,
-        .form-textarea,
         .form-select {
             width: 100%;
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 3rem 1rem 1.25rem;
             border: 2px solid var(--gray-200);
             border-radius: var(--border-radius);
             font-size: 1rem;
@@ -264,7 +195,6 @@
         }
 
         .form-input:focus,
-        .form-textarea:focus,
         .form-select:focus {
             outline: none;
             border-color: var(--primary);
@@ -272,69 +202,35 @@
             transform: translateY(-1px);
         }
 
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-            line-height: 1.6;
+        .form-input::placeholder {
+            color: var(--gray-400);
         }
 
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%236b7280' class='w-6 h-6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1.5rem center;
-            background-size: 1.5em;
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
         }
 
         .input-icon {
             position: absolute;
-            right: 1.25rem;
+            right: 1rem;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.25rem;
             transition: var(--transition);
             z-index: 2;
             opacity: 0.5;
+            pointer-events: none;
         }
 
-        .form-input:focus + .input-icon,
-        .form-textarea:focus + .input-icon,
-        .form-select:focus + .input-icon {
+        .form-input:focus ~ .input-icon,
+        .form-select:focus ~ .input-icon {
             opacity: 1;
             transform: translateY(-50%) scale(1.1);
         }
 
-        .autocomplete-suggestions {
-            position: absolute;
-            background: #ffffff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            max-height: 300px;
-            overflow-y: auto;
-            width: 100%;
-            z-index: 10;
-            display: none;
-        }
-
-        .autocomplete-suggestion {
-            padding: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .autocomplete-suggestion:last-child {
-            border-bottom: none;
-        }
-
-        .autocomplete-suggestion:hover {
-            background: var(--gray-100);
-        }
-
         .form-actions {
-            margin-top: 2.5rem;
+            margin-top: 2rem;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -383,7 +279,7 @@
 
         .dental-nav {
             text-align: center;
-            padding-top: 2rem;
+            padding-top: 1.5rem;
             border-top: 1px solid var(--gray-200);
         }
 
@@ -391,7 +287,7 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1.25rem;
             border-radius: var(--border-radius);
             transition: var(--transition);
             display: inline-flex;
@@ -409,139 +305,69 @@
         .error-message {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(248, 113, 113, 0.1) 100%);
             color: var(--error);
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 1.25rem;
             border-radius: var(--border-radius);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border: 1px solid rgba(239, 68, 68, 0.2);
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .error-message::before {
             content: "⚠️";
-            font-size: 1.25rem;
+            font-size: 1.125rem;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
-            body {
-                padding: 1rem;
+            body { 
+                padding: 1rem; 
             }
             
-            .dental-container {
-                border-radius: 16px;
+            .dental-container { 
+                border-radius: 16px; 
             }
             
-            .dental-header {
-                padding: 2rem 1.5rem;
+            .dental-header { 
+                padding: 1.5rem 1.5rem 1rem; 
             }
             
-            .dental-title {
-                font-size: 2rem;
+            .dental-title { 
+                font-size: 1.75rem; 
             }
             
-            .dental-content {
-                padding: 2rem 1.5rem;
+            .dental-content { 
+                padding: 2rem 1.5rem; 
             }
             
-            .form-input,
-            .form-textarea,
-            .form-select {
-                padding: 1rem 1.25rem;
+            .form-input, 
+            .form-select { 
+                padding: 0.875rem 2.5rem 0.875rem 1rem; 
             }
             
-            .dental-submit {
-                padding: 1rem 1.5rem;
+            .dental-submit { 
+                padding: 1rem 1.5rem; 
+                font-size: 1rem; 
+            }
+            
+            .form-grid { 
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+
+            .input-icon {
+                right: 0.75rem;
                 font-size: 1rem;
             }
-        }
-
-        /* Animation Classes */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .form-input.valid,
-        .form-select.valid {
-            border-color: var(--success);
-            background: rgba(16, 185, 129, 0.02);
-        }
-
-        .form-input.invalid,
-        .form-select.invalid {
-            border-color: var(--error);
-            background: rgba(239, 68, 68, 0.02);
-        }
-
-        .form-input.valid + .input-icon,
-        .form-select.valid + .input-icon {
-            color: var(--success);
-        }
-
-        .form-input.invalid + .input-icon,
-        .form-select.invalid + .input-icon {
-            color: var(--error);
-        }
-
-        .loading .dental-submit {
-            background: var(--gray-400);
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .loading .dental-submit::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid transparent;
-            border-top: 2px solid var(--white);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="dental-container fade-in">
-        <div class="progress-indicator"></div>
-        
+    <div class="dental-container">
         <div class="dental-header">
             <div class="header-content">
-                <div class="dental-logo pulse"></div>
+                <div class="dental-logo"></div>
                 <h1 class="dental-title">Pure Dental Care</h1>
                 <p class="dental-subtitle">Hệ Thống Quản Lý Nha Khoa Thông Minh</p>
             </div>
@@ -550,51 +376,75 @@
         <div class="dental-content">
             <div class="form-header">
                 <h2 class="form-title">Thêm Thuốc</h2>
-                <p class="form-description">Nhập thông tin thuốc và kiểm tra thông tin từ cơ sở dữ liệu thuốc</p>
+                <p class="form-description">Nhập thông tin chi tiết của thuốc để thêm vào hệ thống</p>
             </div>
 
-            <div class="medical-badge">
-                <span>⚕️</span>
-                <span>Kê đơn thuốc an toàn</span>
-            </div>
+            <c:if test="${not empty errorMessage}">
+                <div class="error-message">${errorMessage}</div>
+            </c:if>
 
-            <% String error = (String) request.getAttribute("error"); %>
-            <% if (error != null) { %>
-                <div class="error-message"><%= error %></div>
-            <% } %>
-
-            <form action="${pageContext.request.contextPath}/AddMedicationsServlet" method="post" id="medicationForm">
+            <form action="${pageContext.request.contextPath}/AddMedicationsServlet" method="post">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="drugName" class="form-label required">Tên Thuốc</label>
+                        <label for="name" class="form-label required">Tên Thuốc</label>
                         <div class="input-wrapper">
-                            <input type="text" id="drugName" name="drugName" class="form-input" 
-                                   placeholder="Nhập tên thuốc (generic name)..." required 
-                                   value="<%= request.getAttribute("formDrugName") != null ? request.getAttribute("formDrugName") : "" %>"
-                                   autocomplete="off">
+                            <input type="text" id="name" name="drugName" class="form-input" 
+                                   value="${formDrugName}" placeholder="Nhập tên thuốc..." required>
                             <span class="input-icon">💊</span>
-                            <div class="autocomplete-suggestions" id="suggestions"></div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="manufacturingDate" class="form-label required">Ngày Sản Xuất</label>
+                        <label for="dosage" class="form-label required">Hàm Lượng</label>
                         <div class="input-wrapper">
-                            <input type="date" id="manufacturingDate" name="manufacturingDate" class="form-input" 
-                                   value="<%= request.getAttribute("formManufacturingDate") != null ? request.getAttribute("formManufacturingDate") : "" %>"
-                                   max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
-                                   required>
+                            <input type="text" id="dosage" name="dosage" class="form-input" 
+                                   value="${formDosage}" placeholder="Nhập hàm lượng..." required>
+                            <span class="input-icon">⚖️</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manufacturer" class="form-label required">Nhà Sản Xuất</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="manufacturer" name="manufacturer" class="form-input" 
+                                   value="${formManufacturer}" placeholder="Nhập nhà sản xuất..." required>
+                            <span class="input-icon">🏭</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Mô Tả</label>
+                        <div class="input-wrapper">
+                            <textarea id="description" name="description" class="form-input" 
+                                      placeholder="Nhập mô tả thuốc...">${formDescription}</textarea>
+                            <span class="input-icon">📝</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productionDate" class="form-label required">Ngày Sản Xuất</label>
+                        <div class="input-wrapper">
+                            <input type="date" id="productionDate" name="manufacturingDate" class="form-input" 
+                                   value="${formManufacturingDate}" max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>" required>
                             <span class="input-icon">📅</span>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="expiryDate" class="form-label required">Ngày Hết Hạn</label>
+                        <label for="expirationDate" class="form-label required">Ngày Hết Hạn</label>
                         <div class="input-wrapper">
-                            <input type="date" id="expiryDate" name="expiryDate" class="form-input" 
-                                   value="<%= request.getAttribute("formExpiryDate") != null ? request.getAttribute("formExpiryDate") : "" %>"
-                                   required>
+                            <input type="date" id="expirationDate" name="expiryDate" class="form-input" 
+                                   value="${formExpiryDate}" required>
                             <span class="input-icon">⏳</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price" class="form-label required">Giá</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="price" name="price" class="form-input" 
+                                   value="${formPrice}" placeholder="Nhập giá..." step="0.01" min="0" required>
+                            <span class="input-icon">💰</span>
                         </div>
                     </div>
 
@@ -602,30 +452,31 @@
                         <label for="quantity" class="form-label required">Số Lượng</label>
                         <div class="input-wrapper">
                             <input type="number" id="quantity" name="quantity" class="form-input" 
-                                   placeholder="Nhập số lượng..." required 
-                                   value="<%= request.getAttribute("formQuantity") != null ? request.getAttribute("formQuantity") : "" %>"
-                                   min="0">
+                                   value="${formQuantity}" placeholder="Nhập số lượng..." min="0" required>
                             <span class="input-icon">📦</span>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Lưu Vào Database</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="save" name="save" value="true" 
-                                       <%= "true".equals(request.getParameter("save")) ? "checked" : "" %>>
-                                <span class="checkmark"></span>
-                                <span class="checkbox-label">Lưu thông tin vào database</span>
-                            </div>
+                        <label for="dosageForm" class="form-label required">Dạng Bào Chế</label>
+                        <div class="input-wrapper">
+                            <select id="dosageForm" name="dosageForm" class="form-select" required>
+                                <option value="" ${empty formData.dosageForm ? 'selected' : ''}>Chọn dạng bào chế...</option>
+                                <option value="Tablet" ${formData.dosageForm == 'Tablet' ? 'selected' : ''}>Viên nén</option>
+                                <option value="Capsule" ${formData.dosageForm == 'Capsule' ? 'selected' : ''}>Viên nang</option>
+                                <option value="Injection" ${formData.dosageForm == 'Injection' ? 'selected' : ''}>Tiêm</option>
+                                <option value="Syrup" ${formData.dosageForm == 'Syrup' ? 'selected' : ''}>Sirô</option>
+                                <option value="Cream" ${formData.dosageForm == 'Cream' ? 'selected' : ''}>Kem</option>
+                            </select>
+                            <span class="input-icon">🔬</span>
                         </div>
                     </div>
                 </div>
 
+                <input type="hidden" name="save" value="true">
+
                 <div class="form-actions">
-                    <button type="submit" class="dental-submit">
-                        <span class="submit-text">Thêm Thuốc</span>
-                    </button>
+                    <button type="submit" class="dental-submit">Thêm Thuốc</button>
                 </div>
             </form>
 
@@ -637,140 +488,5 @@
             </div>
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('medicationForm');
-            const drugNameInput = document.getElementById('drugName');
-            const suggestionsDiv = document.getElementById('suggestions');
-            const inputs = document.querySelectorAll('.form-input');
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            const progressBar = document.querySelector('.progress-indicator');
-            const submitBtn = document.querySelector('.dental-submit');
-
-            drugNameInput.addEventListener('input', function() {
-                const query = this.value.trim();
-                if (query.length < 3) {
-                    suggestionsDiv.style.display = 'none';
-                    drugNameInput.classList.remove('valid', 'invalid');
-                    return;
-                }
-                $.ajax({
-                    url: 'https://api.fda.gov/drug/label.json',
-                    data: {
-                        search: 'generic_name:' + encodeURIComponent(query),
-                        limit: 5
-                    },
-                    success: function(response) {
-                        suggestionsDiv.innerHTML = '';
-                        if (response.results && response.results.length > 0) {
-                            response.results.forEach(function(drug) {
-                                const genericName = drug.openfda && drug.openfda.generic_name 
-                                    ? drug.openfda.generic_name[0] 
-                                    : drug.active_ingredient 
-                                    ? drug.active_ingredient[0] 
-                                    : query;
-                                const div = document.createElement('div');
-                                div.className = 'autocomplete-suggestion';
-                                div.textContent = genericName;
-                                div.addEventListener('click', function() {
-                                    drugNameInput.value = genericName;
-                                    drugNameInput.classList.add('valid');
-                                    drugNameInput.classList.remove('invalid');
-                                    suggestionsDiv.style.display = 'none';
-                                    updateProgress();
-                                });
-                                suggestionsDiv.appendChild(div);
-                            });
-                            suggestionsDiv.style.display = 'block';
-                        } else {
-                            suggestionsDiv.style.display = 'none';
-                            drugNameInput.classList.add('invalid');
-                            drugNameInput.classList.remove('valid');
-                        }
-                    },
-                    error: function() {
-                        suggestionsDiv.style.display = 'none';
-                        drugNameInput.classList.add('invalid');
-                        drugNameInput.classList.remove('valid');
-                    }
-                });
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!suggestionsDiv.contains(e.target) && e.target !== drugNameInput) {
-                    suggestionsDiv.style.display = 'none';
-                }
-            });
-
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const checkboxItem = this.closest('.checkbox-item');
-                    if (this.checked) {
-                        checkboxItem.classList.add('checked');
-                    } else {
-                        checkboxItem.classList.remove('checked');
-                    }
-                    updateProgress();
-                });
-            });
-
-            function updateProgress() {
-                const totalFields = inputs.length + 1;
-                let filledFields = Array.from(inputs).filter(input => input.value.trim() !== '').length;
-                const hasSelectedCheckbox = Array.from(checkboxes).some(cb => cb.checked);
-                if (hasSelectedCheckbox) filledFields++;
-                const progress = (filledFields / totalFields) * 100;
-                progressBar.style.width = progress + '%';
-            }
-
-            inputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    updateProgress();
-                    if (input.value.trim() !== '') {
-                        input.classList.add('valid');
-                        input.classList.remove('invalid');
-                    } else {
-                        input.classList.remove('valid');
-                        input.classList.add('invalid');
-                    }
-                });
-                input.addEventListener('focus', function() {
-                    this.parentElement.style.transform = 'scale(1.02)';
-                });
-                input.addEventListener('blur', function() {
-                    this.parentElement.style.transform = 'scale(1)';
-                });
-            });
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const drugName = document.getElementById('drugName').value.trim();
-                const manufacturingDate = document.getElementById('manufacturingDate').value;
-                const expiryDate = document.getElementById('expiryDate').value;
-                const quantity = document.getElementById('quantity').value;
-
-                if (!drugName || !manufacturingDate || !expiryDate || !quantity) {
-                    alert('Vui lòng điền đầy đủ thông tin bắt buộc.');
-                    return;
-                }
-
-                if (parseInt(quantity) < 0) {
-                    alert('Số lượng phải lớn hơn hoặc bằng 0.');
-                    return;
-                }
-
-                if (manufacturingDate > expiryDate) {
-                    alert('Ngày sản xuất không được sau ngày hết hạn.');
-                    return;
-                }
-
-                document.body.classList.add('loading');
-                submitBtn.querySelector('.submit-text').textContent = 'Đang xử lý...';
-                form.submit();
-            });
-        });
-    </script>
 </body>
 </html>

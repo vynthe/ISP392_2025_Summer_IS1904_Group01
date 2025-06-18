@@ -1,4 +1,4 @@
-package model.email;
+package model.util;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;

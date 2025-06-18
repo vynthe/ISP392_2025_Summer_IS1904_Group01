@@ -104,57 +104,118 @@
             </c:if>
 
             <div class="d-flex justify-content-between mb-3">
-                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn btn-primary">Back to Schedules</a>
+                <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet" class="btn btn-primary">Back to Schedules</a>
             </div>
             <h2 class="text-center mb-4">Chi Tiết Lịch Trình</h2>
 
-            <c:if test="${not empty schedule}">
+            <c:if test="${not empty scheduleDetails}">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Schedule ID:</span>
-                        <span class="detail-value">${schedule.scheduleID}</span>
+                        <span class="detail-value">${scheduleDetails.scheduleID}</span>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <span class="detail-label">Day of Week:</span>
-                        <span class="detail-value">${schedule.dayOfWeek}</span>
+                        <span class="detail-label">Employee ID:</span>
+                        <span class="detail-value">${scheduleDetails.employeeID}</span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Role:</span>
+                        <span class="detail-value">${scheduleDetails.role}</span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Start Time:</span>
-                        <span class="detail-value"><fmt:formatDate value="${schedule.startTime}" pattern="HH:mm" /></span>
+                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.startTime}" pattern="dd/MM/yyyy HH:mm" /></span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">End Time:</span>
-                        <span class="detail-value"><fmt:formatDate value="${schedule.endTime}" pattern="HH:mm" /></span>
+                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.endTime}" pattern="dd/MM/yyyy HH:mm" /></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Shift Start:</span>
+                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.shiftStart}" pattern="HH:mm" /></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Shift End:</span>
+                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.shiftEnd}" pattern="HH:mm" /></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Day of Week:</span>
+                        <span class="detail-value">${scheduleDetails.dayOfWeek}</span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Room ID:</span>
+                        <span class="detail-value">${scheduleDetails.roomID}</span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Room Name:</span>
-                        <span class="detail-value">${schedule.roomName}</span>
+                        <span class="detail-value">${scheduleDetails.roomName}</span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Doctor ID:</span>
+                        <span class="detail-value">${scheduleDetails.doctorID}</span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Doctor Name:</span>
-                        <span class="detail-value">${schedule.doctorName}</span>
+                        <span class="detail-value">${scheduleDetails.doctorName}</span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="detail-label">Nurse ID:</span>
+                        <span class="detail-value">${scheduleDetails.nurseID}</span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Nurse Name:</span>
-                        <span class="detail-value">${schedule.nurseName}</span>
+                        <span class="detail-value">${scheduleDetails.nurseName}</span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <span class="detail-label">Status:</span>
-                        <span class="detail-value">${schedule.status}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Created By:</span>
-                        <span class="detail-value">${schedule.createdBy}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Created At:</span>
-                        <span class="detail-value"><fmt:formatDate value="${schedule.createdAt}" pattern="dd/MM/yyyy HH:mm" /></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Updated At:</span>
-                        <span class="detail-value"><fmt:formatDate value="${schedule.updatedAt}" pattern="dd/MM/yyyy HH:mm" /></span>
+                        <span class="detail-value">${scheduleDetails.status}</span>
                     </div>
                 </div>
+
+                <h3 class="mt-4">Danh sách dịch vụ</h3>
+                <c:choose>
+                    <c:when test="${not empty scheduleDetails.services and not empty scheduleDetails.services[0]}">
+                        <c:forEach var="service" items="${scheduleDetails.services}">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <span class="detail-label">Service Name:</span>
+                                    <span class="detail-value">${service.serviceName}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">${service.price}</span>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <p class="detail-value">Không có dịch vụ nào.</p>
+                    </c:otherwise>
+                </c:choose>
+
+                <h3 class="mt-4">Danh sách bệnh nhân</h3>
+                <c:choose>
+                    <c:when test="${not empty scheduleDetails.patients and not empty scheduleDetails.patients[0]}">
+                        <c:forEach var="patient" items="${scheduleDetails.patients}">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <span class="detail-label">Patient ID:</span>
+                                    <span class="detail-value">${patient.patientID}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="detail-label">Full Name:</span>
+                                    <span class="detail-value">${patient.fullName}</span>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <p class="detail-value">Không có bệnh nhân nào.</p>
+                    </c:otherwise>
+                </c:choose>
+            </c:if>
+            <c:if test="${empty scheduleDetails}">
+                <p class="detail-value">Không tìm thấy chi tiết lịch.</p>
             </c:if>
         </div>
         <div class="full-width-bottom-border"></div>

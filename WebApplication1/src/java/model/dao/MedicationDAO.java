@@ -1,3 +1,4 @@
+
 package model.dao;
 
 import model.entity.Medication;
@@ -5,225 +6,151 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Date;
 
 public class MedicationDAO {
+
     private final DBContext dbContext;
 
     public MedicationDAO() {
         this.dbContext = DBContext.getInstance();
     }
 
-    private boolean isValidMedicationName(String medicationName) {
-        return medicationName != null && !medicationName.trim().isEmpty();
-    }
-
-    private boolean isValidSellingPrice(java.math.BigDecimal sellingPrice) {
-        return sellingPrice != null && sellingPrice.compareTo(java.math.BigDecimal.ZERO) >= 0;
-    }
-
-    private boolean isValidStatus(String status) {
-        if (status == null) return false;
-        return "Available".equals(status) || "Out of Stock".equals(status) || "Discontinued".equals(status);
-    }
-
-    public void addMedication(Medication medication) throws SQLException {
-        if (medication == null) throw new SQLException("Medication object cannot be null.");
-        if (!isValidMedicationName(medication.getMedicationName())) {
-            throw new SQLException("Invalid medication name.");
-        }
-        if (!isValidSellingPrice(medication.getSellingPrice())) {
-            throw new SQLException("Invalid selling price.");
-        }
-        if (!isValidStatus(medication.getStatus())) {
-            throw new SQLException("Invalid status.");
+    // Add a new medication to the database
+    public boolean addMedication(Medication medication) throws SQLException {
+        if (medication == null) {
+            throw new SQLException("Medication object cannot be null.");
         }
 
-        String sql = "INSERT INTO Medications (MedicationName, GenericName, BrandName, Description, Dosage, SellingPrice, Status, CreatedAt, UpdatedAt, CreatedBy, Manufacturer, Ndc, DosageForm, ManufacturingDate, ExpiryDate, Quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Medications (name, dosage, manufacturer, description, production_date, " +
+                     "expiration_date, price, quantity, status, dosage_form) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, medication.getMedicationName());
-            stmt.setString(2, medication.getGenericName());
-            stmt.setString(3, medication.getBrandName());
-            stmt.setString(4, medication.getDescription());
-            stmt.setString(5, medication.getDosage());
-            stmt.setBigDecimal(6, medication.getSellingPrice());
-            stmt.setString(7, medication.getStatus());
-            stmt.setTimestamp(8, Timestamp.valueOf(medication.getCreatedAt()));
-            stmt.setTimestamp(9, Timestamp.valueOf(medication.getUpdatedAt()));
-            stmt.setObject(10, medication.getCreatedBy());
-            stmt.setString(11, medication.getManufacturer());
-            stmt.setString(12, medication.getNdc());
-            stmt.setString(13, medication.getDosageForm());
-            stmt.setObject(14, medication.getManufacturingDate());
-            stmt.setObject(15, medication.getExpiryDate());
-            stmt.setObject(16, medication.getQuantity());
-            stmt.executeUpdate();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, medication.getName());
+            pstmt.setString(2, medication.getDosage());
+            pstmt.setString(3, medication.getManufacturer());
+            pstmt.setString(4, medication.getDescription());
+            pstmt.setDate(5, medication.getProductionDate() != null ? java.sql.Date.valueOf(medication.getProductionDate()) : null);
+            pstmt.setDate(6, medication.getExpirationDate() != null ? java.sql.Date.valueOf(medication.getExpirationDate()) : null);
+            pstmt.setDouble(7, medication.getPrice());
+            pstmt.setInt(8, medication.getQuantity());
+            pstmt.setString(9, medication.getStatus());
+            pstmt.setString(10, medication.getDosageForm());
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        medication.setMedicationID(generatedKeys.getInt(1));
+                    }
+                }
+            }
+            return affectedRows > 0;
         } catch (SQLException e) {
-            System.err.println("Error adding medication: " + e.getMessage());
+            System.err.println("SQLException in addMedication: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
     }
 
-public Medication getMedicationById(int id) throws SQLException {
-    String sql = "SELECT * FROM Medications WHERE MedicationID = ?";
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setInt(1, id);
-
-        try (ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                Medication medication = new Medication();
-                medication.setMedicationID(rs.getInt("MedicationID"));
-                medication.setMedicationName(rs.getString("MedicationName"));
-                medication.setGenericName(rs.getString("GenericName"));
-                medication.setBrandName(rs.getString("BrandName"));
-                medication.setDescription(rs.getString("Description"));
-                medication.setDosage(rs.getString("Dosage"));
-                medication.setSellingPrice(rs.getBigDecimal("SellingPrice"));
-                medication.setStatus(rs.getString("Status"));
-
-                // Optional: kiểm tra null để tránh lỗi
-                Timestamp createdAt = rs.getTimestamp("CreatedAt");
-                Timestamp updatedAt = rs.getTimestamp("UpdatedAt");
-                medication.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                medication.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-
-                medication.setCreatedBy(rs.getInt("CreatedBy"));
-
-                medication.setManufacturer(rs.getString("Manufacturer"));
-                medication.setNdc(rs.getString("Ndc"));
-                medication.setDosageForm(rs.getString("DosageForm"));
-
-                Date manuDate = rs.getDate("ManufacturingDate");
-                Date expDate = rs.getDate("ExpiryDate");
-
-                medication.setManufacturingDate(manuDate != null ? manuDate.toLocalDate() : null);
-                medication.setExpiryDate(expDate != null ? expDate.toLocalDate() : null);
-
-                medication.setQuantity(rs.getInt("Quantity"));
-
-                return medication;
-            }
-        }
-    } catch (SQLException e) {
-        System.err.println("Error retrieving medication by ID: " + e.getMessage());
-        throw e;
-    }
-    return null;
-}
-
+    // View all medications
     public List<Medication> getAllMedications() throws SQLException {
         List<Medication> medications = new ArrayList<>();
-        String sql = "SELECT * FROM Medications";
+        String sql = "SELECT * FROM Medications WHERE status = 'Active'";
+
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Medication medication = new Medication();
-                medication.setMedicationID(rs.getInt("MedicationID"));
-                medication.setMedicationName(rs.getString("MedicationName"));
-                medication.setGenericName(rs.getString("GenericName"));
-                medication.setBrandName(rs.getString("BrandName"));
-                medication.setDescription(rs.getString("Description"));
-                medication.setDosage(rs.getString("Dosage"));
-                medication.setSellingPrice(rs.getBigDecimal("SellingPrice"));
-                medication.setStatus(rs.getString("Status"));
-                medication.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
-                medication.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
-                medication.setCreatedBy(rs.getInt("CreatedBy"));
-                medication.setManufacturer(rs.getString("Manufacturer"));
-                medication.setNdc(rs.getString("Ndc"));
-                medication.setDosageForm(rs.getString("DosageForm"));
-                medication.setManufacturingDate(rs.getDate("ManufacturingDate") != null ? rs.getDate("ManufacturingDate").toLocalDate() : null);
-                medication.setExpiryDate(rs.getDate("ExpiryDate") != null ? rs.getDate("ExpiryDate").toLocalDate() : null);
-                medication.setQuantity(rs.getInt("Quantity"));
+                Medication medication = mapResultSetToMedication(rs);
                 medications.add(medication);
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving all medications: " + e.getMessage());
+            System.err.println("SQLException in getAllMedications: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
         return medications;
     }
 
-    public boolean updateMedication(Medication medication) throws SQLException {
-        if (medication == null) throw new SQLException("Medication object cannot be null.");
-        if (!isValidMedicationName(medication.getMedicationName())) {
-            throw new SQLException("Invalid medication name.");
-        }
-        if (!isValidSellingPrice(medication.getSellingPrice())) {
-            throw new SQLException("Invalid selling price.");
-        }
-        if (!isValidStatus(medication.getStatus())) {
-            throw new SQLException("Invalid status.");
-        }
+    // View a specific medication by ID
+    public Medication getMedicationById(int medicationId) throws SQLException {
+        String sql = "SELECT * FROM Medications WHERE MedicationID = ?";
 
-        String query = "UPDATE Medications SET MedicationName = ?, GenericName = ?, BrandName = ?, Description = ?, Dosage = ?, SellingPrice = ?, Status = ?, UpdatedAt = ?, CreatedBy = ?, Manufacturer = ?, Ndc = ?, DosageForm = ?, ManufacturingDate = ?, ExpiryDate = ?, Quantity = ? WHERE MedicationID = ?";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, medication.getMedicationName());
-            stmt.setString(2, medication.getGenericName());
-            stmt.setString(3, medication.getBrandName());
-            stmt.setString(4, medication.getDescription());
-            stmt.setString(5, medication.getDosage());
-            stmt.setBigDecimal(6, medication.getSellingPrice());
-            stmt.setString(7, medication.getStatus());
-            stmt.setTimestamp(8, Timestamp.valueOf(medication.getUpdatedAt()));
-            stmt.setObject(9, medication.getCreatedBy());
-            stmt.setString(10, medication.getManufacturer());
-            stmt.setString(11, medication.getNdc());
-            stmt.setString(12, medication.getDosageForm());
-            stmt.setObject(13, medication.getManufacturingDate());
-            stmt.setObject(14, medication.getExpiryDate());
-            stmt.setObject(15, medication.getQuantity());
-            stmt.setInt(16, medication.getMedicationID());
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating medication: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    public boolean deleteMedication(int medicationID) throws SQLException {
-        String query = "DELETE FROM Medications WHERE MedicationID = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, medicationID);
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected == 0) {
-                System.err.println("Medication with ID " + medicationID + " not found for deletion.");
-                return false;
-            }
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error deleting medication: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    public boolean isMedicationExists(String medicationName) throws SQLException {
-        if (!isValidMedicationName(medicationName)) {
-            return false;
-        }
-        String sql = "SELECT COUNT(*) FROM Medications WHERE MedicationName = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, medicationName);
-            try (ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, medicationId);
+            try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                    return mapResultSetToMedication(rs);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error checking medication existence: " + e.getMessage());
+            System.err.println("SQLException in getMedicationById: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
-        return false;
+        return null;
+    }
+
+    // Retrieve paginated list of medications
+    public List<Medication> getMedicationsPaginated(int page, int pageSize) throws SQLException {
+        List<Medication> medications = new ArrayList<>();
+        String sql = "SELECT * FROM Medications WHERE status = 'Active' " +
+                     "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            int offset = (page - 1) * pageSize;
+            pstmt.setInt(1, offset);
+            pstmt.setInt(2, pageSize);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Medication medication = mapResultSetToMedication(rs);
+                    medications.add(medication);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getMedicationsPaginated: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return medications;
+    }
+
+    // Count total number of active medications
+    public int getTotalMedicationCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Medications WHERE status = 'Active'";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getTotalMedicationCount: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return 0;
+    }
+
+    // Helper method to map ResultSet to Medication object
+    private Medication mapResultSetToMedication(ResultSet rs) throws SQLException {
+        Medication medication = new Medication();
+        medication.setMedicationID(rs.getInt("MedicationID"));
+        medication.setName(rs.getString("name"));
+        medication.setDosage(rs.getString("dosage"));
+        medication.setManufacturer(rs.getString("manufacturer"));
+        medication.setDescription(rs.getString("description"));
+        medication.setProductionDate(rs.getDate("production_date") != null ? rs.getDate("production_date").toLocalDate() : null);
+        medication.setExpirationDate(rs.getDate("expiration_date") != null ? rs.getDate("expiration_date").toLocalDate() : null);
+        medication.setPrice(rs.getDouble("price"));
+        medication.setQuantity(rs.getInt("quantity"));
+        medication.setStatus(rs.getString("status"));
+        medication.setDosageForm(rs.getString("dosage_form"));
+        return medication;
     }
 }

@@ -1,6 +1,5 @@
 package model.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -8,41 +7,42 @@ public class Medication {
 
     // Database fields
     private Integer medicationID;
-    private String medicationName;
-    private String genericName;
-    private String brandName;
-    private String description;
-    private String dosage;              // Thay thế defaultDosage, phân tích từ API
-    private BigDecimal sellingPrice;
-    private String status;
-    private LocalDate manufacturingDate; // Di chuyển từ API
-    private LocalDate expiryDate;       // Di chuyển từ API
-    private Integer quantity;           // Di chuyển từ API
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Integer createdBy;
+    private String name;                // Tên thuốc
+    private String dosage;             // Liều dùng
+    private String manufacturer;       // Nhà sản xuất
+    private String description;        // Mô tả
+    private LocalDate productionDate;  // Ngày sản xuất
+    private LocalDate expirationDate;  // Hạn dùng
+    private Double price;              // Giá tiền
+    private Integer quantity;          // Số lượng
+    private String status;             // Trạng thái
+    private String dosageForm;         // Dạng bào chế
 
-    // API fields (chỉ dùng tạm thời để lấy dữ liệu)
-    private String manufacturer;
-    private String ndc;
-    private String dosageForm;
-
-    // Constructors
+    // Constructor mặc định với giá trị khởi tạo
     public Medication() {
-        this.status = "Available";
-        this.sellingPrice = BigDecimal.ZERO;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.status = "Active";
+        this.quantity = 0;
+        this.price = 0.0;
     }
 
-    public Medication(String medicationName, String genericName, String brandName) {
-        this();
-        this.medicationName = medicationName;
-        this.genericName = genericName;
-        this.brandName = brandName;
+    // Constructor đầy đủ
+    public Medication(Integer medicationID, String name, String dosage, String manufacturer, String description,
+            LocalDate productionDate, LocalDate expirationDate, Double price, Integer quantity,
+            String status, String dosageForm) {
+        this.medicationID = medicationID;
+        this.name = name;
+        this.dosage = dosage;
+        this.manufacturer = manufacturer;
+        this.description = description;
+        this.productionDate = productionDate;
+        this.expirationDate = expirationDate;
+        this.price = price;
+        this.quantity = quantity;
+        this.status = status;
+        this.dosageForm = dosageForm;
     }
 
-    // Getters and Setters for Database fields
+    // Getters and Setters
     public Integer getMedicationID() {
         return medicationID;
     }
@@ -51,36 +51,12 @@ public class Medication {
         this.medicationID = medicationID;
     }
 
-    public String getMedicationName() {
-        return medicationName;
+    public String getName() {
+        return name;
     }
 
-    public void setMedicationName(String medicationName) {
-        this.medicationName = medicationName;
-    }
-
-    public String getGenericName() {
-        return genericName;
-    }
-
-    public void setGenericName(String genericName) {
-        this.genericName = genericName;
-    }
-
-    public String getBrandName() {
-        return brandName;
-    }
-
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDosage() {
@@ -91,71 +67,6 @@ public class Medication {
         this.dosage = dosage;
     }
 
-    public BigDecimal getSellingPrice() {
-        return sellingPrice;
-    }
-
-    public void setSellingPrice(BigDecimal sellingPrice) {
-        this.sellingPrice = sellingPrice;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDate getManufacturingDate() {
-        return manufacturingDate;
-    }
-
-    public void setManufacturingDate(LocalDate manufacturingDate) {
-        this.manufacturingDate = manufacturingDate;
-    }
-
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDate expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    // Getters and Setters for API fields
     public String getManufacturer() {
         return manufacturer;
     }
@@ -164,12 +75,62 @@ public class Medication {
         this.manufacturer = manufacturer;
     }
 
-    public String getNdc() {
-        return ndc;
+    public String getDescription() {
+        return description;
     }
 
-    public void setNdc(String ndc) {
-        this.ndc = ndc;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDate getProductionDate() {
+        return productionDate;
+    }
+
+    public void setProductionDate(LocalDate productionDate) {
+        this.productionDate = productionDate;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        if (price != null && price < 0) {
+            throw new IllegalArgumentException("Price must be non-negative");
+        }
+        this.price = price;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        if (quantity != null && quantity < 0) {
+            throw new IllegalArgumentException("Quantity must be non-negative");
+        }
+        this.quantity = quantity;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        if (status != null && (status.equals("Active") || status.equals("Inactive") || status.equals("Out of Stock"))) {
+            this.status = status;
+        } else {
+            throw new IllegalArgumentException("Status must be 'Active', 'Inactive', or 'Out of Stock'");
+        }
     }
 
     public String getDosageForm() {
@@ -177,17 +138,20 @@ public class Medication {
     }
 
     public void setDosageForm(String dosageForm) {
-        this.dosageForm = dosageForm;
+        if (dosageForm != null && (dosageForm.equals("Tablet") || dosageForm.equals("Liquid")
+                || dosageForm.equals("Capsule") || dosageForm.equals("Injection")
+                || dosageForm.equals("Syrup") || dosageForm.equals("Powder")
+                || dosageForm.equals("Cream") || dosageForm.equals("Ointment"))) {
+            this.dosageForm = dosageForm;
+        } else {
+            throw new IllegalArgumentException("Dosage form must be one of: Tablet, Liquid, Capsule, Injection, Syrup, Powder, Cream, Ointment");
+        }
     }
 
-    public void parseDosageFromApi(String apiDosage) {
-        if (apiDosage != null && !apiDosage.trim().isEmpty()) {
-            String[] parts = apiDosage.trim().split("\\s+");
-            if (parts.length >= 2) {
-                this.dosage = apiDosage; // Lưu toàn bộ dosage, có thể phân tích thêm nếu cần
-            } else {
-                this.dosage = apiDosage;
-            }
+    // Validation for dates
+    public void validateDates() {
+        if (productionDate != null && expirationDate != null && !expirationDate.isAfter(productionDate)) {
+            throw new IllegalArgumentException("Expiration date must be after production date");
         }
     }
 
@@ -195,19 +159,33 @@ public class Medication {
     public String toString() {
         return "Medication{"
                 + "medicationID=" + medicationID
-                + ", medicationName='" + medicationName + '\''
-                + ", genericName='" + genericName + '\''
-                + ", brandName='" + brandName + '\''
-                + ", description='" + description + '\''
+                + ", name='" + name + '\''
                 + ", dosage='" + dosage + '\''
-                + ", sellingPrice=" + sellingPrice
-                + ", status='" + status + '\''
                 + ", manufacturer='" + manufacturer + '\''
-                + ", ndc='" + ndc + '\''
-                + ", dosageForm='" + dosageForm + '\''
-                + ", manufacturingDate=" + manufacturingDate
-                + ", expiryDate=" + expiryDate
+                + ", description='" + description + '\''
+                + ", productionDate=" + productionDate
+                + ", expirationDate=" + expirationDate
+                + ", price=" + price
                 + ", quantity=" + quantity
+                + ", status='" + status + '\''
+                + ", dosageForm='" + dosageForm + '\''
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Medication that = (Medication) obj;
+        return medicationID != null && medicationID.equals(that.medicationID);
+    }
+
+    @Override
+    public int hashCode() {
+        return medicationID != null ? medicationID.hashCode() : 0;
     }
 }

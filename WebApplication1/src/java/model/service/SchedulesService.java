@@ -5,8 +5,11 @@ import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import model.dao.RoomsDAO;
+import model.entity.Rooms;
 import model.entity.Schedules;
 
 public class SchedulesService {
@@ -201,5 +204,18 @@ public class SchedulesService {
 public List<Map<String, Object>> searchSchedule(String employeeName, String role, String employeeID, LocalDate searchDate) throws SQLException, ClassNotFoundException {
     return schedulesDAO.searchSchedule(employeeName, role, employeeID, searchDate);
 }
+public Map<String, Object> viewDetailSchedule(int scheduleID) throws SQLException, ClassNotFoundException {
+        try {
+            // Gọi phương thức từ DAO
+            Map<String, Object> scheduleDetails = schedulesDAO.ViewDetailSchedule(scheduleID);
+            return scheduleDetails;
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lấy chi tiết lịch từ Service: " + e.getMessage() + " tại " + java.time.LocalDateTime.now() + " +07");
+            throw e;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Lỗi ClassNotFound khi lấy chi tiết lịch: " + e.getMessage() + " tại " + java.time.LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
 }
 
