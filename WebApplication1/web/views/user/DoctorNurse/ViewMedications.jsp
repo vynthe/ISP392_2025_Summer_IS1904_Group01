@@ -339,7 +339,7 @@
                             <td data-label="Dạng Bào Chế">${medication.dosageForm}</td>
                             <td data-label="Nhà Sản Xuất">${medication.manufacturer}</td>
                             <td data-label="Hành Động">
-                                <a href="${pageContext.request.contextPath}/MedicationDetailServlet?id=${medication.medicationID}" class="action-button">🔍 Xem chi tiết</a>
+                                <a href="${pageContext.request.contextPath}/ViewMedicationDetailsServlet?id=${medication.medicationID}" class="action-button">🔍 Xem chi tiết</a>
                             </td>
                         </tr>
                     </c:forEach>

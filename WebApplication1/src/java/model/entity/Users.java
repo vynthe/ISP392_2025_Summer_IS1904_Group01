@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.entity;
+
 import java.sql.Date;
-/**
- *
- * @author exorc
- */
+import java.sql.Timestamp;
+
 public class Users {
     private int userID;
     private String username;
@@ -25,11 +20,18 @@ public class Users {
     private Integer createdBy;
     private Date createdAt;
     private Date updatedAt;
+    // Thêm các thuộc tính mới
+    private String verificationCode;
+    private Timestamp verificationCodeExpiry;
+    private boolean isVerified;
 
     public Users() {
     }
 
-    public Users(int userID, String username, String password, String email, String fullName, Date dob, String gender, String phone, String address, String medicalHistory, String specialization, String role, String status, int createdBy, Date createdAt, Date updatedAt) {
+    public Users(int userID, String username, String password, String email, String fullName, Date dob, String gender, 
+                 String phone, String address, String medicalHistory, String specialization, String role, String status, 
+                 Integer createdBy, Date createdAt, Date updatedAt, String verificationCode, 
+                 Timestamp verificationCodeExpiry, boolean isVerified) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -46,8 +48,12 @@ public class Users {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.verificationCode = verificationCode;
+        this.verificationCodeExpiry = verificationCodeExpiry;
+        this.isVerified = isVerified;
     }
 
+    // Getters và Setters cho các thuộc tính hiện có
     public int getUserID() {
         return userID;
     }
@@ -176,12 +182,61 @@ public class Users {
         this.updatedAt = updatedAt;
     }
 
+    // Getters và Setters cho các thuộc tính mới
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public Timestamp getVerificationCodeExpiry() {
+        return verificationCodeExpiry;
+    }
+
+    public void setVerificationCodeExpiry(Timestamp verificationCodeExpiry) {
+        this.verificationCodeExpiry = verificationCodeExpiry;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
+    }
+
     @Override
     public String toString() {
-        return "Users{" + "userID=" + userID + ", username=" + username + ", password=" + password + ", email=" + email + ", fullName=" + fullName + ", dob=" + dob + ", gender=" + gender + ", phone=" + phone + ", address=" + address + ", medicalHistory=" + medicalHistory + ", specialization=" + specialization + ", role=" + role + ", status=" + status + ", createdBy=" + createdBy + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
+        return "Users{" +
+                "userID=" + userID +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", dob=" + dob +
+                ", gender='" + gender + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                ", medicalHistory='" + medicalHistory + '\'' +
+                ", specialization='" + specialization + '\'' +
+                ", role='" + role + '\'' +
+                ", status='" + status + '\'' +
+                ", createdBy=" + createdBy +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", verificationCode='" + verificationCode + '\'' +
+                ", verificationCodeExpiry=" + verificationCodeExpiry +
+                ", isVerified=" + isVerified +
+                '}';
     }
 
     public void setCreatedBy(Object object) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (object instanceof Integer) {
+            this.createdBy = (Integer) object;
+        } else {
+            throw new IllegalArgumentException("CreatedBy must be an Integer");
+        }
     }
 }

@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 
 @WebServlet(name = "AddMedicationsServlet", urlPatterns = {"/AddMedicationsServlet"})
 public class AddMedicationsServlet extends HttpServlet {
