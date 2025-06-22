@@ -167,6 +167,15 @@
             text-align: center;
             padding: 20px 0;
         }
+        /* Success Message */
+        .success-message {
+            font-size: 20px; /* Kích thước nhỏ */
+            color: #4CAF50; /* Xanh lá cây nhạt */
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -194,13 +203,29 @@
     </header>
 
     <!-- Banner -->
+    <!-- Banner -->
     <section class="banner">
         <div class="container">
             <p>PDC là công ty bệnh nha khoa được nhiều người tin tưởng trong lĩnh vực chăm sóc sức khỏe răng miệng.</p>
             <p class="slogan">"Giải pháp tối ưu, cân thiện tối thiểu" – đó chính là slogan và mục tiêu mà Nha Khoa PDC đang, và sẽ thực hiện trong suốt thời gian hoạt động.</p>
-            <a href="${pageContext.request.contextPath}/BookAppointmentController">Đặt lịch khám</a>
+            <div class="banner-actions">
+                <a href="${pageContext.request.contextPath}/BookAppointmentGuestServlet">Đặt lịch khám</a>
+                <!-- Success Message -->
+                <% 
+                    String successMessage = (String) session.getAttribute("successMessage");
+                    if (successMessage != null) {
+                %>
+                    <div class="success-message">
+                        <%= successMessage %>
+                    </div>
+                    <% 
+                        session.removeAttribute("successMessage"); // Xóa thông báo sau khi hiển thị
+                    }
+                %>
+            </div>
         </div>
     </section>
+
 
     <!-- Dịch vụ nha khoa -->
     <section class="services">
