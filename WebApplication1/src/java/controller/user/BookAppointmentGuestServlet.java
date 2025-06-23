@@ -19,6 +19,10 @@ public class BookAppointmentGuestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        // Đặt mã hóa cho response
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
         // Lấy dữ liệu từ form
         String fullName = request.getParameter("fullName");
         String phoneNumber = request.getParameter("phoneNumber");

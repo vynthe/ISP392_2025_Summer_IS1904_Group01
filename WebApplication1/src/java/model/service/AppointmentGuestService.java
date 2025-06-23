@@ -6,6 +6,7 @@ import model.entity.AppointmentGuest;
 import model.dao.AppointmentGuestDAO;
 
 public class AppointmentGuestService {
+
     private final AppointmentGuestDAO appointmentDAO = new AppointmentGuestDAO();
 
     public void bookAppointment(AppointmentGuest appointment) throws SQLException {
@@ -15,6 +16,7 @@ public class AppointmentGuestService {
         }
 
         // Kiểm tra hợp lệ dữ liệu
+        validateFullName(appointment.getFullName());
         isValidPhoneNumber(appointment.getPhoneNumber());
         if (appointment.getEmail() != null) {
             isValidEmail(appointment.getEmail());
@@ -25,7 +27,7 @@ public class AppointmentGuestService {
     }
 
     // Phương thức kiểm tra hợp lệ tên
-  public void validateFullName(String fullName) throws SQLException {
+    public void validateFullName(String fullName) throws SQLException {
         String trimmedFullName = (fullName != null) ? fullName.trim() : null;
 
         if (trimmedFullName == null || trimmedFullName.isEmpty()) {
@@ -38,6 +40,7 @@ public class AppointmentGuestService {
             throw new SQLException("Họ và tên chỉ được chứa chữ cái và dấu cách.");
         }
     }
+
     // Phương thức kiểm tra hợp lệ số điện thoại
     public void isValidPhoneNumber(String phoneNumber) throws SQLException {
         if (phoneNumber == null || phoneNumber.length() != 10 || phoneNumber.trim().isEmpty()) {
