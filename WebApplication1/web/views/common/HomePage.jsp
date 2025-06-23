@@ -211,7 +211,8 @@
             <div class="banner-actions">
                 <a href="${pageContext.request.contextPath}/BookAppointmentGuestServlet">Đặt lịch khám</a>
                 <!-- Success Message -->
-                <% 
+               
+            </div > <% 
                     String successMessage = (String) session.getAttribute("successMessage");
                     if (successMessage != null) {
                 %>
@@ -222,7 +223,6 @@
                         session.removeAttribute("successMessage"); // Xóa thông báo sau khi hiển thị
                     }
                 %>
-            </div>
         </div>
     </section>
 

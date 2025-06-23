@@ -36,7 +36,7 @@ public class BookAppointmentGuestServlet extends HttpServlet {
         try {
             // Gọi phương thức bookAppointment từ service
             appointmentService.bookAppointment(appointment);
-            session.setAttribute("successMessage", "Đặt lịch hẹn thành công!");
+            session.setAttribute("successMessage", "Vui lòng chờ xác nhận đặt lịch !");
             response.sendRedirect(request.getContextPath() + "/views/common/HomePage.jsp");
         } catch (SQLException e) {
             request.setAttribute("error", "Lỗi: " + e.getMessage());
