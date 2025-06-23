@@ -1,4 +1,3 @@
-
 package model.dao;
 
 import model.entity.Medication;
@@ -25,12 +24,11 @@ public class MedicationDAO {
             throw new SQLException("Medication object cannot be null.");
         }
 
-        String sql = "INSERT INTO Medications (name, dosage, manufacturer, description, production_date, " +
-                     "expiration_date, price, quantity, status, dosage_form) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Medications (name, dosage, manufacturer, description, production_date, "
+                + "expiration_date, price, quantity, status, dosage_form) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, medication.getName());
             pstmt.setString(2, medication.getDosage());
             pstmt.setString(3, medication.getManufacturer());
@@ -62,9 +60,7 @@ public class MedicationDAO {
         List<Medication> medications = new ArrayList<>();
         String sql = "SELECT * FROM Medications WHERE status = 'Active'";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Medication medication = mapResultSetToMedication(rs);
                 medications.add(medication);
@@ -78,10 +74,9 @@ public class MedicationDAO {
 
     // View a specific medication by ID
     public Medication getMedicationById(int medicationId) throws SQLException {
-        String sql = "SELECT * FROM Medications WHERE MedicationID = ?";
+        String sql = "SELECT * FROM Medications WHERE MedicationID = ? AND status = 'Active'"; // Thêm điều kiện status
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, medicationId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -98,11 +93,10 @@ public class MedicationDAO {
     // Retrieve paginated list of medications
     public List<Medication> getMedicationsPaginated(int page, int pageSize) throws SQLException {
         List<Medication> medications = new ArrayList<>();
-        String sql = "SELECT * FROM Medications WHERE status = 'Active' " +
-                     "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT * FROM Medications WHERE status = 'Active' "
+                + "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             int offset = (page - 1) * pageSize;
             pstmt.setInt(1, offset);
             pstmt.setInt(2, pageSize);
@@ -124,9 +118,7 @@ public class MedicationDAO {
     public int getTotalMedicationCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM Medications WHERE status = 'Active'";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -152,5 +144,29 @@ public class MedicationDAO {
         medication.setStatus(rs.getString("status"));
         medication.setDosageForm(rs.getString("dosage_form"));
         return medication;
+    }
+
+    // Update specific fields for medication import
+    public boolean updateMedicationForImport(Medication medication) throws SQLException {
+        if (medication == null || medication.getMedicationID() <= 0) {
+            throw new SQLException("Medication object or ID cannot be null or invalid.");
+        }
+
+        String sql = "UPDATE Medications SET production_date = ?, expiration_date = ?, price = ?, quantity = ? "
+                + "WHERE MedicationID = ? AND status = 'Active'"; // Thêm điều kiện status
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDate(1, medication.getProductionDate() != null ? java.sql.Date.valueOf(medication.getProductionDate()) : null);
+            pstmt.setDate(2, medication.getExpirationDate() != null ? java.sql.Date.valueOf(medication.getExpirationDate()) : null);
+            pstmt.setDouble(3, medication.getPrice());
+            pstmt.setInt(4, medication.getQuantity());
+            pstmt.setInt(5, medication.getMedicationID());
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("SQLException in updateMedicationForImport: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
     }
 }
