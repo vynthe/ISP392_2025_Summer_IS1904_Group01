@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import model.entity.AppointmentGuest;
 
 public class AppointmentGuestDAO {
@@ -19,20 +18,9 @@ public class AppointmentGuestDAO {
     }
 
     // Lưu lịch hẹn mới
-    public boolean saveAppointment(AppointmentGuest appointment) throws SQLException {
+    public void saveAppointment(AppointmentGuest appointment) throws SQLException {
         if (appointment == null) {
             throw new SQLException("Appointment object cannot be null.");
-        }
-
-        // Kiểm tra hợp lệ dữ liệu
-        if (!isValidFullName(appointment.getFullName())) {
-            throw new SQLException("Tên không được chứa ký tự đặc biệt và tối đa 100 ký tự.");
-        }
-        if (!isValidPhoneNumber(appointment.getPhoneNumber())) {
-            throw new SQLException("Số điện thoại phải là 10 chữ số.");
-        }
-        if (appointment.getEmail() != null && !isValidEmail(appointment.getEmail())) {
-            throw new SQLException("Email phải có đuôi @gmail.com.");
         }
 
         String sql = "INSERT INTO appointments2 (fullName, phoneNumber, email, service) VALUES (?, ?, ?, ?)";
@@ -50,8 +38,9 @@ public class AppointmentGuestDAO {
                         appointment.setId(generatedKeys.getInt(1));
                     }
                 }
+            } else {
+                throw new SQLException("Failed to save appointment.");
             }
-            return affectedRows > 0;
         } catch (SQLException e) {
             System.err.println("SQLException in saveAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
@@ -90,7 +79,7 @@ public class AppointmentGuestDAO {
             System.err.println("SQLException in getAppointmentById: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
-        return null;
+        throw new SQLException("No appointment found with ID: " + id);
     }
 
     // Lấy danh sách lịch hẹn phân trang
@@ -132,16 +121,6 @@ public class AppointmentGuestDAO {
 
     // Cập nhật lịch hẹn
     public void updateAppointment(AppointmentGuest appointment) throws SQLException {
-        if (!isValidFullName(appointment.getFullName())) {
-            throw new SQLException("Tên không được chứa ký tự đặc biệt và tối đa 100 ký tự.");
-        }
-        if (!isValidPhoneNumber(appointment.getPhoneNumber())) {
-            throw new SQLException("Số điện thoại phải là 10 chữ số.");
-        }
-        if (appointment.getEmail() != null && !isValidEmail(appointment.getEmail())) {
-            throw new SQLException("Email phải có đuôi @gmail.com.");
-        }
-
         String sql = "UPDATE appointments2 SET fullName = ?, phoneNumber = ?, email = ?, service = ?, status = ? WHERE id = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -151,7 +130,10 @@ public class AppointmentGuestDAO {
             pstmt.setString(4, appointment.getService());
             pstmt.setString(5, appointment.getStatus());
             pstmt.setInt(6, appointment.getId());
-            pstmt.executeUpdate();
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Failed to update appointment with ID: " + appointment.getId());
+            }
         } catch (SQLException e) {
             System.err.println("SQLException in updateAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
@@ -164,7 +146,10 @@ public class AppointmentGuestDAO {
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            pstmt.executeUpdate();
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Failed to delete appointment with ID: " + id);
+            }
         } catch (SQLException e) {
             System.err.println("SQLException in deleteAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
@@ -182,29 +167,5 @@ public class AppointmentGuestDAO {
         appointment.setAppointmentDate(rs.getTimestamp("appointmentDate"));
         appointment.setStatus(rs.getString("status"));
         return appointment;
-    }
-
-    // Kiểm tra hợp lệ tên
-    private boolean isValidFullName(String fullName) {
-        if (fullName == null || fullName.length() > 100 || fullName.trim().isEmpty()) {
-            return false;
-        }
-        return Pattern.matches("^[a-zA-Z0-9\\s]+$", fullName);
-    }
-
-    // Kiểm tra hợp lệ số điện thoại
-    private boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.length() != 10 || phoneNumber.trim().isEmpty()) {
-            return false;
-        }
-        return Pattern.matches("\\d{10}", phoneNumber);
-    }
-
-    // Kiểm tra hợp lệ email
-    private boolean isValidEmail(String email) {
-        if (email == null) {
-            return true; // Email là optional
-        }
-        return Pattern.matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$", email);
     }
 }

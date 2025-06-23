@@ -8,36 +8,24 @@ import model.dao.AppointmentGuestDAO;
 public class AppointmentGuestService {
     private final AppointmentGuestDAO appointmentDAO = new AppointmentGuestDAO();
 
-    public boolean bookAppointment(AppointmentGuest appointment) {
-        try {
-            // Kiểm tra dữ liệu cơ bản
-            if (appointment.getFullName() == null || appointment.getPhoneNumber() == null || appointment.getService() == null) {
-                return false;
-            }
-
-            // Kiểm tra hợp lệ dữ liệu
-            if (!validateFullName(appointment.getFullName())) {
-                return false;
-            }
-            if (!isValidPhoneNumber(appointment.getPhoneNumber())) {
-                return false;
-            }
-            if (appointment.getEmail() != null && !isValidEmail(appointment.getEmail())) {
-                return false;
-            }
-
-            // Lưu lịch hẹn
-            appointmentDAO.saveAppointment(appointment);
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    public void bookAppointment(AppointmentGuest appointment) throws SQLException {
+        // Kiểm tra dữ liệu cơ bản
+        if (appointment.getFullName() == null || appointment.getPhoneNumber() == null || appointment.getService() == null) {
+            throw new SQLException("Dữ liệu cơ bản không được để trống.");
         }
+
+        // Kiểm tra hợp lệ dữ liệu
+        isValidPhoneNumber(appointment.getPhoneNumber());
+        if (appointment.getEmail() != null) {
+            isValidEmail(appointment.getEmail());
+        }
+
+        // Lưu lịch hẹn
+        appointmentDAO.saveAppointment(appointment);
     }
 
     // Phương thức kiểm tra hợp lệ tên
-
-    public void validateFullName(String fullName) throws SQLException {
+  public void validateFullName(String fullName) throws SQLException {
         String trimmedFullName = (fullName != null) ? fullName.trim() : null;
 
         if (trimmedFullName == null || trimmedFullName.isEmpty()) {
@@ -50,20 +38,23 @@ public class AppointmentGuestService {
             throw new SQLException("Họ và tên chỉ được chứa chữ cái và dấu cách.");
         }
     }
-
     // Phương thức kiểm tra hợp lệ số điện thoại
-    private boolean isValidPhoneNumber(String phoneNumber) {
+    public void isValidPhoneNumber(String phoneNumber) throws SQLException {
         if (phoneNumber == null || phoneNumber.length() != 10 || phoneNumber.trim().isEmpty()) {
-            return false;
+            throw new SQLException("Số điện thoại không hợp lệ.");
         }
-        return Pattern.matches("\\d{10}", phoneNumber);
+        if (!Pattern.matches("\\d{10}", phoneNumber)) {
+            throw new SQLException("Số điện thoại phải chứa đúng 10 chữ số.");
+        }
     }
 
     // Phương thức kiểm tra hợp lệ email
-    private boolean isValidEmail(String email) {
+    public void isValidEmail(String email) throws SQLException {
         if (email == null) {
-            return true; // Email là optional
+            return; // Email là optional
         }
-        return Pattern.matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$", email);
+        if (!Pattern.matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$", email)) {
+            throw new SQLException("Email không hợp lệ, phải là địa chỉ gmail.");
+        }
     }
 }
