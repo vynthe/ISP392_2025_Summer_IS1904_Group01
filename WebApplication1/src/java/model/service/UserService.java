@@ -10,8 +10,6 @@ import java.util.Map;
 import model.dao.UserDAO;
 import model.entity.Users;
 import org.mindrot.jbcrypt.BCrypt;
-import model.util.EmailUtil;
-import model.util.VerificationCodeGenerator;
 
 public class UserService {
 
@@ -73,16 +71,7 @@ public class UserService {
             user.setCreatedAt(new java.sql.Date(System.currentTimeMillis()));
             user.setUpdatedAt(null);
 
-            boolean success = userDAO.registerUserBasic(user);
-            if (success) {
-                try {
-                    EmailUtil.sendVerificationEmail(user.getEmail(), user.getVerificationCode());
-                } catch (Exception e) {
-                    System.err.println("Lỗi gửi email xác thực: " + e.getMessage());
-                    throw new SQLException("Không thể gửi email xác thực. Vui lòng thử lại sau.", e);
-                }
-            }
-            return success;
+            return userDAO.registerUserBasic(user);
         } catch (SQLException e) {
             System.err.println("Lỗi khi đăng ký người dùng: " + e.getMessage());
             throw e;
@@ -90,15 +79,6 @@ public class UserService {
             System.err.println("Lỗi xác thực dữ liệu: " + e.getMessage());
             throw new SQLException(e.getMessage(), e);
         }
-    }
-
-    public boolean verifyUser(String email, String verificationCode) throws SQLException {
-        email = (email != null) ? email.trim() : null;
-        verificationCode = (verificationCode != null) ? verificationCode.trim() : null;
-        if (email == null || verificationCode == null) {
-            throw new SQLException("Email hoặc mã xác thực không được để trống.");
-        }
-        return userDAO.verifyUser(email, verificationCode);
     }
 
     public boolean isEmailOrUsernameExists(String email, String username) throws SQLException {
@@ -127,10 +107,6 @@ public class UserService {
         }
         if (!BCrypt.checkpw(password, user.getPassword())) {
             return null;
-        }
-        // Kiểm tra xác thực email, bỏ qua nếu không có verification_code (tài khoản cũ)
-        if (user.getVerificationCode() != null && !user.isVerified()) {
-            throw new IllegalArgumentException("Tài khoản chưa được xác thực email.");
         }
         return user;
     }
@@ -269,77 +245,60 @@ public class UserService {
         username = (username != null) ? username.trim() : null;
         password = (password != null) ? password.trim() : null;
 
-        try {
-            validateUsername(username);
-            validateEmail(email);
-            validatePhoneNumber(phone);
-            validateFullName(fullName);
-            validateDob(dob);
-            validatePassword(password);
+        validateUsername(username);
+        validateEmail(email);
+        validatePhoneNumber(phone);
+        validateFullName(fullName);
+        validateDob(dob);
+        validatePassword(password);
 
-            if (userDAO.isEmailOrUsernameExists(email, username)) {
-                throw new SQLException("Email hoặc tên đăng nhập đã tồn tại.");
-            }
-            if (phone != null && !phone.isEmpty() && userDAO.isPhoneExists(phone)) {
-                throw new SQLException("Số điện thoại đã tồn tại.");
-            }
-
-            String mappedGender = gender;
-            if (mappedGender != null && !mappedGender.isEmpty()) {
-                if ("Nam".equalsIgnoreCase(mappedGender)) {
-                    mappedGender = "Male";
-                } else if ("Nữ".equalsIgnoreCase(mappedGender)) {
-                    mappedGender = "Female";
-                } else if ("Khác".equalsIgnoreCase(mappedGender)) {
-                    mappedGender = "Other";
-                } else {
-                    throw new SQLException("Giới tính không hợp lệ.");
-                }
-            } else {
-                mappedGender = null;
-            }
-
-            List<String> validRoles = List.of("patient", "doctor", "nurse", "receptionist", "admin");
-            if (role == null || !validRoles.contains(role.toLowerCase())) {
-                throw new SQLException("Vai trò không hợp lệ.");
-            }
-
-            List<String> validStatuses = List.of("Active", "Inactive");
-            if (status == null || !validStatuses.contains(status)) {
-                status = "Active";
-            }
-
-            Users user = new Users();
-            user.setFullName(fullName);
-            user.setGender(mappedGender);
-            user.setDob(dob);
-            user.setSpecialization(specialization);
-            user.setRole(role);
-            user.setStatus(status);
-            user.setEmail(email);
-            user.setPhone(phone);
-            user.setAddress(address);
-            user.setUsername(username);
-            user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
-            user.setCreatedBy(createdBy);
-
-            boolean success = userDAO.addUser(user, createdBy);
-            if (success) {
-                try {
-                    EmailUtil.sendVerificationEmail(user.getEmail(), user.getVerificationCode());
-                } catch (Exception e) {
-                    System.err.println("Lỗi gửi email xác thực: " + e.getMessage());
-                    throw new SQLException("Không thể gửi email xác thực. Vui lòng thử lại sau.", e);
-                }
-            }
-            return success;
-        } catch (SQLException e) {
-            System.err.println("Lỗi khi thêm người dùng: " + e.getMessage());
-            throw e;
-        } catch (IllegalArgumentException e) {
-            System.err.println("Lỗi xác thực dữ liệu: " + e.getMessage());
-            throw new SQLException(e.getMessage(), e);
+        if (userDAO.isEmailOrUsernameExists(email, username)) {
+            throw new SQLException("Email hoặc tên đăng nhập đã tồn tại.");
         }
+        if (phone != null && !phone.isEmpty() && userDAO.isPhoneExists(phone)) {
+            throw new SQLException("Số điện thoại đã tồn tại.");
+        }
+
+        String mappedGender = gender;
+        if (mappedGender != null && !mappedGender.isEmpty()) {
+            if ("Nam".equalsIgnoreCase(mappedGender)) {
+                mappedGender = "Male";
+            } else if ("Nữ".equalsIgnoreCase(mappedGender)) {
+                mappedGender = "Female";
+            } else if ("Khác".equalsIgnoreCase(mappedGender)) {
+                mappedGender = "Other";
+            } else {
+                throw new SQLException("Giới tính không hợp lệ.");
+            }
+        } else {
+            mappedGender = null;
+        }
+
+        List<String> validRoles = List.of("patient", "doctor", "nurse", "receptionist", "admin");
+        if (role == null || !validRoles.contains(role.toLowerCase())) {
+            throw new SQLException("Vai trò không hợp lệ.");
+        }
+
+        List<String> validStatuses = List.of("Active", "Inactive");
+        if (status == null || !validStatuses.contains(status)) {
+            status = "Active";
+        }
+
+        Users user = new Users();
+        user.setFullName(fullName);
+        user.setGender(mappedGender);
+        user.setDob(dob);
+        user.setSpecialization(specialization);
+        user.setRole(role);
+        user.setStatus(status);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setUsername(username);
+        user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+        user.setCreatedBy(createdBy);
+
+        return userDAO.addUser(user, createdBy);
     }
 
     public List<Users> getAllEmployee() throws SQLException {
@@ -407,25 +366,25 @@ public class UserService {
         return userDAO.deleteEmployee(userID);
     }
 
-    public boolean UpdatePatient(Users patient) throws SQLException {
-        if (patient == null) {
+    public boolean UpdatePatient(Users user) throws SQLException {
+        if (user == null) {
             throw new SQLException("Thông tin người dùng không được để trống.");
         }
 
-        if (patient.getFullName() != null) patient.setFullName(patient.getFullName().trim());
-        if (patient.getGender() != null) patient.setGender(patient.getGender().trim());
-        if (patient.getPhone() != null) patient.setPhone(patient.getPhone().trim());
-        if (patient.getAddress() != null) patient.setAddress(patient.getAddress().trim());
-        if (patient.getStatus() != null) patient.setStatus(patient.getStatus().trim());
+        if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
+        if (user.getGender() != null) user.setGender(user.getGender().trim());
+        if (user.getPhone() != null) user.setPhone(user.getPhone().trim());
+        if (user.getAddress() != null) user.setAddress(user.getAddress().trim());
+        if (user.getStatus() != null) user.setStatus(user.getStatus().trim());
 
-        validateFullName(patient.getFullName());
-        validateDob(patient.getDob());
-        validatePhoneNumber(patient.getPhone());
+        validateFullName(user.getFullName());
+        validateDob(user.getDob());
+        validatePhoneNumber(user.getPhone());
 
-        if (patient.getGender() == null || patient.getGender().isEmpty()) {
+        if (user.getGender() == null || user.getGender().isEmpty()) {
             throw new SQLException("Giới tính không được để trống.");
         }
-        String mappedGender = patient.getGender();
+        String mappedGender = user.getGender();
         if ("Nam".equalsIgnoreCase(mappedGender)) {
             mappedGender = "Male";
         } else if ("Nữ".equalsIgnoreCase(mappedGender)) {
@@ -433,20 +392,20 @@ public class UserService {
         } else if ("Khác".equalsIgnoreCase(mappedGender)) {
             mappedGender = "Other";
         } else {
-            throw new SQLException("Giới tính không hợp lệ: " + patient.getGender());
+            throw new SQLException("Giới tính không hợp lệ: " + user.getGender());
         }
-        patient.setGender(mappedGender);
+        user.setGender(mappedGender);
 
-        if (patient.getAddress() == null || patient.getAddress().isEmpty() || patient.getAddress().length() > 255) {
+        if (user.getAddress() == null || user.getAddress().isEmpty() || user.getAddress().length() > 255) {
             throw new SQLException("Địa chỉ không được để trống hoặc vượt quá 255 ký tự.");
         }
 
         List<String> validStatuses = List.of("Active", "Inactive");
-        if (patient.getStatus() == null || !validStatuses.contains(patient.getStatus())) {
-            patient.setStatus("Active");
+        if (user.getStatus() == null || !validStatuses.contains(user.getStatus())) {
+            user.setStatus("Active");
         }
 
-        return userDAO.UpdatePatient(patient);
+        return userDAO.UpdatePatient(user);
     }
 
     public List<Users> searchEmployees(String keyword) throws SQLException {
@@ -460,6 +419,7 @@ public class UserService {
     public List<Users> getUsersByRole(String role) throws SQLException {
         return userDAO.getUsersByRole((role != null) ? role.trim() : "");
     }
+    
 
     public Map<Integer, String> getEmployeeNameMap() throws SQLException {
         Map<Integer, String> employeeMap = new HashMap<>();
@@ -471,4 +431,6 @@ public class UserService {
         }
         return employeeMap;
     }
+ 
+
 }
