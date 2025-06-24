@@ -65,15 +65,9 @@ public class RegistrationServlet extends HttpServlet {
             return;
         }
 
-        // Validate email max length and format
+        // Validate email max length
         if (email.length() > 50) {
             request.setAttribute("error", "Email không được vượt quá 50 ký tự.");
-            request.setAttribute("form", "register");
-            request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
-            return;
-        }
-        if (!email.endsWith("@gmail.com") || email.equals("@gmail.com")) {
-            request.setAttribute("error", "Email phải có đuôi @gmail.com.");
             request.setAttribute("form", "register");
             request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
             return;
@@ -119,10 +113,10 @@ public class RegistrationServlet extends HttpServlet {
         }
 
         try {
-            // Attempt to register user with phone as null (not provided in form)
+            // Attempt to register user
             if (userService.registerUser(username, email, password, role, null)) {
                 HttpSession session = request.getSession();
-                session.setAttribute("successMessage", "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.");
+                session.setAttribute("successMessage", "Đã đăng ký thành công, vui lòng đăng nhập!");
                 response.sendRedirect(request.getContextPath() + "/UserLoginController");
             } else {
                 request.setAttribute("error", "Username hoặc Email đã tồn tại.");
@@ -130,7 +124,7 @@ public class RegistrationServlet extends HttpServlet {
                 request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            request.setAttribute("error", "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : "Không thể xử lý đăng ký."));
+            request.setAttribute("error", e.getMessage());
             request.setAttribute("form", "register");
             request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
         } catch (IllegalArgumentException e) {

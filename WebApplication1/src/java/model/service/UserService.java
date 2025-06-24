@@ -33,9 +33,6 @@ public class UserService {
             if (email != null && email.length() > 50) {
                 throw new SQLException("Email không được vượt quá 50 ký tự.");
             }
-            if (password != null && password.length() > 20) {
-                throw new SQLException("Mật khẩu không được vượt quá 20 ký tự.");
-            }
 
             validateUsername(username);
             validateEmail(email);
@@ -206,10 +203,15 @@ public class UserService {
 
     private void validatePassword(String password) throws IllegalArgumentException {
         String trimmedPassword = (password != null) ? password.trim() : null;
-        if (trimmedPassword == null || trimmedPassword.length() < 8 || !trimmedPassword.matches("^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\\d).+$")) {
-            throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự, 1 chữ cái in hoa, 1 ký tự đặc biệt và 1 số.");
+        if (trimmedPassword == null || trimmedPassword.isEmpty()) {
+            throw new IllegalArgumentException("Mật khẩu không được để trống.");
         }
-        if (trimmedPassword.length() > 20) throw new IllegalArgumentException("Mật khẩu không được vượt quá 20 ký tự.");
+        if (trimmedPassword.length() <= 8) {
+            throw new IllegalArgumentException("Mật khẩu phải có trên 8 ký tự.");
+        }
+        if (!trimmedPassword.matches("^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\\d).+$")) {
+            throw new IllegalArgumentException("Mật khẩu phải chứa ít nhất 1 chữ cái in hoa, 1 ký tự đặc biệt (!@#$%^&*) và 1 số.");
+        }
     }
 
     private void validateDob(Date dob) throws IllegalArgumentException {
@@ -420,7 +422,6 @@ public class UserService {
         return userDAO.getUsersByRole((role != null) ? role.trim() : "");
     }
     
-
     public Map<Integer, String> getEmployeeNameMap() throws SQLException {
         Map<Integer, String> employeeMap = new HashMap<>();
         List<Users> employees = userDAO.getAllEmployee();
@@ -431,6 +432,4 @@ public class UserService {
         }
         return employeeMap;
     }
- 
-
 }
