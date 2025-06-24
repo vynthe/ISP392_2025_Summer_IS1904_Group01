@@ -448,7 +448,6 @@
                            required>
                     <i class="fas fa-phone input-icon"></i>
                     <label for="phoneNumber" class="floating-label">Số điện thoại *</label>
-                    <div class="input-hint">Định dạng: 10 chữ số (VD: 0987654321)</div>
                 </div>
 
                 <!-- Email -->
@@ -460,7 +459,6 @@
                            placeholder=" ">
                     <i class="fas fa-envelope input-icon"></i>
                     <label for="email" class="floating-label">Email</label>
-                    <div class="input-hint">Tùy chọn - Phải có đuôi @gmail.com</div>
                 </div>
 
                 <!-- Service Type -->
