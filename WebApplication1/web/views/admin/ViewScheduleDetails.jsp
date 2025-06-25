@@ -104,7 +104,7 @@
             </c:if>
 
             <div class="d-flex justify-content-between mb-3">
-                <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet" class="btn btn-primary">Back to Schedules</a>
+                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${param.page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-primary">Back to Schedules</a>
             </div>
             <h2 class="text-center mb-4">Chi Tiết Lịch Trình</h2>
 

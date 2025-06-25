@@ -273,7 +273,7 @@
                                         </td>
                                         <td>${schedule["status"]}</td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-info btn-sm">
+                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleID=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                             <a href="${pageContext.request.contextPath}/views/admin/UpdateSchedule.jsp?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-warning btn-sm ms-2">

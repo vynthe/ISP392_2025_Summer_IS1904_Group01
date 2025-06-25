@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,12 +92,74 @@ public class ViewSchedulesServlet extends HttpServlet {
                 } else {
                     schedules = scheduleService.getAllSchedules();
                 }
+                // Sắp xếp danh sách theo role với thứ tự Doctor > Patient > Receptionist
+                if (schedules != null) {
+                    Collections.sort(schedules, new Comparator<Map<String, Object>>() {
+                        @Override
+                        public int compare(Map<String, Object> s1, Map<String, Object> s2) {
+                            String role1 = (String) s1.getOrDefault("role", "");
+                            String role2 = (String) s2.getOrDefault("role", "");
+                            // Ép kiểu và kiểm tra null an toàn
+                            role1 = role1 != null ? role1 : "";
+                            role2 = role2 != null ? role2 : "";
+                            // Định nghĩa thứ tự ưu tiên: Doctor (0), Patient (1), Receptionist (2)
+                            int order1 = getRoleOrder(role1.toLowerCase());
+                            int order2 = getRoleOrder(role2.toLowerCase());
+                            return Integer.compare(order1, order2);
+                        }
+
+                        private int getRoleOrder(String role) {
+                            if (role == null) return 3; // Xử lý null
+                            switch (role.toLowerCase()) {
+                                case "doctor":
+                                    return 0;
+                                case "patient":
+                                    return 1;
+                                case "receptionist":
+                                    return 2;
+                                default:
+                                    return 3; // Các role khác sẽ đứng cuối
+                            }
+                        }
+                    });
+                }
                 request.setAttribute("schedules", schedules);
                 request.setAttribute("employeeMap", employeeMap);
                 request.getRequestDispatcher("/views/admin/ViewSchedules.jsp").forward(request, response);
             } else if ("doctor".equalsIgnoreCase(role) || "nurse".equalsIgnoreCase(role)) {
                 List<Schedules> tempSchedules = scheduleService.getSchedulesByRoleAndUserId(role, entityId);
                 schedules = convertSchedulesToMap(tempSchedules, employeeMap);
+                // Sắp xếp danh sách theo role với thứ tự Doctor > Patient > Receptionist
+                if (schedules != null) {
+                    Collections.sort(schedules, new Comparator<Map<String, Object>>() {
+                        @Override
+                        public int compare(Map<String, Object> s1, Map<String, Object> s2) {
+                            String role1 = (String) s1.getOrDefault("role", "");
+                            String role2 = (String) s2.getOrDefault("role", "");
+                            // Ép kiểu và kiểm tra null an toàn
+                            role1 = role1 != null ? role1 : "";
+                            role2 = role2 != null ? role2 : "";
+                            // Định nghĩa thứ tự ưu tiên: Doctor (0), Patient (1), Receptionist (2)
+                            int order1 = getRoleOrder(role1.toLowerCase());
+                            int order2 = getRoleOrder(role2.toLowerCase());
+                            return Integer.compare(order1, order2);
+                        }
+
+                        private int getRoleOrder(String role) {
+                            if (role == null) return 3; // Xử lý null
+                            switch (role.toLowerCase()) {
+                                case "doctor":
+                                    return 0;
+                                case "patient":
+                                    return 1;
+                                case "receptionist":
+                                    return 2;
+                                default:
+                                    return 3; // Các role khác sẽ đứng cuối
+                            }
+                        }
+                    });
+                }
                 request.setAttribute("schedules", schedules);
                 request.setAttribute("employeeMap", employeeMap);
                 request.getRequestDispatcher("/views/user/DoctorNurse/ViewScheduleEmployee.jsp").forward(request, response);

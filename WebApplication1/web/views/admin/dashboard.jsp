@@ -110,6 +110,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
+            align-items: stretch; /* Đảm bảo các thẻ giãn đều chiều cao */
         }
         
         .action-card {
@@ -122,6 +123,10 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Phân bố đều nội dung */
+            min-height: 300px; /* Đặt chiều cao tối thiểu để cân bằng */
         }
         
         .action-card::before {
