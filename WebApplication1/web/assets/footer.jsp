@@ -7,10 +7,10 @@
                 <h3><i class="fas fa-rocket"></i> Về Nha Khoa PDC</h3>
                 <p>Chúng tôi là phòng khám nha khoa hàng đầu, cam kết mang lại nụ cười khỏe mạnh và tự tin với công nghệ tiên tiến và đội ngũ chuyên gia giàu kinh nghiệm.</p>
                 <div class="contact-info">
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường Lê Lợi, Quận 1, TP. HCM, Việt Nam</p>
-                    <p><i class="fas fa-phone"></i> Hotline: +84 123 456 789 (24/7)</p>
-                    <p><i class="fas fa-clock"></i> Thời gian: 8:00 - 20:00 (Thứ 2 - Chủ Nhật)</p>
-                    <p><i class="fas fa-envelope"></i> Email: info@nhakhoapdc.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Địa Chỉ: </p>
+                    <p><i class="fas fa-phone"></i> Hotline:</p>
+                    <p><i class="fas fa-clock"></i> Thời gian: 7:30 - 17:00 (Thứ 2 - Thứ 7)</p>
+                    <p><i class="fas fa-envelope"></i> Email:</p>
                 </div>
                 <div class="social-links">
                     <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
