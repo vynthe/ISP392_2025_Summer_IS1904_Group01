@@ -88,8 +88,11 @@ public class UserService {
         String trimmedPhone = (phone != null) ? phone.trim() : null;
 
         if (trimmedPhone != null && !trimmedPhone.isEmpty()) {
-            if (!trimmedPhone.matches("^[1-9]\\d{9}$")) {
-                throw new IllegalArgumentException("Số điện thoại phải là 10 chữ số và bắt đầu bằng số từ 1 đến 9.");
+            if (!trimmedPhone.matches("^\\d{10}$")) {
+                throw new IllegalArgumentException("Số điện thoại phải có đủ 10 chữ số.");
+            }
+            if (!trimmedPhone.startsWith("0")) {
+                throw new IllegalArgumentException("Số điện thoại phải bắt đầu bằng số 0.");
             }
         }
     }
@@ -432,10 +435,12 @@ public class UserService {
         }
         return employeeMap;
     }
+
     public int countPatients() throws SQLException {
-    return userDAO.countPatients();
-}
+        return userDAO.countPatients();
+    }
+
     public int countEmployee() throws SQLException {
-    return userDAO.countEmployee();
-}
+        return userDAO.countEmployee();
+    }
 }
