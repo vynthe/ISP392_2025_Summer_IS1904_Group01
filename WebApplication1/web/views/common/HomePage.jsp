@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -19,6 +19,8 @@
             line-height: 1.6;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Header */
@@ -407,110 +409,6 @@
             color: inherit;
         }
 
-        /* Footer */
-        footer {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            text-align: center;
-            padding: 40px 0;
-            position: relative;
-        }
-
-        footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .footer-info {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .footer-contact {
-            display: flex;
-            gap: 20px;
-            font-size: 14px;
-        }
-
-        .footer-contact span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 15px;
-        }
-
-        .footer-social a {
-            color: white;
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .footer-social a:hover {
-            color: #ffd700;
-            transform: translateY(-2px);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 15px;
-            }
-
-            .banner h2 {
-                font-size: 32px;
-            }
-
-            .banner p,
-            .banner .slogan {
-                font-size: 16px;
-            }
-
-            .cta-button {
-                padding: 15px 35px;
-                font-size: 18px;
-            }
-
-            .services-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-info {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
-
         /* Loading Animation */
         .loading {
             position: fixed;
@@ -544,6 +442,39 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .banner h2 {
+                font-size: 32px;
+            }
+
+            .banner p,
+            .banner .slogan {
+                font-size: 16px;
+            }
+
+            .cta-button {
+                padding: 15px 35px;
+                font-size: 18px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
         }
     </style>
 </head>
@@ -688,30 +619,8 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <div>
-                        <strong>© 2025 Nha Khoa PDC</strong>
-                        <p>Nụ cười tự tin, sức khỏe hoàn hảo</p>
-                    </div>
-                    <div class="footer-contact">
-                        <span><i class="fas fa-phone"></i> 1900-1234</span>
-                        <span><i class="fas fa-envelope"></i> info@nhakhoapdc.com</span>
-                        <span><i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam</span>
-                    </div>
-                </div>
-                <div class="footer-social">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                    <a href="#"><i class="fab fa-zalo"></i></a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Include Footer -->
+    <jsp:include page="/assets/footer.jsp" />
 
     <script>
         // Loading animation

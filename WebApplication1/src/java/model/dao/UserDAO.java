@@ -428,5 +428,26 @@ public class UserDAO {
         user.setUpdatedAt(rs.getDate("UpdatedAt"));
         return user;
     }
- 
+ public int countPatients() throws SQLException {
+    String sql = "SELECT COUNT(*) FROM Users WHERE Role = 'patient'";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+        return 0;
+    }
+ }
+ public int countEmployee() throws SQLException {
+    String sql = "SELECT COUNT(*) FROM Users WHERE Role IN ('doctor', 'nurse', 'receptionist')";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+        return 0;
+    }
+ }
 }

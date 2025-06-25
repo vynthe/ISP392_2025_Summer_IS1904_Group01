@@ -17,7 +17,7 @@ public class UserService {
 
     public UserService() {
         this.userDAO = new UserDAO();
-    }
+    }  
 
     public boolean registerUser(String username, String email, String password, String role, String phone) throws SQLException {
         username = (username != null) ? username.trim() : null;
@@ -88,8 +88,8 @@ public class UserService {
         String trimmedPhone = (phone != null) ? phone.trim() : null;
 
         if (trimmedPhone != null && !trimmedPhone.isEmpty()) {
-            if (!trimmedPhone.matches("^\\d{10}$")) {
-                throw new IllegalArgumentException("Số điện thoại phải là 10 chữ số.");
+            if (!trimmedPhone.matches("^[1-9]\\d{9}$")) {
+                throw new IllegalArgumentException("Số điện thoại phải là 10 chữ số và bắt đầu bằng số từ 1 đến 9.");
             }
         }
     }
@@ -432,4 +432,10 @@ public class UserService {
         }
         return employeeMap;
     }
+    public int countPatients() throws SQLException {
+    return userDAO.countPatients();
+}
+    public int countEmployee() throws SQLException {
+    return userDAO.countEmployee();
+}
 }

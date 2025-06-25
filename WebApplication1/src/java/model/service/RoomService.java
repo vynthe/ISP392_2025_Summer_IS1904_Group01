@@ -120,5 +120,7 @@ public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
       public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
     return roomsDAO.getRoomByID(userId, role);  // phương thức này bạn đã viết rồi
 }
-
+  public int countAvailableRooms() throws SQLException {
+        return roomsDAO.countAvailableRooms();
+    }
 }

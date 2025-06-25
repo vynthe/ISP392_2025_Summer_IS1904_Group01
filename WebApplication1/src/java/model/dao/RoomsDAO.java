@@ -287,4 +287,18 @@ public List<Rooms> getRoomByID(int userId, String role) throws SQLException {
         }
         return roomIds;
     }
+     public int countAvailableRooms() throws SQLException {
+    String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'Available'";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+        return 0;
+    } catch (SQLException e) {
+        System.err.println("SQLException in countAvailableRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+        throw e;
+    }
+     }
 }

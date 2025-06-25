@@ -1,4 +1,3 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
@@ -16,6 +15,7 @@
             --error-red: #ff4444;
             --white: #ffffff;
             --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --success-green: #28a745;
         }
 
         body {
@@ -131,14 +131,45 @@
             font-size: 16px;
         }
 
-        .action-button {
-            color: var(--primary-purple);
-            cursor: pointer;
-            text-decoration: none;
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .action-button:hover {
-            text-decoration: underline;
+        .action-button {
+            cursor: pointer;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .view-btn {
+            color: var(--primary-purple);
+            background-color: rgba(107, 72, 255, 0.1);
+            border: 1px solid rgba(107, 72, 255, 0.2);
+        }
+
+        .view-btn:hover {
+            background-color: rgba(107, 72, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .import-btn {
+            color: var(--success-green);
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .import-btn:hover {
+            background-color: rgba(40, 167, 69, 0.2);
+            transform: translateY(-1px);
         }
 
         .pagination-container {
@@ -249,6 +280,19 @@
                 padding-left: 50%;
                 text-align: right;
             }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-end;
+            }
+            
+            .action-button {
+                width: auto;
+                min-width: 120px;
+                justify-content: center;
+            }
+            
             td:before {
                 content: attr(data-label);
                 position: absolute;
@@ -339,7 +383,10 @@
                             <td data-label="Dạng Bào Chế">${medication.dosageForm}</td>
                             <td data-label="Nhà Sản Xuất">${medication.manufacturer}</td>
                             <td data-label="Hành Động">
-                                <a href="${pageContext.request.contextPath}/ViewMedicationDetailsServlet?id=${medication.medicationID}" class="action-button">🔍 Xem chi tiết</a>
+                                <div class="action-buttons">
+                                    <a href="${pageContext.request.contextPath}/ViewMedicationDetailsServlet?id=${medication.medicationID}" class="action-button view-btn">🔍 Xem chi tiết</a>
+                                    <a href="${pageContext.request.contextPath}/MedicationImportServlet?id=${medication.medicationID}" class="action-button import-btn">📦 Nhập</a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
