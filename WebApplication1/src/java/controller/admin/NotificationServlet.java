@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+// import java.time.LocalDateTime; // Comment vì chưa dùng
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class NotificationServlet extends HttpServlet {
                 Map<String, Object> data = new HashMap<>();
                 data.put("notificationCount", notificationCount);
                 data.put("notifications", notifications);
-                data.put("currentTime", new Timestamp(System.currentTimeMillis())); // Add current time for reference
+                data.put("currentTime", new Timestamp(System.currentTimeMillis()));
 
                 response.setContentType("application/json");
                 PrintWriter out = response.getWriter();
@@ -69,7 +70,7 @@ public class NotificationServlet extends HttpServlet {
             int notificationCount = notificationService.getUnreadNotificationCountForAdmin(adminId);
             request.setAttribute("notifications", notifications);
             request.setAttribute("notificationCount", notificationCount);
-            request.setAttribute("currentTime", new Timestamp(System.currentTimeMillis())); // Add current time
+            request.setAttribute("currentTime", new Timestamp(System.currentTimeMillis()));
             request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi khi lấy danh sách thông báo: " + e.getMessage());
@@ -123,12 +124,14 @@ public class NotificationServlet extends HttpServlet {
 
             if ("accept".equals(action)) {
                 updateAppointmentStatus(appointmentId, "Approved");
-                sendResponseNotification(notification.getSenderID(), "Appointment Approved", 
-                    "Lịch hẹn của bạn đã được chấp nhận vào " + new Timestamp(System.currentTimeMillis()), adminId);
+                // Tạm thời comment vì chưa cần gửi phản hồi
+                // sendResponseNotification(notification.getSenderID(), "Appointment Approved", 
+                //     "Lịch hẹn của bạn đã được chấp nhận vào " + new Timestamp(System.currentTimeMillis()), adminId);
             } else if ("reject".equals(action)) {
                 updateAppointmentStatus(appointmentId, "Rejected");
-                sendResponseNotification(notification.getSenderID(), "Appointment Rejected", 
-                    "Lịch hẹn của bạn đã bị từ chối vào " + new Timestamp(System.currentTimeMillis()), adminId);
+                // Tạm thời comment vì chưa cần gửi phản hồi
+                // sendResponseNotification(notification.getSenderID(), "Appointment Rejected", 
+                //     "Lịch hẹn của bạn đã bị từ chối vào " + new Timestamp(System.currentTimeMillis()), adminId);
             }
 
             notificationService.markNotificationAsRead(notificationId);
@@ -166,13 +169,24 @@ public class NotificationServlet extends HttpServlet {
         }
     }
 
+    // Comment toàn bộ hàm này vì chưa cần sử dụng (sẽ dùng sau khi làm email)
+    /*
     private void sendResponseNotification(int userId, String title, String message, int adminId) throws SQLException {
         Notification responseNotification = new Notification(
-            adminId, "Admin", userId, "Patient", title, message, new Timestamp(System.currentTimeMillis())
+            0,
+            adminId,
+            "Admin",
+            userId,
+            "Patient", 
+            title,
+            message,
+            false,
+            LocalDateTime.now()
         );
         NotificationService notificationService = new NotificationService();
         notificationService.createNotification(responseNotification);
     }
+    */
 
     private void handleError(HttpServletRequest request, HttpServletResponse response, String errorMessage,
                             String notificationId, String action, int adminId) throws ServletException, IOException {
@@ -185,7 +199,7 @@ public class NotificationServlet extends HttpServlet {
             int notificationCount = notificationService.getUnreadNotificationCountForAdmin(adminId);
             request.setAttribute("notifications", notifications);
             request.setAttribute("notificationCount", notificationCount);
-            request.setAttribute("currentTime", new Timestamp(System.currentTimeMillis())); // Add current time
+            request.setAttribute("currentTime", new Timestamp(System.currentTimeMillis()));
         } catch (Exception e) {
             request.setAttribute("notifications", null);
         }

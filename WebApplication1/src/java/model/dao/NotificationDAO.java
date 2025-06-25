@@ -12,7 +12,12 @@ public class NotificationDAO {
         String sql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, notification.getSenderID());
+            // Handle nullable SenderID
+            if (notification.getSenderID() == null) {
+                stmt.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                stmt.setInt(1, notification.getSenderID());
+            }
             stmt.setString(2, notification.getSenderRole());
             stmt.setInt(3, notification.getReceiverID());
             stmt.setString(4, notification.getReceiverRole());
@@ -20,13 +25,17 @@ public class NotificationDAO {
             stmt.setString(6, notification.getMessage());
             stmt.setBoolean(7, notification.isRead());
             stmt.setTimestamp(8, Timestamp.valueOf(notification.getCreatedAt()));
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Inserted notification: " + notification.getTitle() + ", Rows affected: " + rowsAffected);
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     notification.setNotificationID(generatedKeys.getInt(1));
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("SQL Error inserting notification: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -40,7 +49,12 @@ public class NotificationDAO {
                 while (rs.next()) {
                     Notification notification = new Notification();
                     notification.setNotificationID(rs.getInt("NotificationID"));
-                    notification.setSenderID(rs.getInt("SenderID"));
+                    // Handle nullable SenderID
+                    if (rs.getObject("SenderID") == null) {
+                        notification.setSenderID(null);
+                    } else {
+                        notification.setSenderID(rs.getInt("SenderID"));
+                    }
                     notification.setSenderRole(rs.getString("SenderRole"));
                     notification.setReceiverID(rs.getInt("ReceiverID"));
                     notification.setReceiverRole(rs.getString("ReceiverRole"));
@@ -51,6 +65,9 @@ public class NotificationDAO {
                     notifications.add(notification);
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("SQL Error retrieving notifications for AdminID " + adminId + ": " + e.getMessage());
+            throw e;
         }
         return notifications;
     }
@@ -65,6 +82,9 @@ public class NotificationDAO {
                     return rs.getInt(1);
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("SQL Error counting unread notifications for AdminID " + adminId + ": " + e.getMessage());
+            throw e;
         }
         return 0;
     }
@@ -78,7 +98,12 @@ public class NotificationDAO {
                 if (rs.next()) {
                     Notification notification = new Notification();
                     notification.setNotificationID(rs.getInt("NotificationID"));
-                    notification.setSenderID(rs.getInt("SenderID"));
+                    // Handle nullable SenderID
+                    if (rs.getObject("SenderID") == null) {
+                        notification.setSenderID(null);
+                    } else {
+                        notification.setSenderID(rs.getInt("SenderID"));
+                    }
                     notification.setSenderRole(rs.getString("SenderRole"));
                     notification.setReceiverID(rs.getInt("ReceiverID"));
                     notification.setReceiverRole(rs.getString("ReceiverRole"));
@@ -89,6 +114,9 @@ public class NotificationDAO {
                     return notification;
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("SQL Error retrieving notification ID " + notificationId + ": " + e.getMessage());
+            throw e;
         }
         return null;
     }
@@ -98,7 +126,12 @@ public class NotificationDAO {
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, notificationId);
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Marked notification ID " + notificationId + " as read, Rows affected: " + rowsAffected);
+        } catch (SQLException e) {
+            System.err.println("SQL Error marking notification ID " + notificationId + " as read: " + e.getMessage());
+            throw e;
         }
     }
+    
 }

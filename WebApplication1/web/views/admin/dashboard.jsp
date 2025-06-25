@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page import="model.service.UserService" %>
 <%@ page import="model.service.RoomService" %>
 <%@ page import="java.sql.SQLException" %>
@@ -499,7 +500,7 @@
                 <div class="notification-icon relative" id="notificationContainer">
                     <a href="#" id="notificationBell">
                         <i class="fas fa-bell"></i>
-                        <c:if test="${notificationCount > 0}">
+                        <c:if test="${not empty notificationCount && notificationCount > 0}">
                             <span id="notificationBadge" class="notification-badge">${notificationCount}</span>
                         </c:if>
                     </a>
@@ -512,23 +513,25 @@
                         <div id="notificationList">
                             <c:if test="${not empty notifications}">
                                 <c:forEach var="notification" items="${notifications}">
-                                    <div class="notification-item">
-                                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="Avatar" class="rounded-full" width="32" height="32">
-                                        <div class="notification-content">
-                                            <p class="name font-bold">${notification.senderRole}</p>
-                                            <p>${notification.message}</p>
-                                            <p class="time text-sm text-gray-500">
-                                            <fmt:formatDate value="${notification.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                            </p>
+                                    <c:if test="${not empty notification}">
+                                        <div class="notification-item">
+                                            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="Avatar" class="rounded-full" width="32" height="32">
+                                            <div class="notification-content">
+                                                <p class="name font-bold">${notification.senderRole != null ? notification.senderRole : 'Unknown'}</p>
+                                                <p>${notification.message != null ? notification.message : 'No message'}</p>
+                                                <p class="time text-sm text-gray-500">
+                                                    <fmt:formatDate value="${notification.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                </p>
+                                            </div>
+                                            <div class="notification-actions">
+                                                <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
+                                                    <input type="hidden" name="notificationId" value="${notification.notificationID != null ? notification.notificationID : ''}">
+                                                    <button type="submit" name="action" value="accept" class="action-btn accept-btn">Accept</button>
+                                                    <button type="submit" name="action" value="reject" class="action-btn reject-btn">Reject</button>
+                                                </form>
+                                            </div>
                                         </div>
-                                        <div class="notification-actions">
-                                            <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
-                                                <input type="hidden" name="notificationId" value="${notification.notificationID}">
-                                                <button type="submit" name="action" value="accept" class="action-btn accept-btn">Accept</button>
-                                                <button type="submit" name="action" value="reject" class="action-btn reject-btn">Reject</button>
-                                            </form>
-                                        </div>
-                                    </div>
+                                    </c:if>
                                 </c:forEach>
                             </c:if>
                             <c:if test="${empty notifications}">
@@ -539,7 +542,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- User Avatar -->
                 <div class="user-avatar" id="userMenuBtn">
@@ -779,46 +781,84 @@
         
         // AJAX to update notification count and list
         function updateNotifications() {
+            // Kiểm tra kết nối mạng
+            if (!navigator.onLine) {
+                if (notificationBadge) notificationBadge.style.display = 'none';
+                if (notificationList) notificationList.innerHTML = '<div class="notification-item"><p>Không có kết nối mạng. Vui lòng kiểm tra máy chủ localhost.</p></div>';
+                console.warn('Offline mode detected');
+                return;
+            }
+
             fetch('${pageContext.request.contextPath}/NotificationCountServlet', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Máy chủ không phản hồi: ' + response.statusText + ' (' + response.status + ')');
+                return response.json();
+            })
             .then(data => {
-                const count = data.count;
-                notificationBadge.textContent = count;
-                notificationBadge.style.display = count > 0 ? 'block' : 'none';
+                console.log('Fetched data:', data); // Debug log
+                if (notificationBadge) {
+                    const count = data.count || 0;
+                    notificationBadge.textContent = count;
+                    notificationBadge.style.display = count > 0 ? 'block' : 'none';
+                }
 
-                // Update notification list with new bookings
-                if (data.notifications && data.notifications.length > 0) {
-                    notificationList.innerHTML = '';
-                    data.notifications.forEach(notification => {
-                        const item = document.createElement('div');
-                        item.className = 'notification-item';
-                        item.innerHTML = `
-                            <img src="${notification.avatarUrl || 'default-avatar.png'}" alt="Avatar" class="rounded-full">
-                            <div class="notification-content">
-                                <p class="name">${notification.name || 'Unknown'}</p>
-                                <p>${notification.message || 'Đã đặt lịch thành công!'}</p>
-                                <p class="time">${notification.time || 'Vừa xong'} giờ</p>
-                            </div>
-                            <div class="notification-actions">
-                                <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
-                                    <input type="hidden" name="notificationId" value="${notification.id || ''}">
-                                    <button type="submit" name="action" value="accept" class="action-btn accept-btn">Chấp nhận</button>
-                                    <button type="submit" name="action" value="reject" class="action-btn reject-btn">Từ chối</button>
-                                </form>
-                            </div>
-                        `;
-                        notificationList.appendChild(item);
-                    });
-                } else {
-                    notificationList.innerHTML = '<div class="notification-item"><p>Không có thông báo nào.</p></div>';
+                if (notificationList) {
+                    if (data.notifications && Array.isArray(data.notifications) && data.notifications.length > 0) {
+                        notificationList.innerHTML = '';
+                        data.notifications.forEach(notification => {
+                            console.log('Processing notification:', notification); // Debug log
+                            const item = document.createElement('div');
+                            item.className = 'notification-item';
+                            let formattedDate = 'Vừa xong';
+                            if (notification.createdAt) {
+                                try {
+                                    const date = new Date(notification.createdAt);
+                                    formattedDate = date.toLocaleString('vi-VN', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    });
+                                } catch (e) {
+                                    console.error('Date formatting error:', e);
+                                    formattedDate = 'Ngày không hợp lệ';
+                                }
+                            }
+                            item.innerHTML = `
+                                <img src="${notification.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/1077/1077063.png'}" alt="Avatar" class="rounded-full" width="32" height="32">
+                                <div class="notification-content">
+                                    <p class="name">${notification.senderRole || 'Unknown'}</p>
+                                    <p>${notification.message || 'Đã đặt lịch thành công!'}</p>
+                                    <p class="time">${formattedDate}</p>
+                                </div>
+                                <div class="notification-actions">
+                                    <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
+                                        <input type="hidden" name="notificationId" value="${notification.notificationID || ''}">
+                                        <button type="submit" name="action" value="accept" class="action-btn accept-btn">Chấp nhận</button>
+                                        <button type="submit" name="action" value="reject" class="action-btn reject-btn">Từ chối</button>
+                                    </form>
+                                </div>
+                            `;
+                            notificationList.appendChild(item);
+                        });
+                    } else {
+                        notificationList.innerHTML = '<div class="notification-item"><p>Không có thông báo nào.</p></div>';
+                    }
                 }
             })
-            .catch(error => console.error('Error fetching notifications:', error));
+            .catch(error => {
+                console.error('Error fetching notifications:', error);
+                if (notificationList) {
+                    notificationList.innerHTML = '<div class="notification-item"><p>Lỗi khi tải thông báo: ' + error.message + '. Vui lòng khởi động máy chủ hoặc kiểm tra servlet.</p></div>';
+                }
+                if (notificationBadge) notificationBadge.style.display = 'none';
+            });
         }
         
         // Update every 30 seconds
