@@ -266,6 +266,158 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
         
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 12px;
+        }
+        
+        .notification-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .notification-menu {
+            display: none;
+            position: absolute;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            right: 0;
+            top: 60px;
+            min-width: 300px;
+            z-index: 10;
+            padding: 8px;
+            color: #fff;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .notification-menu.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification-header {
+            padding: 8px 12px;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+        
+        .notification-options {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 12px;
+            margin-bottom: 8px;
+        }
+        
+        .notification-options a {
+            color: #1e90ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .notification-options a:hover {
+            text-decoration: underline;
+        }
+        
+        .notification-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        
+        .notification-content {
+            flex-grow: 1;
+        }
+        
+        .notification-content p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .notification-content .name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .notification-content .time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .accept-btn {
+            background: #43e97b;
+            color: #fff;
+        }
+        
+        .accept-btn:hover {
+            background: #38d76b;
+        }
+        
+        .reject-btn {
+            background: #ef4444;
+            color: #fff;
+        }
+        
+        .reject-btn:hover {
+            background: #dc2626;
+        }
+        
         .floating-shapes {
             position: absolute;
             top: 0;
@@ -342,7 +494,54 @@
                 </div>
             </div>
             
-            <div class="relative">
+            <div class="relative flex items-center">
+                <!-- Notification Bell -->
+                <div class="notification-icon relative" id="notificationContainer">
+                    <a href="#" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <c:if test="${notificationCount > 0}">
+                            <span id="notificationBadge" class="notification-badge">${notificationCount}</span>
+                        </c:if>
+                    </a>
+                    <div id="notificationMenu" class="notification-menu">
+                        <div class="notification-header">Thông báo</div>
+                        <div class="notification-options">
+                            <a href="#">Tất Cả</a>
+                            <a href="#">Chưa đọc</a>
+                        </div>
+                        <div id="notificationList">
+                            <c:if test="${not empty notifications}">
+                                <c:forEach var="notification" items="${notifications}">
+                                    <div class="notification-item">
+                                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="Avatar" class="rounded-full" width="32" height="32">
+                                        <div class="notification-content">
+                                            <p class="name font-bold">${notification.senderRole}</p>
+                                            <p>${notification.message}</p>
+                                            <p class="time text-sm text-gray-500">
+                                            <fmt:formatDate value="${notification.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                            </p>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
+                                                <input type="hidden" name="notificationId" value="${notification.notificationID}">
+                                                <button type="submit" name="action" value="accept" class="action-btn accept-btn">Accept</button>
+                                                <button type="submit" name="action" value="reject" class="action-btn reject-btn">Reject</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${empty notifications}">
+                                <div class="notification-item">
+                                    <p>Không có thông báo nào.</p>
+                                </div>
+                            </c:if>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- User Avatar -->
                 <div class="user-avatar" id="userMenuBtn">
                     <i class="fas fa-user"></i>
                 </div>
@@ -540,10 +739,24 @@
             userMenu.classList.toggle('hidden');
         });
         
-        // Close menu when clicking outside
+        // Notification menu toggle with improved animation
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationMenu = document.getElementById('notificationMenu');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        
+        notificationBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationMenu.classList.toggle('active');
+        });
+        
+        // Close menus when clicking outside
         document.addEventListener('click', function(event) {
             if (!userMenuBtn.contains(event.target) && !userMenu.contains(event.target)) {
                 userMenu.classList.add('hidden');
+            }
+            if (!notificationBell.contains(event.target) && !notificationMenu.contains(event.target)) {
+                notificationMenu.classList.remove('active');
             }
         });
         
@@ -563,6 +776,54 @@
                 }, index * 100);
             });
         });
+        
+        // AJAX to update notification count and list
+        function updateNotifications() {
+            fetch('${pageContext.request.contextPath}/NotificationCountServlet', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const count = data.count;
+                notificationBadge.textContent = count;
+                notificationBadge.style.display = count > 0 ? 'block' : 'none';
+
+                // Update notification list with new bookings
+                if (data.notifications && data.notifications.length > 0) {
+                    notificationList.innerHTML = '';
+                    data.notifications.forEach(notification => {
+                        const item = document.createElement('div');
+                        item.className = 'notification-item';
+                        item.innerHTML = `
+                            <img src="${notification.avatarUrl || 'default-avatar.png'}" alt="Avatar" class="rounded-full">
+                            <div class="notification-content">
+                                <p class="name">${notification.name || 'Unknown'}</p>
+                                <p>${notification.message || 'Đã đặt lịch thành công!'}</p>
+                                <p class="time">${notification.time || 'Vừa xong'} giờ</p>
+                            </div>
+                            <div class="notification-actions">
+                                <form method="post" action="${pageContext.request.contextPath}/NotificationServlet" style="display: inline;">
+                                    <input type="hidden" name="notificationId" value="${notification.id || ''}">
+                                    <button type="submit" name="action" value="accept" class="action-btn accept-btn">Chấp nhận</button>
+                                    <button type="submit" name="action" value="reject" class="action-btn reject-btn">Từ chối</button>
+                                </form>
+                            </div>
+                        `;
+                        notificationList.appendChild(item);
+                    });
+                } else {
+                    notificationList.innerHTML = '<div class="notification-item"><p>Không có thông báo nào.</p></div>';
+                }
+            })
+            .catch(error => console.error('Error fetching notifications:', error));
+        }
+        
+        // Update every 30 seconds
+        setInterval(updateNotifications, 30000);
+        updateNotifications(); // Initial call
     </script>
 </body>
 </html>
