@@ -10,15 +10,16 @@ import model.service.RoomService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @WebServlet(name = "ViewRoomDetailServlet", urlPatterns = {"/ViewRoomDetailServlet"})
 public class ViewRoomDetailServlet extends HttpServlet {
 
-    private RoomService userService;
+    private RoomService roomService;
 
     @Override
     public void init() throws ServletException {
-        userService = new RoomService();
+        roomService = new RoomService();
     }
 
     @Override
@@ -33,9 +34,20 @@ public class ViewRoomDetailServlet extends HttpServlet {
 
         try {
             int roomID = Integer.parseInt(roomIDParam);
-            Rooms room = userService.getRoomByID(roomID);
+            Rooms room = roomService.getRoomByID(roomID);
             if (room != null) {
                 request.setAttribute("room", room);
+                // Lấy tên bác sĩ và y tá
+                String doctorName = roomService.getDoctorNameByRoomId(roomID);
+                String nurseName = roomService.getNurseNameByRoomId(roomID);
+                request.setAttribute("doctorName", doctorName != null ? doctorName : "Chưa phân công");
+                request.setAttribute("nurseName", nurseName != null ? nurseName : "Chưa phân công");
+                // Lấy danh sách bệnh nhân
+                List<String> patients = roomService.getPatientsByRoomId(roomID);
+                request.setAttribute("patients", patients.isEmpty() ? List.of("Không có bệnh nhân") : patients);
+                // Lấy danh sách dịch vụ
+                List<String> services = roomService.getServicesByRoomId(roomID);
+                request.setAttribute("services", services.isEmpty() ? List.of("Không có dịch vụ") : services);
             } else {
                 request.setAttribute("error", "Không tìm thấy phòng với ID: " + roomID);
             }

@@ -66,11 +66,13 @@ public class ViewRoomServlet extends HttpServlet {
                 roomList = isSearching ? roomService.searchRooms(keyword) : roomService.getAllRooms();
                 request.setAttribute("roomList", roomList);
                 request.setAttribute("keyword", keyword);
+                request.setAttribute("isAdmin", "admin".equals(role));
                 request.getRequestDispatcher("/views/admin/ViewRoom.jsp").forward(request, response);
 
             } else if ("doctor".equals(role) || "nurse".equals(role)) {
                 roomList = roomService.getRoomsByUserIdAndRole(userId, role);
                 request.setAttribute("roomList", roomList);
+                request.setAttribute("isAdmin", false);
                 request.getRequestDispatcher("/views/user/DoctorNurse/viewRooms.jsp").forward(request, response);
 
             } else if ("patient".equals(role)) {

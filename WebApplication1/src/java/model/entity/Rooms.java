@@ -18,11 +18,29 @@ public class Rooms {
     private int createdBy;
     private Date createdAt;
     private Date updatedAt; 
+     private String doctorName; 
+    private String nurseName;
 
     public Rooms() {
     }
 
-    public Rooms(int roomID, String roomName, String description, int doctorID, int nurseID, String status, int createdBy, Date createdAt, Date updatedAt) {
+    public String getDoctorName() {
+        return doctorName;
+    }
+
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;
+    }
+
+    public String getNurseName() {
+        return nurseName;
+    }
+
+    public void setNurseName(String nurseName) {
+        this.nurseName = nurseName;
+    }
+
+    public Rooms(int roomID, String roomName, String description, int doctorID, int nurseID, String status, int createdBy, Date createdAt, Date updatedAt, String doctorName, String nurseName) {
         this.roomID = roomID;
         this.roomName = roomName;
         this.description = description;
@@ -32,6 +50,8 @@ public class Rooms {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.doctorName = doctorName;
+        this.nurseName = nurseName;
     }
 
     public int getRoomID() {

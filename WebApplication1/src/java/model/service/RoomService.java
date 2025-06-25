@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 import model.entity.Rooms;
 import model.dao.RoomsDAO;
+import model.entity.Services;
 
 /**
  *
@@ -117,9 +118,54 @@ public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
             throw e; 
         }
     }
-      public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
+ public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
     return roomsDAO.getRoomByID(userId, role);  // phương thức này bạn đã viết rồi
 }
+public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nurseID, int excludeRoomID) throws SQLException {
+        return roomsDAO.isDoctorOrNurseAssignedToAnotherRoom(doctorID, nurseID, excludeRoomID);
+    }
+
+    public List<String> getPatientsByRoomId(int roomId) throws SQLException {
+        return roomsDAO.getPatientsByRoomId(roomId);
+    }
+
+    public List<String> getServicesByRoomId(int roomId) throws SQLException {
+        return roomsDAO.getServicesByRoomId(roomId);
+    }
+    public String getDoctorNameByRoomId(int roomId) throws SQLException {
+        Rooms room = getRoomByID(roomId);
+        if (room != null) {
+            return roomsDAO.getUserFullNameById(room.getDoctorID()); 
+        }
+        return null;
+    }
+
+    public String getNurseNameByRoomId(int roomId) throws SQLException {
+        Rooms room = getRoomByID(roomId);
+        if (room != null) {
+            return roomsDAO.getUserFullNameById(room.getNurseID()); 
+        }
+        return null;
+    }
+    public boolean assignServiceToRoom(int roomId, int serviceId) {
+    return roomsDAO.addServiceToRoom(roomId, serviceId);
+}
+public List<Services> getServicesByRoom(int roomId) {
+        try {
+            return roomsDAO.getServicesByRoom(roomId);
+        } catch (SQLException e) {
+            System.err.println("Error in RoomService.getServicesByRoom: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+            return List.of(); // Trả về list rỗng nếu lỗi
+        }
+    }
+ public boolean assignServiceToRoom(int roomId, int serviceId, int createdBy) {
+        return roomsDAO.assignServiceToRoom(roomId, serviceId, createdBy);
+    }
+
+public List<Services> getAllActiveServices() throws SQLException {
+    return roomsDAO.getAllActiveServices();
+}
+
   public int countAvailableRooms() throws SQLException {
         return roomsDAO.countAvailableRooms();
     }
