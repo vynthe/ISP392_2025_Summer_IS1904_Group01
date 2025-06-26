@@ -18,11 +18,17 @@ public class Services_Service {
         servicesDAO = new ServicesDAO();
     }
 
-   public void addService(Services service, int adminId) throws SQLException, IllegalArgumentException {
+    public void addService(Services service, int adminId) throws SQLException, IllegalArgumentException {
         try {
             // Validate service
             if (service.getServiceName() == null || service.getServiceName().trim().isEmpty()) {
                 throw new IllegalArgumentException("Tên dịch vụ không được để trống.");
+            }
+            if (service.getServiceName().length() > 50) {
+                throw new IllegalArgumentException("Tên dịch vụ không được vượt quá 50 ký tự.");
+            }
+            if (service.getDescription() != null && service.getDescription().length() > 300) {
+                throw new IllegalArgumentException("Mô tả dịch vụ không được vượt quá 300 ký tự.");
             }
             if (service.getPrice() < 0) {
                 throw new IllegalArgumentException("Giá dịch vụ không hợp lệ");
@@ -56,6 +62,12 @@ public class Services_Service {
     public boolean updateService(Services service) throws SQLException, IllegalArgumentException {
         if (service.getServiceName() == null || service.getServiceName().trim().isEmpty()) {
             throw new IllegalArgumentException("Tên dịch vụ không được để trống.");
+        }
+        if (service.getServiceName().length() > 50) {
+            throw new IllegalArgumentException("Tên dịch vụ không được vượt quá 50 ký tự.");
+        }
+        if (service.getDescription() != null && service.getDescription().length() > 300) {
+            throw new IllegalArgumentException("Mô tả dịch vụ không được vượt quá 200 ký tự.");
         }
         if (service.getPrice() < 0) {
             throw new IllegalArgumentException("Giá dịch vụ không hợp lệ");
@@ -115,11 +127,13 @@ public class Services_Service {
     public boolean isServiceNameAndPriceExists(String serviceName, double price) throws SQLException {
         return servicesDAO.isServiceNameAndPriceExists(serviceName, price);
     }
+
     public List<Services> getServicesByCategory(String category) throws SQLException {
-    ServicesDAO servicesDAO = new ServicesDAO();
-    return servicesDAO.getServicesByCategory(category);
-}
+        ServicesDAO servicesDAO = new ServicesDAO();
+        return servicesDAO.getServicesByCategory(category);
+    }
+
     public List<Services> searchServices(String keyword, double minPrice, double maxPrice) throws SQLException {
-       return servicesDAO.searchServices(keyword, minPrice, maxPrice);
+        return servicesDAO.searchServices(keyword, minPrice, maxPrice);
     }
 }
