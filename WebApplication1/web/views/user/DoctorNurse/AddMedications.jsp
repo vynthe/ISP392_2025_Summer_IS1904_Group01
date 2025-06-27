@@ -462,11 +462,11 @@
                         <div class="input-wrapper">
                             <select id="dosageForm" name="dosageForm" class="form-select" required>
                                 <option value="" ${empty formData.dosageForm ? 'selected' : ''}>Chọn dạng bào chế...</option>
-                                <option value="Tablet" ${formData.dosageForm == 'Tablet' ? 'selected' : ''}>Viên nén</option>
-                                <option value="Capsule" ${formData.dosageForm == 'Capsule' ? 'selected' : ''}>Viên nang</option>
-                                <option value="Injection" ${formData.dosageForm == 'Injection' ? 'selected' : ''}>Tiêm</option>
-                                <option value="Syrup" ${formData.dosageForm == 'Syrup' ? 'selected' : ''}>Sirô</option>
-                                <option value="Cream" ${formData.dosageForm == 'Cream' ? 'selected' : ''}>Kem</option>
+                                <option value="Tablet" ${formData.dosageForm == 'Tablet' ? 'selected' : ''}>Tablet</option>
+                                <option value="Capsule" ${formData.dosageForm == 'Capsule' ? 'selected' : ''}>Capsule</option>
+                                <option value="Injection" ${formData.dosageForm == 'Injection' ? 'selected' : ''}>Injection</option>
+                                <option value="Syrup" ${formData.dosageForm == 'Syrup' ? 'selected' : ''}>Syrup</option>
+                                <option value="Cream" ${formData.dosageForm == 'Cream' ? 'selected' : ''}>Cream</option>
                             </select>
                             <span class="input-icon">🔬</span>
                         </div>
