@@ -749,13 +749,12 @@
                                                            title="Chỉnh sửa thông tin phòng">
                                                             <i class="fas fa-edit"></i> Sửa
                                                         </a>
-                                                        <a href="#" 
-                                                           class="btn-action btn-delete"
-                                                           title="Xóa phòng"
-                                                           data-room-id="${room.roomID}"
-                                                           data-room-name="${room.roomName}">
-                                                            <i class="fas fa-trash-alt"></i> Xóa
+                                                           <a href="${pageContext.request.contextPath}/DeleteRoomServlet?id=${room.roomID}" 
+                                                           class="btn-action btn-edit"
+                                                           title="Xóa thông tin phòng">
+                                                            <i class="fas fa-edit"></i> Xóa
                                                         </a>
+                                                        
                                                         <a href="${pageContext.request.contextPath}/AssignServiceToRoomServlet?roomId=${room.roomID}" 
                                                            class="btn-action btn-service"
                                                            title="Quản lý dịch vụ phòng">
