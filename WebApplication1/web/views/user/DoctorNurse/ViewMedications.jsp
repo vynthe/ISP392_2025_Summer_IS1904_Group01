@@ -759,7 +759,7 @@
                                                         <a href="${pageContext.request.contextPath}/MedicationImportServlet?id=${medication.medicationID}" 
                                                            class="action-btn btn-import">
                                                             <i class="fas fa-download"></i>
-                                                            Nhập kho
+                                                            Nhập thuốc 
                                                         </a>
                                                     </div>
                                                 </td>
