@@ -183,4 +183,44 @@ public class MedicationService {
             throw e;
         }
     }
+    public List<Medication> searchMedications(String keyword) throws SQLException {
+        return medicationDAO.searchMedications(keyword);
+    }
+    
+    // Search medications with pagination
+    public List<Medication> searchMedicationsPaginated(String keyword, int page, int pageSize) throws SQLException {
+        if (page < 1 || pageSize < 1) {
+            throw new IllegalArgumentException("Invalid page or pageSize.");
+        }
+        try {
+            return medicationDAO.searchMedicationsPaginated(keyword, page, pageSize);
+        } catch (SQLException e) {
+            System.err.println("SQLException in searchMedicationsPaginated: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+    
+    // Get total number of medications matching the keyword
+    public int getTotalSearchMedicationCount(String keyword) throws SQLException {
+        try {
+            return medicationDAO.getTotalSearchMedicationCount(keyword);
+        } catch (SQLException e) {
+            System.err.println("SQLException in getTotalSearchMedicationCount: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+   
+    // Tìm kiếm theo tên và dạng bào chế (có phân trang)
+public List<Medication> searchMedicationsByNameAndDosageForm(String nameKeyword, String dosageFormKeyword, int page, int pageSize) throws SQLException {
+    if (page < 1 || pageSize < 1) {
+        throw new IllegalArgumentException("Invalid page or pageSize.");
+    }
+    return medicationDAO.searchMedicationsByNameAndDosageForm(nameKeyword, dosageFormKeyword, page, pageSize);
+}
+
+// Đếm tổng số thuốc theo tên và dạng bào chế
+public int getTotalCountByNameAndDosageForm(String nameKeyword, String dosageFormKeyword) throws SQLException {
+    return medicationDAO.getTotalCountByNameAndDosageForm(nameKeyword, dosageFormKeyword);
+}
+
 }

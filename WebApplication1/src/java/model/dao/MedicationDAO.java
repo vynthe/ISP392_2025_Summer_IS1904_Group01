@@ -1,11 +1,7 @@
 package model.dao;
 
 import model.entity.Medication;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +14,6 @@ public class MedicationDAO {
         this.dbContext = DBContext.getInstance();
     }
 
-    // Add a new medication to the database
     public boolean addMedication(Medication medication) throws SQLException {
         if (medication == null) {
             throw new SQLException("Medication object cannot be null.");
@@ -50,31 +45,31 @@ public class MedicationDAO {
             }
             return affectedRows > 0;
         } catch (SQLException e) {
-            System.err.println("SQLException in addMedication: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in addMedication: " + e.getMessage());
             throw e;
         }
     }
 
-    // View all medications
     public List<Medication> getAllMedications() throws SQLException {
         List<Medication> medications = new ArrayList<>();
         String sql = "SELECT * FROM Medications WHERE status = 'Active'";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
-                Medication medication = mapResultSetToMedication(rs);
-                medications.add(medication);
+                medications.add(mapResultSetToMedication(rs));
             }
         } catch (SQLException e) {
-            System.err.println("SQLException in getAllMedications: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getAllMedications: " + e.getMessage());
             throw e;
         }
         return medications;
     }
 
-    // View a specific medication by ID
     public Medication getMedicationById(int medicationId) throws SQLException {
-        String sql = "SELECT * FROM Medications WHERE MedicationID = ? AND status = 'Active'"; // Thêm điều kiện status
+        String sql = "SELECT * FROM Medications WHERE MedicationID = ? AND status = 'Active'";
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, medicationId);
@@ -84,52 +79,146 @@ public class MedicationDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("SQLException in getMedicationById: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getMedicationById: " + e.getMessage());
             throw e;
         }
         return null;
     }
 
-    // Retrieve paginated list of medications
     public List<Medication> getMedicationsPaginated(int page, int pageSize) throws SQLException {
         List<Medication> medications = new ArrayList<>();
         String sql = "SELECT * FROM Medications WHERE status = 'Active' "
-                + "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                   + "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            int offset = (page - 1) * pageSize;
-            pstmt.setInt(1, offset);
+            pstmt.setInt(1, (page - 1) * pageSize);
             pstmt.setInt(2, pageSize);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    Medication medication = mapResultSetToMedication(rs);
-                    medications.add(medication);
+                    medications.add(mapResultSetToMedication(rs));
                 }
             }
         } catch (SQLException e) {
-            System.err.println("SQLException in getMedicationsPaginated: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getMedicationsPaginated: " + e.getMessage());
             throw e;
         }
         return medications;
     }
 
-    // Count total number of active medications
     public int getTotalMedicationCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM Medications WHERE status = 'Active'";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
-            System.err.println("SQLException in getTotalMedicationCount: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getTotalMedicationCount: " + e.getMessage());
             throw e;
         }
         return 0;
     }
 
-    // Helper method to map ResultSet to Medication object
+    public boolean updateMedicationForImport(Medication medication) throws SQLException {
+        if (medication == null || medication.getMedicationID() <= 0) {
+            throw new SQLException("Medication object or ID cannot be null or invalid.");
+        }
+
+        String sql = "UPDATE Medications SET production_date = ?, expiration_date = ?, price = ?, quantity = ? "
+                   + "WHERE MedicationID = ? AND status = 'Active'";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDate(1, medication.getProductionDate() != null ? java.sql.Date.valueOf(medication.getProductionDate()) : null);
+            pstmt.setDate(2, medication.getExpirationDate() != null ? java.sql.Date.valueOf(medication.getExpirationDate()) : null);
+            pstmt.setDouble(3, medication.getPrice());
+            pstmt.setInt(4, medication.getQuantity());
+            pstmt.setInt(5, medication.getMedicationID());
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("SQLException in updateMedicationForImport: " + e.getMessage());
+            throw e;
+        }
+    }
+
+   
+    public List<Medication> searchMedications(String keyword) throws SQLException {
+        List<Medication> medications = new ArrayList<>();
+        String sql = "SELECT * FROM Medications WHERE "
+                   + "(name LIKE ? OR manufacturer LIKE ? OR dosage_form LIKE ? OR dosage LIKE ?) AND status = 'Active'";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String pattern = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            stmt.setString(4, pattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    medications.add(mapResultSetToMedication(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in searchMedications: " + e.getMessage());
+            throw e;
+        }
+        return medications;
+    }
+
+    // ✅ SEARCH + PAGINATION 
+    public List<Medication> searchMedicationsPaginated(String keyword, int page, int pageSize) throws SQLException {
+        List<Medication> medications = new ArrayList<>();
+        String sql = "SELECT * FROM Medications WHERE "
+                   + "(name LIKE ? OR manufacturer LIKE ? OR dosage_form LIKE ? OR dosage LIKE ?) AND status = 'Active' "
+                   + "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String pattern = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            stmt.setString(4, pattern);
+            stmt.setInt(5, (page - 1) * pageSize);
+            stmt.setInt(6, pageSize);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    medications.add(mapResultSetToMedication(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in searchMedicationsPaginated: " + e.getMessage());
+            throw e;
+        }
+        return medications;
+    }
+
+    // ✅ COUNT kết quả tìm kiếm 
+    public int getTotalSearchMedicationCount(String keyword) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Medications WHERE "
+                   + "(name LIKE ? OR manufacturer LIKE ? OR dosage_form LIKE ? OR dosage LIKE ?) AND status = 'Active'";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String pattern = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            stmt.setString(4, pattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getTotalSearchMedicationCount: " + e.getMessage());
+            throw e;
+        }
+        return 0;
+    }
+
+    // MAP ResultSet to Medication object
     private Medication mapResultSetToMedication(ResultSet rs) throws SQLException {
         Medication medication = new Medication();
         medication.setMedicationID(rs.getInt("MedicationID"));
@@ -145,28 +234,63 @@ public class MedicationDAO {
         medication.setDosageForm(rs.getString("dosage_form"));
         return medication;
     }
+    
+    // Tìm kiếm theo tên và dạng bào chế có phân trang
+public List<Medication> searchMedicationsByNameAndDosageForm(String nameKeyword, String dosageFormKeyword, int page, int pageSize) throws SQLException {
+    List<Medication> medications = new ArrayList<>();
+    String sql = "SELECT * FROM Medications WHERE status = 'Active' "
+               + "AND name LIKE ? AND dosage_form LIKE ? "
+               + "ORDER BY MedicationID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-    // Update specific fields for medication import
-    public boolean updateMedicationForImport(Medication medication) throws SQLException {
-        if (medication == null || medication.getMedicationID() <= 0) {
-            throw new SQLException("Medication object or ID cannot be null or invalid.");
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        String namePattern = "%" + (nameKeyword == null ? "" : nameKeyword.trim()) + "%";
+        String dosagePattern = "%" + (dosageFormKeyword == null ? "" : dosageFormKeyword.trim()) + "%";
+
+        stmt.setString(1, namePattern);
+        stmt.setString(2, dosagePattern);
+        stmt.setInt(3, (page - 1) * pageSize);
+        stmt.setInt(4, pageSize);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                medications.add(mapResultSetToMedication(rs));
+            }
         }
-
-        String sql = "UPDATE Medications SET production_date = ?, expiration_date = ?, price = ?, quantity = ? "
-                + "WHERE MedicationID = ? AND status = 'Active'"; // Thêm điều kiện status
-
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDate(1, medication.getProductionDate() != null ? java.sql.Date.valueOf(medication.getProductionDate()) : null);
-            pstmt.setDate(2, medication.getExpirationDate() != null ? java.sql.Date.valueOf(medication.getExpirationDate()) : null);
-            pstmt.setDouble(3, medication.getPrice());
-            pstmt.setInt(4, medication.getQuantity());
-            pstmt.setInt(5, medication.getMedicationID());
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            System.err.println("SQLException in updateMedicationForImport: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
-        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in searchMedicationsByNameAndDosageForm: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+        throw e;
     }
+
+    return medications;
+}
+
+// Đếm tổng số thuốc theo tên và dạng bào chế
+public int getTotalCountByNameAndDosageForm(String nameKeyword, String dosageFormKeyword) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM Medications WHERE status = 'Active' "
+               + "AND name LIKE ? AND dosage_form LIKE ?";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        String namePattern = "%" + (nameKeyword == null ? "" : nameKeyword.trim()) + "%";
+        String dosagePattern = "%" + (dosageFormKeyword == null ? "" : dosageFormKeyword.trim()) + "%";
+
+        stmt.setString(1, namePattern);
+        stmt.setString(2, dosagePattern);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in getTotalCountByNameAndDosageForm: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+
+    return 0;
+}
+
 }

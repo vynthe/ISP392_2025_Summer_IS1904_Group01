@@ -177,9 +177,16 @@
                 <c:choose>
                     <c:when test="${not empty requestScope.service}">
                         <c:choose>
-                            <c:when test="${requestScope.service.serviceID == 3}">
-                                <img src="https://images.pexels.com/photos/6627652/pexels-photo-6627652.jpeg?auto=compress&cs=tinysrgb&w=300" alt="Bọc răng Illustration">
+                            <c:when test="${requestScope.service.serviceID == 1}">
+                                <img src="https://nhakhoanhantam.com/stmresource/files/nho-rang/nho-rang-khon-co-dau-khong.jpg" 
+                                     alt="Nhổ răng" width="300" height="200" />
                             </c:when>
+                            <c:when test="${requestScope.service.serviceID == 2}">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-uN-5wAcHTV9lvb6sn9H5Vm49JjpCuBZQbQ&s"
+                                     alt="Dịch vụ răng 2" width="300" height="200" />
+                            </c:when>
+
+
                             <c:when test="${requestScope.service.serviceID == 4}">
                                 <img src="https://images.pexels.com/photos/3942924/pexels-photo-3942924.jpeg?auto=compress&cs=tinysrgb&w=300" alt="Sửa hàm Illustration">
                             </c:when>

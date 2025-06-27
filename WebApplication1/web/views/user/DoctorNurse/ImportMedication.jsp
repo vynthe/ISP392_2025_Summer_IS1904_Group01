@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+
 <html>
 <head>
     <title>Nhập Thuốc - Hệ Thống Quản Lý Dược Phẩm</title>
@@ -448,20 +451,10 @@
             <div class="content">
                 <!-- Hiển thị thông báo trạng thái từ session -->
                 <c:if test="${not empty sessionScope.statusMessage}">
-                    <c:choose>
-                        <c:when test="${sessionScope.statusMessage == 'Nhập thuốc thành công!' || sessionScope.statusMessage == 'Nhập thuốc thành công!'}">
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle"></i>
-                                ${sessionScope.statusMessage}
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="alert alert-error">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                ${sessionScope.statusMessage}
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                    <div class="alert ${fn:contains(sessionScope.statusMessage, 'thành công') ? 'alert-success' : 'alert-error'}">
+                        <i class="fas ${fn:contains(sessionScope.statusMessage, 'thành công') ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                        ${sessionScope.statusMessage}
+                    </div>
                     <c:remove var="statusMessage" scope="session" /> <!-- Xóa thông báo sau khi hiển thị -->
                 </c:if>
 
@@ -562,7 +555,7 @@
                         <div class="button-group">
                             <button type="submit" class="btn btn-primary" id="submitBtn">
                                 <i class="fas fa-plus-circle"></i>
-                                Nhập thuốc
+                                Cập nhật
                             </button>
                             <a href="${pageContext.request.contextPath}/ViewMedicationsServlet" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i>
