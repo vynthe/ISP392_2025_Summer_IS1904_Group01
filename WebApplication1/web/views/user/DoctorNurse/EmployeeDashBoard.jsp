@@ -574,6 +574,16 @@
                         <p>Quản lý lịch trình và ca làm việc</p>
                     </div>
                 </a>
+                       
+                <a href="${pageContext.request.contextPath}/ViewPrescriptionServlet" class="action-card">
+                    <div class="action-icon prescription">
+                        <i class="fas fa-prescription-bottle-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Thêm Đơn Thuốc</h3>
+                        <p>Quản lý đơn thuốc</p>
+                    </div>
+                </a>
                 
                 <a href="${pageContext.request.contextPath}/ViewRoomServlet" class="action-card">
                     <div class="action-icon room">
