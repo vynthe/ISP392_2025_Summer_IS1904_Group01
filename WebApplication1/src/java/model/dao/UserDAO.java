@@ -450,4 +450,14 @@ public class UserDAO {
         return 0;
     }
  }
+ public boolean changePassword(String email, String hashedPassword) throws SQLException {
+    String sql = "UPDATE Users SET password = ?, updatedAt = GETDATE() WHERE email = ?";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, hashedPassword);
+        stmt.setString(2, email);
+        return stmt.executeUpdate() > 0;
+    }
+}
+
 }

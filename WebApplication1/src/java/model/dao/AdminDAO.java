@@ -179,4 +179,13 @@ public class AdminDAO {
     }
     return null;
 }
+      public boolean changePassword(int adminID, String hashedPassword) throws SQLException {
+    String sql = "UPDATE Admins SET password = ?, updatedAt = GETDATE() WHERE adminID = ?";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, hashedPassword);
+        stmt.setInt(2, adminID);
+        return stmt.executeUpdate() > 0;
+    }
+}
 }

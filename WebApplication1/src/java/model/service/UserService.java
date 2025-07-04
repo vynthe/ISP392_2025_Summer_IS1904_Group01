@@ -443,4 +443,8 @@ public class UserService {
     public int countEmployee() throws SQLException {
         return userDAO.countEmployee();
     }
+     public boolean changePassword(Users user, String newPassword) throws SQLException {
+    String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+    return new UserDAO().changePassword(user.getEmail(), hashed);
+}
 }

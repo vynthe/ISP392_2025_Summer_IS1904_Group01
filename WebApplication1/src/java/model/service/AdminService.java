@@ -85,4 +85,9 @@ public class AdminService {
      public Admins getAdminById(int adminID) throws SQLException {
         return adminDAO.getAdminById(adminID);
     }
+     
+     public boolean changePassword(Admins admin, String newPassword) throws SQLException {
+    String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+    return new AdminDAO().changePassword(admin.getAdminID(), hashed);
+}
 }

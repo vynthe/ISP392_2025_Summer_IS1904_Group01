@@ -106,6 +106,8 @@
                         <a href="${pageContext.request.contextPath}/UserProfileController" class="block">View Profile</a>
                         <a href="${pageContext.request.contextPath}/EditProfileUserController" class="block">Edit Profile</a>
                         <a href="${pageContext.request.contextPath}/LogoutServlet" class="block" onclick="return confirm('Are you sure you want to sign out?')">Sign Out</a>
+                        <a href="${pageContext.request.contextPath}/ChangePasswordController" class="block">Change Password</a>
+
                     </div>
                 </div>
             </div>
