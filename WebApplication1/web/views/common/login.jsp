@@ -1,30 +1,26 @@
-<%-- 
-    Document   : login
-    Created on : Feb 27, 2025, 2:28:51 PM
-    Author     : ADMIN
---%>
-
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống quản lí phòng khám đa khoa</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Đăng nhập - Nha Khoa PDC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow-x: hidden;
         }
 
@@ -55,113 +51,148 @@
             50% { transform: translateY(-20px) rotate(180deg); }
         }
 
-        .wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: rgba(39, 39, 39, 0.4);
-            padding: 20px;
-            width: 100%;
-            height: auto;
-        }
-
-        /* Navigation */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
+        /* Header - với glassmorphism effect */
+        header {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 5%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
             z-index: 1000;
             transition: all 0.3s ease;
         }
 
-        .nav-logo a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 2rem;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        .logo i {
+            font-size: 28px;
+            margin-right: 12px;
+            color: #ffd700;
+        }
+
+        .logo h1 {
+            font-size: 28px;
             font-weight: 700;
+            margin: 0;
             background: linear-gradient(45deg, #fff, #f0f0f0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .nav-menu ul {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
+        .logo span {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-left: 10px;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        .nav-menu .link {
-            color: #fff;
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            color: white;
             text-decoration: none;
             font-weight: 500;
-            padding: 0.5rem 1rem;
+            padding: 8px 16px;
             border-radius: 25px;
             transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
         }
 
-        .nav-menu .link:hover,
-        .nav-menu .link.active {
-            background: rgba(255, 255, 255, 0.2);
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        nav a:hover::before {
+            left: 100%;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
             transform: translateY(-2px);
         }
 
-        .nav-button {
+        .nav-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 10px;
         }
 
-        .nav-button .btn {
-            padding: 0.7rem 1.5rem;
-            border: none;
+        .btn {
+            padding: 10px 24px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 25px;
-            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .nav-button .btn:first-child {
+        .btn:hover {
             background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .nav-button .btn:last-child {
-            background: #fff;
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .nav-button .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* Form Container */
+        .btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            background: rgba(39, 39, 39, 0.4);
+        }
+
+        /* Form Container - với glassmorphism effect */
         .form-container {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
             border-radius: 20px;
-            padding: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 450px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -199,26 +230,35 @@
             }
         }
 
-        .top {
+        .form-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 30px;
         }
 
-        .top span {
+        .form-header h2 {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-header p {
             color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            display: block;
-            margin-bottom: 0.5rem;
+            font-size: 16px;
         }
 
-        .top span a {
+        .form-header p a {
             color: #fff;
             text-decoration: none;
             font-weight: 600;
             position: relative;
         }
 
-        .top span a::after {
+        .form-header p a::after {
             content: '';
             position: absolute;
             bottom: -2px;
@@ -229,34 +269,23 @@
             transition: width 0.3s ease;
         }
 
-        .top span a:hover::after {
+        .form-header p a:hover::after {
             width: 100%;
-        }
-
-        header {
-            color: #fff;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .input-box {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .input-field {
             width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
+            padding: 15px 20px 15px 50px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
             color: #fff;
-            font-size: 1rem;
+            font-size: 16px;
             outline: none;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
@@ -280,11 +309,11 @@
 
         .input-box i {
             position: absolute;
-            left: 1rem;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2rem;
+            font-size: 18px;
             transition: all 0.3s ease;
         }
 
@@ -295,16 +324,16 @@
 
         .submit {
             width: 100%;
-            padding: 1rem;
+            padding: 15px;
             background: linear-gradient(45deg, #fff, #f0f0f0);
             border: none;
             border-radius: 15px;
             color: #667eea;
-            font-size: 1.1rem;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 1rem;
+            margin-top: 10px;
             position: relative;
             overflow: hidden;
         }
@@ -333,15 +362,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1.5rem;
+            margin-top: 20px;
             color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+            font-size: 14px;
         }
 
         .two-col .one {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .two-col input[type="checkbox"] {
@@ -395,11 +424,11 @@
 
         /* Message styles */
         .success, .error {
-            padding: 0.8rem;
+            padding: 15px 20px;
             border-radius: 10px;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
             animation: slideIn 0.3s ease;
         }
 
@@ -426,89 +455,132 @@
             }
         }
 
+        /* Switch forms */
+        .form-switch {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-switch .btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+        .form-switch .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
-            .nav {
-                padding: 0 3%;
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
             }
 
-            .nav-menu {
-                display: none;
-            }
-
-            .nav-button .btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
             }
 
             .form-container {
-                padding: 2rem;
-                margin: 0 1rem;
+                padding: 30px 20px;
+                margin: 0 10px;
             }
 
-            header {
-                font-size: 2rem;
+            .form-header h2 {
+                font-size: 28px;
             }
 
             .two-col {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 15px;
                 text-align: center;
             }
         }
 
         @media (max-width: 480px) {
-            .nav-logo a {
-                font-size: 1.5rem;
-            }
-
             .form-container {
-                padding: 1.5rem;
+                padding: 25px 15px;
             }
 
-            header {
-                font-size: 1.8rem;
+            .form-header h2 {
+                font-size: 24px;
             }
 
             .input-field {
-                padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+                padding: 12px 15px 12px 45px;
             }
 
             .input-box i {
-                left: 0.8rem;
+                left: 15px;
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
     <div class="bg-animation"></div>
     
-    <div class="wrapper">
-        <nav class="nav">
-            <div class="nav-logo">
-                <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp">PDC</a>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <i class="fas fa-tooth"></i>
+                    <div>
+                        <h1>PDC</h1>
+                        <span>Nha Khoa PDC</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav>
+                    <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-blog"></i> Blog
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-concierge-bell"></i> Dịch vụ
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-info-circle"></i> Về chúng tôi
+                    </a>
+                </nav>
+                
+                <!-- Auth Buttons -->
+                <div class="nav-buttons">
+                    <a href="javascript:void(0)" class="btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a href="javascript:void(0)" class="btn" id="registerBtn">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
+                </div>
             </div>
-            <div class="nav-menu">
-                <ul>
-                    <li><a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="link active">Home</a></li>
-                    <li><a href="interface/Blog.jsp" class="link">Blog</a></li>
-                    <li><a href="interface/Service.jsp" class="link">Services</a></li>
-                    <li><a href="interface/About.jsp" class="link">About</a></li>
-                </ul>
-            </div>
-            <div class="nav-button">
-                <button class="btn" id="loginBtn">Sign In</button>
-                <button class="btn" id="registerBtn">Sign Up</button>
-            </div>
-        </nav>
+        </div>
+    </header>
 
+    <!-- Main Content -->
+    <div class="main-content">
         <div class="form-container">
             <!-- Login Form -->
             <div class="form-box" id="login" style="display: ${empty param.form || param.form == 'login' ? 'block' : 'none'};">
-                <div class="top">
-                    <span>Không có tài khoản? <a href="javascript:void(0)" onclick="register()">Sign Up</a></span>
-                    <header>Đăng Nhập</header>
+                <div class="form-header">
+                    <h2>Đăng Nhập</h2>
+                    <p>Chào mừng bạn trở lại! <a href="javascript:void(0)" onclick="register()">Đăng ký tài khoản mới</a></p>
                 </div>
+                
                 <form action="${pageContext.request.contextPath}/login" method="post">
                     <div class="input-box">
                         <input type="text" class="input-field" name="emailOrUsername" placeholder="Email hoặc Username" maxlength="50" required>
@@ -524,26 +596,33 @@
                     <div class="two-col">
                         <div class="one">
                             <input type="checkbox" id="login-check" name="rememberMe">
-                            <label for="login-check">Ghi nhớ</label>
+                            <label for="login-check">Ghi nhớ đăng nhập</label>
                         </div>
                         <div class="two">
-                            <label><a href="${pageContext.request.contextPath}/ForgotPasswordServlet">Quên mật khẩu?</a></label>
+                            <a href="${pageContext.request.contextPath}/ForgotPasswordServlet">Quên mật khẩu?</a>
                         </div>
                     </div>
 
                     <c:if test="${not empty sessionScope.logoutMessage}">
                         <div class="success">
+                            <i class="fas fa-check-circle"></i>
                             ${sessionScope.logoutMessage}
                         </div>
                         <c:remove var="logoutMessage" scope="session" />
                     </c:if>
 
                     <c:if test="${not empty requestScope.error}">  
-                        <div class="error">${requestScope.error}</div>
+                        <div class="error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            ${requestScope.error}
+                        </div>
                     </c:if>
                     
                     <c:if test="${not empty sessionScope.successMessage}">
-                        <div class="success">${sessionScope.successMessage}</div>
+                        <div class="success">
+                            <i class="fas fa-check-circle"></i>
+                            ${sessionScope.successMessage}
+                        </div>
                         <c:remove var="successMessage" scope="session" />
                     </c:if>
                 </form>
@@ -551,48 +630,52 @@
 
             <!-- Registration Form -->
             <div class="form-box" id="register" style="display: ${param.form == 'register' ? 'block' : 'none'};">
-                <div class="top">
-                    <span>Có tài khoản? <a href="javascript:void(0)" onclick="login()">Sign In</a></span>
-                    <header>Sign Up</header>
+                <div class="form-header">
+                    <h2>Đăng Ký</h2>
+                    <p>Tạo tài khoản mới để sử dụng dịch vụ! <a href="javascript:void(0)" onclick="login()">Đã có tài khoản?</a></p>
                 </div>
+                
                 <form action="${pageContext.request.contextPath}/RegistrationServlet" method="post" id="registerForm">
                     <div class="input-box">
-                        <input type="text" class="input-field" name="username" value="${requestScope.username}" placeholder="Username" maxlength="20" required>
+                        <input type="text" class="input-field" name="username" value="${requestScope.username}" placeholder="Tên đăng nhập" maxlength="20" required>
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="input-box">        
-                        <input type="email" class="input-field" name="email" value="${requestScope.email}" placeholder="Email" maxlength="50" required>
+                        <input type="email" class="input-field" name="email" value="${requestScope.email}" placeholder="Địa chỉ email" maxlength="50" required>
                         <i class="fas fa-envelope"></i>
                     </div>
                     <div class="input-box">
-                        <input type="password" class="input-field" name="password" placeholder="Password" maxlength="20" required>   
+                        <input type="password" class="input-field" name="password" placeholder="Mật khẩu" maxlength="20" required>   
                         <i class="fas fa-lock"></i>
                     </div>
                     <div class="input-box">
                         <select name="role" class="input-field" required>
                             <option value="" disabled ${requestScope.role == null ? 'selected' : ''}>Chọn vai trò</option>
-                            <option value="patient" ${requestScope.role == 'patient' ? 'selected' : ''}>Patient</option>
-                            <option value="doctor" ${requestScope.role == 'doctor' ? 'selected' : ''}>Doctor</option>
-                            <option value="nurse" ${requestScope.role == 'nurse' ? 'selected' : ''}>Nurse</option>
-                            <option value="receptionist" ${requestScope.role == 'receptionist' ? 'selected' : ''}>Receptionist</option>
+                            <option value="patient" ${requestScope.role == 'patient' ? 'selected' : ''}>Bệnh nhân</option>
+                            <option value="doctor" ${requestScope.role == 'doctor' ? 'selected' : ''}>Bác sĩ</option>
+                            <option value="nurse" ${requestScope.role == 'nurse' ? 'selected' : ''}>Y tá</option>
+                            <option value="receptionist" ${requestScope.role == 'receptionist' ? 'selected' : ''}>Lễ tân</option>
                         </select>
                         <i class="fas fa-user-md"></i>
                     </div>
                     <div class="input-box">
-                        <input type="submit" class="submit" value="Register">
+                        <input type="submit" class="submit" value="Đăng Ký">
                     </div>
                     <div class="two-col">
                         <div class="one">
                             <input type="checkbox" id="register-check" name="rememberMe">
-                            <label for="register-check">Remember Me</label>
+                            <label for="register-check">Ghi nhớ đăng nhập</label>
                         </div>
                         <div class="two">
-                            <label><a href="#">Terms & conditions</a></label>
+                            <a href="#">Điều khoản sử dụng</a>
                         </div>
                     </div>
                     
                     <c:if test="${not empty requestScope.error}">
-                        <div class="error">${requestScope.error}</div>
+                        <div class="error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            ${requestScope.error}
+                        </div>
                     </c:if>
                 </form>
             </div>
@@ -605,6 +688,10 @@
             document.getElementById('login').style.display = 'block';
             // Add animation
             document.getElementById('login').style.animation = 'fadeInUp 0.6s ease';
+            
+            // Update nav buttons
+            document.getElementById('loginBtn').classList.add('active');
+            document.getElementById('registerBtn').classList.remove('active');
         }
 
         function register() {
@@ -612,11 +699,24 @@
             document.getElementById('register').style.display = 'block';
             // Add animation
             document.getElementById('register').style.animation = 'fadeInUp 0.6s ease';
+            
+            // Update nav buttons
+            document.getElementById('registerBtn').classList.add('active');
+            document.getElementById('loginBtn').classList.remove('active');
         }
 
         // Add event listeners to navigation buttons
         document.getElementById('loginBtn').addEventListener('click', login);
         document.getElementById('registerBtn').addEventListener('click', register);
+
+        // Set initial active state
+        const urlParams = new URLSearchParams(window.location.search);
+        const form = urlParams.get('form');
+        if (form === 'register') {
+            document.getElementById('registerBtn').classList.add('active');
+        } else {
+            document.getElementById('loginBtn').classList.add('active');
+        }
 
         // Trim whitespace for registration form inputs
         document.getElementById('registerForm').addEventListener('submit', function(event) {
@@ -639,11 +739,11 @@
 
         // Smooth navigation scroll effect
         window.addEventListener('scroll', function() {
-            const nav = document.querySelector('.nav');
+            const header = document.querySelector('header');
             if (window.scrollY > 50) {
-                nav.style.background = 'rgba(255, 255, 255, 0.15)';
+                header.style.background = 'rgba(255, 255, 255, 0.15)';
             } else {
-                nav.style.background = 'rgba(255, 255, 255, 0.1)';
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
             }
         });
     </script>

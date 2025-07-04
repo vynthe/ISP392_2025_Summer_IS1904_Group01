@@ -704,12 +704,12 @@
                                                             <i class="fas fa-check-circle"></i> Còn Phòng
                                                         </span>
                                                     </c:when>
-                                                    <c:when test="${room.status == 'completed'}">
+                                                    <c:when test="${room.status == 'Completed'}">
                                                         <span class="status-badge status-completed">
                                                             <i class="fas fa-check-double"></i> Hoàn Thành
                                                         </span>
                                                     </c:when>
-                                                    <c:when test="${room.status == 'Not available'}">
+                                                    <c:when test="${room.status == 'Not Available'}">
                                                         <span class="status-badge status-unavailable">
                                                             <i class="fas fa-times-circle"></i> Hết Phòng
                                                         </span>
