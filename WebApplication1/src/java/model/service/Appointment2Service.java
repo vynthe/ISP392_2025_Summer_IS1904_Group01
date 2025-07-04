@@ -2,17 +2,19 @@ package model.service;
 
 import java.sql.SQLException;
 import java.util.regex.Pattern;
-import model.entity.AppointmentGuest;
-import model.dao.AppointmentGuestDAO;
+import model.entity.Appointment2;
+import model.dao.Appointment2DAO;
+import model.service.Services_Service;
 
-public class AppointmentGuestService {
+public class Appointment2Service {
 
-    private final AppointmentGuestDAO appointmentDAO = new AppointmentGuestDAO();
+    private final Appointment2DAO appointmentDAO = new Appointment2DAO();
+    private final Services_Service servicesService = new Services_Service();
 
-    public void bookAppointment(AppointmentGuest appointment) throws SQLException {
+    public void bookAppointment(Appointment2 appointment) throws SQLException {
         // Kiểm tra dữ liệu cơ bản
-        if (appointment.getFullName() == null || appointment.getPhoneNumber() == null || appointment.getService() == null) {
-            throw new SQLException("Dữ liệu cơ bản không được để trống.");
+        if (appointment.getFullName() == null || appointment.getPhoneNumber() == null) {
+            throw new SQLException("Họ và tên hoặc số điện thoại không được để trống.");
         }
 
         // Kiểm tra hợp lệ dữ liệu
@@ -20,6 +22,18 @@ public class AppointmentGuestService {
         isValidPhoneNumber(appointment.getPhoneNumber());
         if (appointment.getEmail() != null) {
             isValidEmail(appointment.getEmail());
+        }
+
+        // Kiểm tra serviceID
+        if (appointment.getServiceID() <= 0) {
+            throw new SQLException("Service ID phải là một số nguyên dương.");
+        }
+        try {
+            if (!servicesService.getServiceById(appointment.getServiceID()).getStatus().equals("Active")) {
+                throw new SQLException("Dịch vụ không tồn tại hoặc không ở trạng thái Active.");
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Dịch vụ với ID " + appointment.getServiceID() + " không tồn tại.");
         }
 
         // Lưu lịch hẹn
@@ -43,8 +57,8 @@ public class AppointmentGuestService {
 
     // Phương thức kiểm tra hợp lệ số điện thoại
     public void isValidPhoneNumber(String phoneNumber) throws SQLException {
-        if (phoneNumber == null || phoneNumber.length() != 10 || phoneNumber.trim().isEmpty()) {
-            throw new SQLException("Số điện thoại không hợp lệ.");
+        if (phoneNumber == null || phoneNumber.trim().isEmpty() || phoneNumber.length() != 10) {
+            throw new SQLException("Số điện thoại không hợp lệ, phải có đúng 10 chữ số.");
         }
         if (!Pattern.matches("\\d{10}", phoneNumber)) {
             throw new SQLException("Số điện thoại phải chứa đúng 10 chữ số.");

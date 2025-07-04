@@ -7,14 +7,13 @@ public class Prescriptions {
     private int patientId;
     private int doctorId;
     private int resultId;
-    private int appointmentId;
     private String prescriptionDetails;
     private String status;
     private int createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Getter và Setter
+    // Getter and Setter for prescriptionId
     public int getPrescriptionId() {
         return prescriptionId;
     }
@@ -23,6 +22,7 @@ public class Prescriptions {
         this.prescriptionId = prescriptionId;
     }
 
+    // Getter and Setter for patientId
     public int getPatientId() {
         return patientId;
     }
@@ -31,6 +31,7 @@ public class Prescriptions {
         this.patientId = patientId;
     }
 
+    // Getter and Setter for doctorId
     public int getDoctorId() {
         return doctorId;
     }
@@ -39,6 +40,7 @@ public class Prescriptions {
         this.doctorId = doctorId;
     }
 
+    // Getter and Setter for resultId
     public int getResultId() {
         return resultId;
     }
@@ -47,14 +49,7 @@ public class Prescriptions {
         this.resultId = resultId;
     }
 
-    public int getAppointmentId() {
-        return appointmentId;
-    }
-
-    public void setAppointmentId(int appointmentId) {
-        this.appointmentId = appointmentId;
-    }
-
+    // Getter and Setter for prescriptionDetails
     public String getPrescriptionDetails() {
         return prescriptionDetails;
     }
@@ -63,6 +58,7 @@ public class Prescriptions {
         this.prescriptionDetails = prescriptionDetails;
     }
 
+    // Getter and Setter for status
     public String getStatus() {
         return status;
     }
@@ -71,6 +67,7 @@ public class Prescriptions {
         this.status = status;
     }
 
+    // Getter and Setter for createdBy
     public int getCreatedBy() {
         return createdBy;
     }
@@ -79,6 +76,7 @@ public class Prescriptions {
         this.createdBy = createdBy;
     }
 
+    // Getter and Setter for createdAt
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -87,6 +85,7 @@ public class Prescriptions {
         this.createdAt = createdAt;
     }
 
+    // Getter and Setter for updatedAt
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }

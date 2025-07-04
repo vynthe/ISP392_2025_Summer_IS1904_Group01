@@ -8,28 +8,30 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import model.entity.AppointmentGuest;
+import model.entity.Appointment2;
 
-public class AppointmentGuestDAO {
+public class Appointment2DAO {
     private final DBContext dbContext;
 
-    public AppointmentGuestDAO() {
+    public Appointment2DAO() {
         this.dbContext = DBContext.getInstance();
     }
 
     // Lưu lịch hẹn mới
-    public void saveAppointment(AppointmentGuest appointment) throws SQLException {
+    public void saveAppointment(Appointment2 appointment) throws SQLException {
         if (appointment == null) {
             throw new SQLException("Appointment object cannot be null.");
         }
 
-        String sql = "INSERT INTO appointments2 (fullName, phoneNumber, email, service) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Appointments2 (fullName, phoneNumber, email, serviceID, appointmentDate, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, appointment.getFullName());
             pstmt.setString(2, appointment.getPhoneNumber());
             pstmt.setString(3, appointment.getEmail());
-            pstmt.setString(4, appointment.getService());
+            pstmt.setInt(4, appointment.getServiceID());
+            pstmt.setTimestamp(5, appointment.getAppointmentDate());
+            pstmt.setString(6, appointment.getStatus() != null ? appointment.getStatus() : "Pending");
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
@@ -48,9 +50,9 @@ public class AppointmentGuestDAO {
     }
 
     // Lấy tất cả lịch hẹn
-    public List<AppointmentGuest> getAllAppointments() throws SQLException {
-        List<AppointmentGuest> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM appointments2 WHERE status = 'Pending'";
+    public List<Appointment2> getAllAppointments() throws SQLException {
+        List<Appointment2> appointments = new ArrayList<>();
+        String sql = "SELECT a.*, s.ServiceName FROM Appointments2 a JOIN Services s ON a.serviceID = s.ServiceID WHERE a.status = 'Pending'";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -65,8 +67,8 @@ public class AppointmentGuestDAO {
     }
 
     // Lấy lịch hẹn theo ID
-    public AppointmentGuest getAppointmentById(int id) throws SQLException {
-        String sql = "SELECT * FROM appointments2 WHERE id = ?";
+    public Appointment2 getAppointmentById(int id) throws SQLException {
+        String sql = "SELECT a.*, s.ServiceName FROM Appointments2 a JOIN Services s ON a.serviceID = s.ServiceID WHERE a.id = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -83,9 +85,9 @@ public class AppointmentGuestDAO {
     }
 
     // Lấy danh sách lịch hẹn phân trang
-    public List<AppointmentGuest> getAppointmentsPaginated(int page, int pageSize) throws SQLException {
-        List<AppointmentGuest> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM appointments2 WHERE status = 'Pending' ORDER BY id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+    public List<Appointment2> getAppointmentsPaginated(int page, int pageSize) throws SQLException {
+        List<Appointment2> appointments = new ArrayList<>();
+        String sql = "SELECT a.*, s.ServiceName FROM Appointments2 a JOIN Services s ON a.serviceID = s.ServiceID WHERE a.status = 'Pending' ORDER BY a.id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             int offset = (page - 1) * pageSize;
@@ -105,7 +107,7 @@ public class AppointmentGuestDAO {
 
     // Đếm tổng số lịch hẹn
     public int getTotalAppointmentCount() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM appointments2 WHERE status = 'Pending'";
+        String sql = "SELECT COUNT(*) FROM Appointments2 WHERE status = 'Pending'";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -120,16 +122,17 @@ public class AppointmentGuestDAO {
     }
 
     // Cập nhật lịch hẹn
-    public void updateAppointment(AppointmentGuest appointment) throws SQLException {
-        String sql = "UPDATE appointments2 SET fullName = ?, phoneNumber = ?, email = ?, service = ?, status = ? WHERE id = ?";
+    public void updateAppointment(Appointment2 appointment) throws SQLException {
+        String sql = "UPDATE Appointments2 SET fullName = ?, phoneNumber = ?, email = ?, serviceID = ?, appointmentDate = ?, status = ? WHERE id = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, appointment.getFullName());
             pstmt.setString(2, appointment.getPhoneNumber());
             pstmt.setString(3, appointment.getEmail());
-            pstmt.setString(4, appointment.getService());
-            pstmt.setString(5, appointment.getStatus());
-            pstmt.setInt(6, appointment.getId());
+            pstmt.setInt(4, appointment.getServiceID());
+            pstmt.setTimestamp(5, appointment.getAppointmentDate());
+            pstmt.setString(6, appointment.getStatus());
+            pstmt.setInt(7, appointment.getId());
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
                 throw new SQLException("Failed to update appointment with ID: " + appointment.getId());
@@ -142,7 +145,7 @@ public class AppointmentGuestDAO {
 
     // Xóa lịch hẹn
     public void deleteAppointment(int id) throws SQLException {
-        String sql = "DELETE FROM appointments2 WHERE id = ?";
+        String sql = "DELETE FROM Appointments2 WHERE id = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -156,14 +159,15 @@ public class AppointmentGuestDAO {
         }
     }
 
-    // Ánh xạ ResultSet thành đối tượng AppointmentGuest
-    private AppointmentGuest mapResultSetToAppointment(ResultSet rs) throws SQLException {
-        AppointmentGuest appointment = new AppointmentGuest();
+    // Ánh xạ ResultSet thành đối tượng Appointment2
+    private Appointment2 mapResultSetToAppointment(ResultSet rs) throws SQLException {
+        Appointment2 appointment = new Appointment2();
         appointment.setId(rs.getInt("id"));
         appointment.setFullName(rs.getString("fullName"));
         appointment.setPhoneNumber(rs.getString("phoneNumber"));
         appointment.setEmail(rs.getString("email"));
-        appointment.setService(rs.getString("service"));
+        appointment.setServiceID(rs.getInt("serviceID"));
+        appointment.setServiceName(rs.getString("ServiceName"));
         appointment.setAppointmentDate(rs.getTimestamp("appointmentDate"));
         appointment.setStatus(rs.getString("status"));
         return appointment;

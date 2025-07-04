@@ -2,25 +2,26 @@ package model.entity;
 
 import java.sql.Timestamp;
 
-public class AppointmentGuest {
+public class Appointment2 {
     private int id;
     private String fullName;
     private String phoneNumber;
     private String email;
-    private String service;
+    private int serviceID;
+    private String serviceName; // Thêm trường để lưu tên dịch vụ
     private Timestamp appointmentDate;
     private String status;
 
-    // Constructor mặc định
-    public AppointmentGuest() {
+    // Default constructor
+    public Appointment2() {
     }
 
     // Constructor với các trường bắt buộc
-    public AppointmentGuest(String fullName, String phoneNumber, String email, String service) {
+    public Appointment2(String fullName, String phoneNumber, String email, int serviceID) {
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.service = service;
+        this.serviceID = serviceID;
     }
 
     // Getters và Setters
@@ -56,12 +57,20 @@ public class AppointmentGuest {
         this.email = email;
     }
 
-    public String getService() {
-        return service;
+    public int getServiceID() {
+        return serviceID;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setServiceID(int serviceID) {
+        this.serviceID = serviceID;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public Timestamp getAppointmentDate() {

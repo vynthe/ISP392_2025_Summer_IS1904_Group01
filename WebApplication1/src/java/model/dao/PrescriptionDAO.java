@@ -274,8 +274,6 @@ public class PrescriptionDAO {
         prescription.setPrescriptionId(rs.getInt("PrescriptionID"));
         prescription.setPatientId(rs.getInt("PatientID"));
         prescription.setDoctorId(rs.getInt("DoctorID"));
-        prescription.setResultId(rs.getObject("ResultID") != null ? rs.getInt("ResultID") : 0);
-        prescription.setAppointmentId(rs.getObject("AppointmentID") != null ? rs.getInt("AppointmentID") : 0);
         prescription.setPrescriptionDetails(rs.getString("PrescriptionDetails"));
         prescription.setStatus(rs.getString("Status"));
         return prescription;

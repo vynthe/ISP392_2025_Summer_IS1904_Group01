@@ -58,6 +58,12 @@ public class AddPrescriptionServlet extends HttpServlet {
             if (status == null || status.trim().isEmpty()) {
                 throw new IllegalArgumentException("Status is required.");
             }
+            // Validate status against allowed values
+            List<String> validStatuses = Arrays.asList("Pending", "In Progress", "Completed", "Dispensed", "Cancelled");
+            String trimmedStatus = status.trim();
+            if (!validStatuses.contains(trimmedStatus)) {
+                throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận: " + String.join(", ", validStatuses) + ".");
+            }
             if (medicationIdStrs == null || medicationIdStrs.length == 0 || Arrays.stream(medicationIdStrs).anyMatch(id -> !id.matches("\\d+"))) {
                 throw new IllegalArgumentException("At least one valid medication ID is required.");
             }
@@ -79,13 +85,13 @@ public class AddPrescriptionServlet extends HttpServlet {
             }
 
             log.info("Processing add request - patientId: " + patientId + ", doctorId: " + doctorId +
-                     ", status: " + status + ", medicationIds: " + Arrays.toString(medicationIdStrs));
+                     ", status: " + trimmedStatus + ", medicationIds: " + Arrays.toString(medicationIdStrs));
 
             Prescriptions prescription = new Prescriptions();
             prescription.setPatientId(patientId);
             prescription.setDoctorId(doctorId);
             prescription.setPrescriptionDetails(prescriptionDetails);
-            prescription.setStatus(status);
+            prescription.setStatus(trimmedStatus);
 
             if ("true".equals(saveToDB)) {
                 boolean added = prescriptionService.addPrescription(prescription, medicationIds, Arrays.asList(dosageInstructions));
@@ -99,7 +105,7 @@ public class AddPrescriptionServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
             } else {
                 log.info("Save not requested, returning to form for patientId: " + patientId);
-                setFormAttributes(request, patientIdStr, doctorIdStr, prescriptionDetails, status, medicationIdStrs, dosageInstructions);
+                setFormAttributes(request, patientIdStr, doctorIdStr, prescriptionDetails, trimmedStatus, medicationIdStrs, dosageInstructions);
                 request.setAttribute("medications", prescriptionService.getAllMedications());
                 request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
             }

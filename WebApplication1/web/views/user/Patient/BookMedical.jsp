@@ -4,6 +4,7 @@
     Author     : ASUS
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -287,7 +288,7 @@
             let fullName = document.getElementById("fullName").value.trim();
             let phoneNumber = document.getElementById("phoneNumber").value.trim();
             let email = document.getElementById("email").value.trim();
-            let serviceType = document.getElementById("serviceType").value;
+            let serviceID = document.getElementById("serviceID").value;
             let errors = [];
 
             // Reset error states
@@ -316,10 +317,10 @@
                 document.getElementById("email").classList.add("error");
             }
 
-            // Kiểm tra serviceType
-            if (!serviceType) {
+            // Kiểm tra serviceID
+            if (!serviceID) {
                 errors.push("Vui lòng chọn loại hình dịch vụ.");
-                document.getElementById("serviceType").classList.add("error");
+                document.getElementById("serviceID").classList.add("error");
             }
 
             if (errors.length > 0) {
@@ -463,20 +464,19 @@
 
                 <!-- Service Type -->
                 <div class="input-group">
-                    <select id="serviceType" 
-                            name="serviceType" 
+                    <select id="serviceID" 
+                            name="serviceID" 
                             class="input-field" 
                             required>
                         <option value="">Chọn loại hình dịch vụ quan tâm</option>
-                        <option value="implant">🦷 Cấy ghép Implant</option>
-                        <option value="teeth_cleaning">🔧 Chỉnh nha mắc cài</option>
-                        <option value="dental_treatment">👶 Nha khoa trẻ em</option>
-                        <option value="teeth_whitening">⚕️ Phẫu thuật chỉnh hình hàm</option>
-                        <option value="general_checkup">✨ Nha khoa thẩm mỹ</option>
-                        <option value="root_canal">🦷 Nhổ răng khôn</option>
+                        <c:forEach var="service" items="${services}">
+                            <c:if test="${service.status == 'Active'}">
+                                <option value="${service.serviceID}">${service.serviceName}</option>
+                            </c:if>
+                        </c:forEach>
                     </select>
                     <i class="fas fa-medical-kit input-icon"></i>
-                    <label for="serviceType" class="floating-label">Dịch vụ quan tâm *</label>
+                    <label for="serviceID" class="floating-label">Dịch vụ quan tâm *</label>
                 </div>
 
                 <!-- Submit Button -->

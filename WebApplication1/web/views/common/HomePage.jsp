@@ -534,7 +534,7 @@
                 <p class="slogan">"Giải pháp tối ưu, cân thiện tối thiểu" – đó chính là slogan và mục tiêu mà Nha Khoa PDC đang, và sẽ thực hiện trong suốt thời gian hoạt động.</p>
                 
                 <div class="banner-actions">
-                    <a href="${pageContext.request.contextPath}/BookMedicalGuestServlet" class="cta-button">
+                    <a href="${pageContext.request.contextPath}/BookAppointmentGuestServlet" class="cta-button">
                         <i class="fas fa-calendar-plus"></i>
                         Đặt lịch khám
                     </a>

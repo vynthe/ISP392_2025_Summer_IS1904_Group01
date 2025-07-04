@@ -32,6 +32,9 @@ public class PrescriptionService {
             throw new IllegalArgumentException("Dosage instructions are required for each medication.");
         }
 
+        // Validate status
+        validateStatus(prescription.getStatus());
+
         // Construct prescriptionDetails if not provided
         if (prescription.getPrescriptionDetails() == null || prescription.getPrescriptionDetails().trim().isEmpty()) {
             StringBuilder prescriptionDetails = new StringBuilder();
@@ -141,6 +144,12 @@ public class PrescriptionService {
         } catch (SQLException e) {
             log.error("SQLException retrieving medications: " + e.getMessage(), e);
             throw e;
+        }
+    }
+
+    private void validateStatus(String status) throws SQLException {
+        if (status == null || !List.of("Pending", "In Progress", "Completed", "Dispensed", "Cancelled").contains(status.trim())) {
+            throw new SQLException("Trạng thái không hợp lệ. Chỉ chấp nhận: Pending, In Progress, Completed, Dispensed, Cancelled.");
         }
     }
 }
