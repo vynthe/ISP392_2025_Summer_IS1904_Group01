@@ -104,7 +104,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 0 2rem;
         }
@@ -113,22 +113,25 @@
         .breadcrumb {
             background: var(--white);
             padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
             gap: 0.5rem;
             font-size: 0.875rem;
+            border-left: 4px solid var(--primary-blue);
         }
 
         .breadcrumb a {
             color: var(--primary-blue);
             text-decoration: none;
             font-weight: 500;
+            transition: color 0.2s ease;
         }
 
         .breadcrumb a:hover {
+            color: var(--primary-blue-dark);
             text-decoration: underline;
         }
 
@@ -142,7 +145,7 @@
             border: 1px solid #fecaca;
             color: var(--red-danger);
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
@@ -152,131 +155,200 @@
         /* Medication Card */
         .medication-card {
             background: var(--white);
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-md);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
+            border: 1px solid var(--gray-200);
         }
 
         .card-header {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
             color: var(--white);
-            padding: 2rem;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
         }
 
         .medication-header {
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            position: relative;
+            z-index: 2;
         }
 
         .medication-icon {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.75rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .medication-info h1 {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
         }
 
         .medication-id {
-            font-size: 0.9rem;
+            font-size: 1rem;
             opacity: 0.9;
+            font-weight: 500;
         }
 
         .card-body {
-            padding: 2rem;
+            padding: 2.5rem 2rem;
         }
 
-        /* Details Grid */
+        /* Details Section */
         .details-section {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .section-title {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--gray-800);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .section-title i {
+            color: var(--primary-blue);
+            font-size: 1.125rem;
         }
 
         .details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
         .detail-item {
-            background: var(--gray-50);
-            padding: 1.25rem;
-            border-radius: 0.5rem;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
             border-left: 4px solid var(--primary-blue);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-left-color: var(--green-success);
+        }
+
+        .detail-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, transparent, rgba(37, 99, 235, 0.05));
+            border-radius: 0 0 0 100%;
         }
 
         .detail-label {
             font-size: 0.875rem;
             font-weight: 500;
             color: var(--gray-600);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .detail-value {
-            font-size: 1rem;
+            font-size: 1.125rem;
             font-weight: 600;
             color: var(--gray-800);
-        }
-
-        .price-value {
-            color: var(--green-success);
-            font-size: 1.125rem;
+            position: relative;
+            z-index: 2;
         }
 
         .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .status-active {
-            background: #dcfce7;
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
             color: var(--green-success);
+            border: 1px solid #86efac;
         }
 
         .status-inactive {
-            background: #fee2e2;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
             color: var(--red-danger);
+            border: 1px solid #fca5a5;
         }
 
         /* Description */
         .description-section {
-            background: var(--gray-50);
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            margin-top: 1.5rem;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            margin-top: 2rem;
+            border: 1px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .description-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
+            transform: rotate(45deg);
         }
 
         .description-text {
             color: var(--gray-700);
-            line-height: 1.7;
+            line-height: 1.8;
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
         }
 
         /* Action Buttons */
         .action-section {
-            background: var(--gray-50);
-            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+            padding: 2rem;
             border-top: 1px solid var(--gray-200);
         }
 
@@ -293,7 +365,7 @@
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 1.75rem;
             border: none;
             border-radius: 0.5rem;
             font-weight: 500;
@@ -302,45 +374,49 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn-primary {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             color: var(--white);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         }
 
         .btn-primary:hover {
-            background: var(--primary-blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
         }
 
         .btn-secondary {
             background: var(--white);
             color: var(--gray-700);
             border: 1px solid var(--gray-300);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .btn-secondary:hover {
             background: var(--gray-50);
-        }
-
-        .btn-success {
-            background: var(--green-success);
-            color: var(--white);
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-warning {
-            background: var(--orange-warning);
-            color: var(--white);
-        }
-
-        .btn-warning:hover {
-            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         /* Footer */
@@ -409,6 +485,10 @@
                 text-align: center;
             }
 
+            .medication-info h1 {
+                font-size: 1.5rem;
+            }
+
             .details-grid {
                 grid-template-columns: 1fr;
             }
@@ -419,6 +499,37 @@
 
             .btn-group-left {
                 flex-direction: column;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .card-header {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .header,
+            .footer,
+            .action-section {
+                display: none;
+            }
+
+            .medication-card {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+
+            .card-header {
+                background: #f0f0f0 !important;
+                color: #000 !important;
+            }
+
+            .btn {
+                display: none;
             }
         }
     </style>
@@ -484,7 +595,7 @@
                         <div class="details-section">
                             <h2 class="section-title">
                                 <i class="fas fa-info-circle"></i>
-                                Thông Tin Cơ Bản
+                                Thông Tin Thuốc
                             </h2>
                             <div class="details-grid">
                                 <div class="detail-item">
@@ -499,34 +610,9 @@
                                     <div class="detail-label">Trạng Thái</div>
                                     <div class="detail-value">
                                         <span class="status-badge ${medication.status == 'Active' ? 'status-active' : 'status-inactive'}">
+                                            <i class="fas fa-circle"></i>
                                             ${medication.status != null ? medication.status : 'Không xác định'}
                                         </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Availability Information -->
-                        <div class="details-section">
-                            <h2 class="section-title">
-                                <i class="fas fa-warehouse"></i>
-                                Thông Tin Tồn Kho
-                            </h2>
-                            <div class="details-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label">Số Lượng Hiện Có</div>
-                                    <div class="detail-value">${medication.quantity >= 0 ? medication.quantity : 0} đơn vị</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Giá Thuốc</div>
-                                    <div class="detail-value price-value">
-                                        <c:choose>
-                                            <c:when test="${medication.price != null and medication.price >= 0}">
-                                                <fmt:setLocale value="vi_VN"/>
-                                                <fmt:formatNumber value="${medication.price}" type="currency" currencySymbol="₫"/>
-                                            </c:when>
-                                            <c:otherwise>Liên hệ phòng tài chính</c:otherwise>
-                                        </c:choose>
                                     </div>
                                 </div>
                             </div>
@@ -557,7 +643,6 @@
                                     In Thông Tin
                                 </button>
                             </div>
-                           
                         </div>
                     </div>
                 </div>
@@ -587,10 +672,7 @@
                     <a href="#"><i class="fas fa-bug"></i> Báo Lỗi Hệ Thống</a>
                 </div>
             </div>
-            
         </div>
     </footer>
-
-   
 </body>
 </html>

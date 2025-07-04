@@ -620,10 +620,7 @@
                     </div>
 
 
-                    <a href="${pageContext.request.contextPath}/AddMedicationsServlet" class="add-medication-btn">
-                        <i class="fas fa-plus"></i>
-                        Thêm Thuốc Mới
-                    </a>
+
                 </div>
             </div>
 
@@ -756,11 +753,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             Chi tiết
                                                         </a>
-                                                        <a href="${pageContext.request.contextPath}/MedicationImportServlet?id=${medication.medicationID}" 
-                                                           class="action-btn btn-import">
-                                                            <i class="fas fa-download"></i>
-                                                            Nhập thuốc 
-                                                        </a>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>
@@ -804,20 +797,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="card-actions">
-                                            <div class="action-buttons">
-                                                <a href="${pageContext.request.contextPath}/ViewMedicationDetailsServlet?id=${medication.medicationID}" 
-                                                   class="action-btn btn-view">
-                                                    <i class="fas fa-eye"></i>
-                                                    Xem chi tiết
-                                                </a>
-                                                <a href="${pageContext.request.contextPath}/MedicationImportServlet?id=${medication.medicationID}" 
-                                                   class="action-btn btn-import">
-                                                    <i class="fas fa-download"></i>
-                                                    Nhập thuốc 
-                                                </a>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
                                 </c:forEach>
                             </div>
