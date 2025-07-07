@@ -1,374 +1,251 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>View All Schedules</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #f0f2f5, #e0e7ff);
-                font-family: 'Segoe UI', Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                position: relative;
-            }
-            .container-wrapper {
-                padding-top: 30px;
-                padding-bottom: 30px;
-            }
-            .container {
-                background-color: #ffffff;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                padding: 30px;
-            }
-            h2 {
-                color: #333;
-                font-weight: 600;
-                margin-bottom: 25px;
-            }
-            .table {
-                background-color: #fff;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            }
-            .table thead th {
-                background-color: #4a69bd;
-                color: #fff;
-                font-weight: 600;
-                padding: 15px 10px;
-                vertical-align: middle;
-            }
-            .table tbody tr:hover {
-                background-color: #f5f5f5;
-            }
-            .table tbody td {
-                vertical-align: middle;
-                padding: 12px 10px;
-                color: #555;
-            }
-            .btn-primary {
-                background-color: #0d6efd;
-                border-color: #0d6efd;
-                transition: all 0.3s ease;
-            }
-            .btn-primary:hover {
-                background-color: #0b5ed7;
-                border-color: #0a58ca;
-                transform: translateY(-2px);
-            }
-            .btn-success {
-                background-color: #28a745;
-                border-color: #28a745;
-                transition: all 0.3s ease;
-            }
-            .btn-success:hover {
-                background-color: #218838;
-                border-color: #1e7e34;
-                transform: translateY(-2px);
-            }
-            .btn-info {
-                background-color: #17a2b8;
-                border-color: #17a2b8;
-                transition: all 0.3s ease;
-            }
-            .btn-info:hover {
-                background-color: #138496;
-                border-color: #117a8b;
-                transform: translateY(-2px);
-            }
-            .btn-danger {
-                background-color: #dc3545;
-                border-color: #dc3545;
-                transition: all 0.3s ease;
-            }
-            .btn-danger:hover {
-                background-color: #c82333;
-                border-color: #bd2130;
-                transform: translateY(-2px);
-            }
-            .btn-warning {
-                background-color: #ffc107;
-                border-color: #ffc107;
-                transition: all 0.3s ease;
-            }
-            .btn-warning:hover {
-                background-color: #e0a800;
-                border-color: #d39e00;
-                transform: translateY(-2px);
-            }
-            .debug-info {
-                color: #dc3545;
-                font-size: 0.8em;
-                margin-top: 5px;
-            }
-            .pagination {
-                display: flex;
-                justify-content: center;
-                gap: 5px;
-                margin-top: 25px;
-            }
-            .pagination .page-link {
-                color: #4a69bd;
-                background-color: #fff;
-                border: 1px solid #dee2e6;
-                padding: 8px 15px;
-                border-radius: 5px;
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
-            .pagination .page-link:hover {
-                background-color: #e0e7ff;
-                color: #333;
-                border-color: #cdd7ee;
-            }
-            .pagination .page-item.active .page-link {
-                background-color: #4a69bd;
-                color: #fff;
-                border-color: #4a69bd;
-                box-shadow: 0 3px 10px rgba(74, 105, 189, 0.3);
-            }
-            .form-control:focus {
-                border-color: #4a69bd;
-                box-shadow: 0 0 0 0.25rem rgba(74, 105, 189, 0.25);
-            }
-            .pagination .ellipsis {
-                padding: 8px 15px;
-                color: #555;
-            }
-            .search-container {
-                display: flex;
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            .search-container .form-control {
-                width: 100%;
-                max-width: 300px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container-wrapper">
-            <div class="container">
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        ${error}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                </c:if>
-                <c:if test="${not empty message}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        ${message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                </c:if>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch làm việc nhân viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fff3e0, #ffe082);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">
-                        <i class="fas fa-home me-2"></i>Home
-                    </a>
-                    <h2 class="text-center flex-grow-1 m-0">Danh Sách Lịch Trình</h2>
-                    <a href="${pageContext.request.contextPath}/views/admin/AddSchedule.jsp" class="btn btn-success">
-                        <i class="fas fa-plus-circle me-2"></i>Thêm Lịch Trình
-                    </a>
-                </div>
+        .container-wrapper {
+            position: relative;
+            min-height: 100vh;
+        }
 
-                <form action="${pageContext.request.contextPath}/ViewSchedulesServlet" method="get" class="mb-4">
-                    <div class="search-container">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Tìm kiếm theo tên Bác sĩ, Y tá, Receptionist..." name="employeeName" value="${param.employeeName}">
-                        </div>
-                        <div class="input-group">
-                            <input type="date" class="form-control" name="searchDate" value="${param.searchDate}">
-                        </div>
-                        <div class="input-group">
-                            <select class="form-control" name="role">
-                                <option value="">Tất cả</option>
-                                <option value="Doctor" ${param.role == 'Doctor' ? 'selected' : ''}>Doctor</option>
-                                <option value="Nurse" ${param.role == 'Nurse' ? 'selected' : ''}>Nurse</option>
-                                <option value="Receptionist" ${param.role == 'Receptionist' ? 'selected' : ''}>Receptionist</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Tìm theo Employee ID" name="employeeID" value="${param.employeeID}">
-                        </div>
-                        <div class="input-group">
-                            <button class="btn btn-primary" type="submit">
-                                <i class="fas fa-search me-2"></i>Tìm kiếm
-                            </button>
-                        </div>
-                    </div>
-                </form>
+        .container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
 
-                <c:choose>
-                    <c:when test="${empty schedules}">
-                        <p class="text-center alert alert-warning">Không có lịch trình nào phù hợp với tìm kiếm của bạn.</p>
-                    </c:when>
-                    <c:otherwise>
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-light text-center">
-                                <tr>
-                                    <th>Schedule ID</th>
-                                    <th>Employee ID</th>
-                                    <th>Date</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Role</th>
-                                    <th>Employee Name</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:set var="page" value="${param.page != null ? param.page : 1}" />
-                                <c:set var="pageSize" value="10" />
-                                <c:set var="totalItems" value="${schedules.size()}" />
-                                <c:set var="totalPages" value="${(totalItems + pageSize - 1) / pageSize}" />
-                                <c:set var="startIndex" value="${(page - 1) * pageSize}" />
-                                <c:set var="endIndex" value="${startIndex + pageSize - 1}" />
-                                <c:if test="${endIndex >= totalItems}">
-                                    <c:set var="endIndex" value="${totalItems - 1}" />
-                                </c:if>
+        .full-width-bottom-border {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #f57f17, #ffca28);
+            z-index: 0;
+        }
 
-                                <c:forEach var="schedule" items="${schedules}" begin="${startIndex}" end="${endIndex}">
-                                    <tr class="text-center">
-                                        <td>${schedule["scheduleID"]}</td>
-                                        <td>${schedule["employeeID"]}</td>
-                                        <td>
-                                            <fmt:formatDate value="${schedule['startTime']}" pattern="yyyy-MM-dd" />
-                                        </td>
-                                        <td>
-                                            <fmt:formatDate value="${schedule['shiftStart']}" pattern="HH:mm:ss" />
-                                        </td>
-                                        <td>
-                                            <fmt:formatDate value="${schedule['shiftEnd']}" pattern="HH:mm:ss" />
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${schedule['role'] == 'Doctor'}">
-                                                    <span class="badge bg-primary">Doctor</span>
-                                                </c:when>
-                                                <c:when test="${schedule['role'] == 'Nurse'}">
-                                                    <span class="badge bg-success">Nurse</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-secondary">${schedule['role']}</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${not empty schedule['fullName'] and not empty schedule['fullName'].trim()}">
-                                                    ${schedule['fullName']}
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="text-muted">Chưa có tên</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>${schedule["status"]}</td>
-                                        <td>
-                                            <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?scheduleID=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                            <a href="${pageContext.request.contextPath}/views/admin/UpdateSchedule.jsp?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-warning btn-sm ms-2">
-                                                <i class="fas fa-edit"></i> Update
-                                            </a>
-                                            <a href="${pageContext.request.contextPath}/DeleteSchedulesServlet?scheduleId=${schedule['scheduleID']}&page=${page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Bạn có chắc muốn xóa lịch trình này?');">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
 
-                        <c:if test="${not empty schedules and totalItems > pageSize}">
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination">
-                                    <c:set var="prevPage" value="${page - 1}" />
-                                    <c:set var="nextPage" value="${page + 1}" />
-                                    <c:set var="maxPagesToShow" value="5" />
-                                    <c:set var="halfMaxPages" value="${maxPagesToShow div 2}" />
+        .btn-primary {
+            background: linear-gradient(to right, #f57f17, #ffca28);
+            border: none;
+            transition: all 0.3s ease;
+        }
 
-                                    <li class="page-item ${page == 1 ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${prevPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
-                                    </li>
+        .btn-primary:hover {
+            background: linear-gradient(to right, #e65100, #ffb300);
+            box-shadow: 0 5px 15px rgba(245, 127, 23, 0.3);
+        }
 
-                                    <c:choose>
-                                        <c:when test="${totalPages <= maxPagesToShow}">
-                                            <c:forEach var="i" begin="1" end="${totalPages}">
-                                                <li class="page-item ${page == i ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${i}</a>
-                                                </li>
-                                            </c:forEach>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <li class="page-item ${page == 1 ? 'active' : ''}">
-                                                <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=1&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">1</a>
-                                            </li>
+        .btn-success {
+            background: linear-gradient(to right, #f57f17, #ffca28);
+            border: none;
+            transition: all 0.3s ease;
+        }
 
-                                            <c:if test="${page > halfMaxPages + 1}">
-                                                <li class="page-item disabled"><span class="page-link ellipsis">...</span></li>
-                                            </c:if>
+        .btn-success:hover {
+            background: linear-gradient(to right, #e65100, #ffb300);
+            box-shadow: 0 5px 15px rgba(245, 127, 23, 0.3);
+        }
 
-                                            <c:set var="startPage" value="${page - halfMaxPages}" />
-                                            <c:set var="endPage" value="${page + halfMaxPages}" />
+        .btn-info {
+            background: linear-gradient(to right, #2e7d32, #66bb6a);
+            border: none;
+            transition: all 0.3s ease;
+        }
 
-                                            <c:if test="${startPage < 2}">
-                                                <c:set var="startPage" value="2" />
-                                            </c:if>
-                                            <c:if test="${endPage > totalPages - 1}">
-                                                <c:set var="endPage" value="${totalPages - 1}" />
-                                            </c:if>
+        .btn-info:hover {
+            background: linear-gradient(to right, #1b5e20, #4caf50);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
 
-                                            <c:if test="${endPage - startPage + 1 < maxPagesToShow - 2}">
-                                                <c:set var="endPage" value="${startPage + maxPagesToShow - 3}" />
-                                                <c:if test="${endPage >= totalPages}">
-                                                    <c:set var="endPage" value="${totalPages - 1}" />
-                                                    <c:set var="startPage" value="${endPage - (maxPagesToShow - 3)}" />
-                                                    <c:if test="${startPage < 2}">
-                                                        <c:set var="startPage" value="2" />
-                                                    </c:if>
-                                                </c:if>
-                                            </c:if>
+        .table-hover tbody tr:hover {
+            background-color: #fff8e1;
+        }
 
-                                            <c:forEach var="i" begin="${startPage}" end="${endPage}">
-                                                <c:if test="${i > 0 && i <= totalPages}">
-                                                    <li class="page-item ${page == i ? 'active' : ''}">
-                                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${i}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${i}</a>
-                                                    </li>
-                                                </c:if>
-                                            </c:forEach>
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-                                            <c:if test="${page < totalPages - halfMaxPages}">
-                                                <li class="page-item disabled"><span class="page-link ellipsis">...</span></li>
-                                            </c:if>
+        .table-light {
+            background-color: #f9fafb;
+        }
 
-                                            <c:if test="${totalPages > 1 && totalPages != page}">
-                                                <li class="page-item ${page == totalPages ? 'active' : ''}">
-                                                    <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${totalPages}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}">${totalPages}</a>
-                                                </li>
-                                            </c:if>
-                                        </c:otherwise>
-                                    </c:choose>
+        .search-form {
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
 
-                                    <li class="page-item ${page == totalPages ? 'disabled' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${nextPage}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </c:if>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination .page-link {
+            color: #f57f17;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #ffe082;
+            color: #e65100;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #f57f17;
+            color: #fff;
+            border-color: #f57f17;
+        }
+
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            border-left: 4px solid #2e7d32;
+        }
+    </style>
+</head>
+<body>
+<div class="container-wrapper">
+    <div class="container">
+        <!-- Nút Home -->
+        <div class="d-flex justify-content-start mb-3">
+            <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-success">Home</a>
+        </div>
+        <h2 class="text-center mb-4">Lịch làm việc nhân viên</h2>
+
+        <!-- Thông báo thành công -->
+        <c:if test="${not empty sessionScope.successMessage}">
+            <div class="success-message">${sessionScope.successMessage}</div>
+            <% session.removeAttribute("successMessage"); %>
+        </c:if>
+
+        <!-- Form tìm kiếm -->
+        <div class="mb-3">
+            <form action="${pageContext.request.contextPath}/admin/schedules" method="get" class="d-flex search-form" style="max-width: 600px;">
+                <input type="text" name="keyword" class="form-control me-2" placeholder="Tìm theo tên, chuyên khoa..."
+                       value="${keyword != null ? keyword : ''}">
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+            </form>
+        </div>
+        <!-- Nút Thêm lịch làm việc -->
+        <div class="d-flex justify-content-end mb-3">
+            <a href="${pageContext.request.contextPath}/AddScheduleServlet" class="btn btn-success">Thêm lịch làm việc</a>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+        <!-- Bảng danh sách nhân viên -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-center">
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Chuyên khoa</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <c:choose>
+                <c:when test="${not empty employees}">
+                    <c:set var="page" value="${param.page != null ? param.page : 1}" />
+                    <c:set var="pageSize" value="10" />
+                    <c:set var="totalItems" value="${employees.size()}" />
+                    <c:set var="totalPages" value="${(totalItems + pageSize - 1) / pageSize}" />
+                    <c:set var="startIndex" value="${(page - 1) * pageSize}" />
+                    <c:set var="endIndex" value="${startIndex + pageSize - 1}" />
+                    <c:if test="${endIndex >= totalItems}">
+                        <c:set var="endIndex" value="${totalItems - 1}" />
+                    </c:if>
+
+                    <c:forEach var="employee" items="${employees}" begin="${startIndex}" end="${endIndex}">
+                        <tr class="text-center">
+                            <td>${employee.userID}</td>
+                            <td>${employee.fullName}</td>
+                            <td>${employee.specialization != null ? employee.specialization : 'N/A'}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${employee.role == 'doctor'}">Bác sĩ</c:when>
+                                    <c:when test="${employee.role == 'nurse'}">Y tá</c:when>
+                                    <c:when test="${employee.role == 'receptionist'}">Lễ tân</c:when>
+                                    <c:otherwise>${employee.role}</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <a href="${pageContext.request.contextPath}/ViewScheduleDetailsServlet?userID=${employee.userID}" 
+                                   class="btn btn-sm btn-info text-white">Xem chi tiết</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <tr>
+                        <td colspan="5" class="text-center">Không có dữ liệu</td>
+                    </tr>
+                </c:otherwise>
+            </c:choose>
+            </tbody>
+        </table>
+
+        <!-- Phân trang -->
+        <c:if test="${not empty employees and totalItems > pageSize}">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <c:set var="prevPage" value="${page - 1}" />
+                    <c:set var="nextPage" value="${page + 1}" />
+                    <li class="page-item ${page == 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageContext.request.contextPath}/admin/schedules?page=${prevPage}${keyword != null ? '&keyword=' : ''}${keyword}" ${page == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>Previous</a>
+                    </li>
+                    <c:forEach var="i" begin="1" end="${totalPages}">
+                        <li class="page-item ${page == i ? 'active' : ''}">
+                            <a class="page-link" href="${pageContext.request.contextPath}/admin/schedules?page=${i}${keyword != null ? '&keyword=' : ''}${keyword}">${i}</a>
+                        </li>
+                    </c:forEach>
+                    <li class="page-item ${page == totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageContext.request.contextPath}/admin/schedules?page=${nextPage}${keyword != null ? '&keyword=' : ''}${keyword}" ${page == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </c:if>
+    </div>
+    <div class="full-width-bottom-border"></div>
+</div>
+</body>
 </html>

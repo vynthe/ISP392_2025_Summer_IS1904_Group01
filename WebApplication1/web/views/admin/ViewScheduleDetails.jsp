@@ -1,226 +1,349 @@
-<%-- 
-    Document   : ViewScheduleDetails
-    Created on : 6 Jun 2025, 11:40:00
-    Author     : exorc
---%>
-
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Schedule Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Làm Việc - ${employee.fullName}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #ede7f6, #d1c4e9);
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            position: relative;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
         }
-
-        .container-wrapper {
-            position: relative;
-            min-height: 100vh;
-        }
-
-        .container {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            margin-top: 40px;
-            margin-bottom: 40px;
-            position: relative;
+        
+        .schedule-container {
+            background: white;
+            border-radius: 8px;
             overflow: hidden;
-            z-index: 1;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
         }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
+        
+        .header {
+            background: #4472C4;
+            color: white;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 40px;
         }
-
-        .full-width-bottom-border {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
-            z-index: 0;
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, #7B1FA2, #AB47BC);
+        
+        .header select {
+            padding: 4px;
             border: none;
-            transition: all 0.3s ease;
+            border-radius: 3px;
         }
-
-        .btn-primary:hover {
-            background: linear-gradient(to right, #6A1B9A, #9C27B0);
-            box-shadow: 0 5px 15px rgba(123, 31, 162, 0.3);
-        }
-
-        .detail-label {
+        
+        .header-label {
             font-weight: bold;
-            color: #2c3e50;
         }
-
-        .detail-value {
-            color: #34495e;
+        
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
-
-        .alert-danger {
-            margin-bottom: 20px;
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            color: white;
+            text-decoration: none;
+            border: none;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #fd7e14;
+        }
+        
+        .btn-warning:hover {
+            background: #e8680b;
+        }
+        
+        .btn i {
+            margin-right: 4px;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .day-header {
+            background: #4472C4;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+        
+        .slot-cell {
+            background: #E8F1FF;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            width: 80px;
+        }
+        
+        .schedule-cell {
+            padding: 8px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            position: relative;
+        }
+        
+        .empty-cell {
+            text-align: center;
+            color: #999;
+        }
+        
+        .event {
+            background: #E8F1FF;
+            border: 1px solid #4472C4;
+            border-radius: 4px;
+            padding: 4px;
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        
+        .event-room {
+            color: #666;
+        }
+        
+        .event-time {
+            background: #90EE90;
+            color: #000;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin: 2px 0;
+        }
+        
+        .event-status {
+            font-size: 10px;
+            margin: 2px 0;
+        }
+        
+        .available {
+            background: #90EE90;
+            color: #000;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        
+        .booked {
+            background: #0984e3;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        
+        .cancelled {
+            background: #d63031;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        
+        .completed {
+            background: #6c5ce7;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .btn-update {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-update:hover {
+            background: #0056b3;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .no-schedule {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 16px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container-wrapper">
-        <div class="container">
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ${error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-
-            <div class="d-flex justify-content-between mb-3">
-                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet?page=${param.page}&employeeName=${param.employeeName}&searchDate=${param.searchDate}&role=${param.role}&employeeID=${param.employeeID}" class="btn btn-primary">Back to Schedules</a>
+    <div class="schedule-container">
+        <div class="header">
+            <div class="header-controls">
+                <form action="${pageContext.request.contextPath}/ViewScheduleDetailsServlet" method="get" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                    <input type="hidden" name="userID" value="${employee.userID}">
+                    <span class="header-label">NĂM</span>
+                    <select name="year" onchange="this.form.submit()">
+                        <c:forEach var="year" begin="2023" end="2026">
+                            <option value="${year}" ${year == requestScope.year ? 'selected' : ''}>${year}</option>
+                        </c:forEach>
+                    </select>
+                    
+                    <span class="header-label">TUẦN</span>
+                    <select name="week" onchange="this.form.submit()">
+                        <c:forEach var="week" begin="1" end="52">
+                            <option value="${week}" ${week == requestScope.week ? 'selected' : ''}>Tuần ${week}</option>
+                        </c:forEach>
+                    </select>
+                </form>
             </div>
-            <h2 class="text-center mb-4">Chi Tiết Lịch Trình</h2>
-
-            <c:if test="${not empty scheduleDetails}">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Schedule ID:</span>
-                        <span class="detail-value">${scheduleDetails.scheduleID}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Employee ID:</span>
-                        <span class="detail-value">${scheduleDetails.employeeID}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Role:</span>
-                        <span class="detail-value">${scheduleDetails.role}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Start Time:</span>
-                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.startTime}" pattern="dd/MM/yyyy HH:mm" /></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">End Time:</span>
-                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.endTime}" pattern="dd/MM/yyyy HH:mm" /></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Shift Start:</span>
-                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.shiftStart}" pattern="HH:mm" /></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Shift End:</span>
-                        <span class="detail-value"><fmt:formatDate value="${scheduleDetails.shiftEnd}" pattern="HH:mm" /></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Day of Week:</span>
-                        <span class="detail-value">${scheduleDetails.dayOfWeek}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Room ID:</span>
-                        <span class="detail-value">${scheduleDetails.roomID}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Room Name:</span>
-                        <span class="detail-value">${scheduleDetails.roomName}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Doctor ID:</span>
-                        <span class="detail-value">${scheduleDetails.doctorID}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Doctor Name:</span>
-                        <span class="detail-value">${scheduleDetails.doctorName}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Nurse ID:</span>
-                        <span class="detail-value">${scheduleDetails.nurseID}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Nurse Name:</span>
-                        <span class="detail-value">${scheduleDetails.nurseName}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <span class="detail-label">Status:</span>
-                        <span class="detail-value">${scheduleDetails.status}</span>
-                    </div>
-                </div>
-
-                <h3 class="mt-4">Danh sách dịch vụ</h3>
-                <c:choose>
-                    <c:when test="${not empty scheduleDetails.services and not empty scheduleDetails.services[0]}">
-                        <c:forEach var="service" items="${scheduleDetails.services}">
-                            <div class="row mb-2">
-                                <div class="col-md-6">
-                                    <span class="detail-label">Service Name:</span>
-                                    <span class="detail-value">${service.serviceName}</span>
-                                </div>
-                                <div class="col-md-6">
-                                    <span class="detail-label">Price:</span>
-                                    <span class="detail-value">${service.price}</span>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <p class="detail-value">Không có dịch vụ nào.</p>
-                    </c:otherwise>
-                </c:choose>
-
-                <h3 class="mt-4">Danh sách bệnh nhân</h3>
-                <c:choose>
-                    <c:when test="${not empty scheduleDetails.patients and not empty scheduleDetails.patients[0]}">
-                        <c:forEach var="patient" items="${scheduleDetails.patients}">
-                            <div class="row mb-2">
-                                <div class="col-md-6">
-                                    <span class="detail-label">Patient ID:</span>
-                                    <span class="detail-value">${patient.patientID}</span>
-                                </div>
-                                <div class="col-md-6">
-                                    <span class="detail-label">Full Name:</span>
-                                    <span class="detail-value">${patient.fullName}</span>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <p class="detail-value">Không có bệnh nhân nào.</p>
-                    </c:otherwise>
-                </c:choose>
-            </c:if>
-            <c:if test="${empty scheduleDetails}">
-                <p class="detail-value">Không tìm thấy chi tiết lịch.</p>
-            </c:if>
+            <div class="header-buttons">
+                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn btn-success">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
         </div>
-        <div class="full-width-bottom-border"></div>
+
+        <!-- Thông tin nhân viên -->
+        <div style="padding: 10px; background: #f8f9fa; margin-bottom: 10px;">
+            <h3 style="margin: 0; color: #2c3e50;">Lịch làm việc của ${employee.fullName}</h3>
+            <p style="margin: 5px 0; color: #666;">
+                Vai trò: 
+                <c:choose>
+                    <c:when test="${employee.role == 'doctor'}">Bác sĩ</c:when>
+                    <c:when test="${employee.role == 'nurse'}">Y tá</c:when>
+                    <c:when test="${employee.role == 'receptionist'}">Lễ tân</c:when>
+                    <c:otherwise>${employee.role}</c:otherwise>
+                </c:choose>
+                | Chuyên khoa: ${employee.specialization != null ? employee.specialization : 'N/A'}
+            </p>
+        </div>
+
+        <!-- Kiểm tra lịch làm việc -->
+        <c:choose>
+            <c:when test="${empty schedules}">
+                <div class="no-schedule">Chưa có lịch làm việc</div>
+            </c:when>
+            <c:otherwise>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="day-header" style="width: 80px;">CA</th>
+                            <th class="day-header">THỨ 2<br><fmt:formatDate value="${weekStart}" pattern="dd/MM"/></th>
+                            <th class="day-header">THỨ 3<br><fmt:formatDate value="${weekStart.plusDays(1)}" pattern="dd/MM"/></th>
+                            <th class="day-header">THỨ 4<br><fmt:formatDate value="${weekStart.plusDays(2)}" pattern="dd/MM"/></th>
+                            <th class="day-header">THỨ 5<br><fmt:formatDate value="${weekStart.plusDays(3)}" pattern="dd/MM"/></th>
+                            <th class="day-header">THỨ 6<br><fmt:formatDate value="${weekStart.plusDays(4)}" pattern="dd/MM"/></th>
+                            <th class="day-header">THỨ 7<br><fmt:formatDate value="${weekStart.plusDays(5)}" pattern="dd/MM"/></th>
+                            <th class="day-header">CHỦ NHẬT<br><fmt:formatDate value="${weekStart.plusDays(6)}" pattern="dd/MM"/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="timeSlot" items="${timeSlots}" varStatus="slotLoop">
+                            <tr>
+                                <td class="slot-cell">${timeSlot.display}</td>
+                                <c:forEach var="dayOffset" begin="0" end="6">
+                                    <td class="schedule-cell">
+                                        <c:set var="found" value="false"/>
+                                        <c:forEach var="schedule" items="${schedules}">
+                                            <c:if test="${schedule.slotDate == weekStart.plusDays(dayOffset) && schedule.startTime.toString() == timeSlot.startTime}">
+                                                <c:set var="found" value="true"/>
+                                                <div class="event" data-slot-id="${schedule.slotID}">
+                                                    <div class="event-room">Phòng ${schedule.roomID} (${schedule.role})</div>
+                                                    <div class="event-status">
+                                                        <span class="${schedule.status.toLowerCase()}">${schedule.status}</span>
+                                                    </div>
+                                                    <div class="event-time">
+                                                        (<fmt:formatDate value="${schedule.startTime}" pattern="HH:mm"/>-<fmt:formatDate value="${schedule.endTime}" pattern="HH:mm"/>)
+                                                    </div>
+                                                    <c:if test="${schedule.isAbsent}">
+                                                        <div class="change-room">(${schedule.absenceReason != null ? schedule.absenceReason : 'Vắng mặt'})</div>
+                                                    </c:if>
+                                                    <div class="action-buttons">
+                                                        <form action="${pageContext.request.contextPath}/admin/update-schedule" method="get" style="display: inline; margin: 0;">
+                                                            <input type="hidden" name="slotID" value="${schedule.slotID}">
+                                                            <button type="submit" class="action-btn btn-update">Cập nhật</button>
+                                                        </form>
+                                                        <form action="${pageContext.request.contextPath}/admin/delete-schedule" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa lịch làm việc này?')">
+                                                            <input type="hidden" name="slotID" value="${schedule.slotID}">
+                                                            <button type="submit" class="action-btn btn-delete">Xóa</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </c:if>
+                                        </c:forEach>
+                                        <c:if test="${!found}">
+                                            <div class="empty-cell">-</div>
+                                        </c:if>
+                                    </td>
+                                </c:forEach>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </c:otherwise>
+        </c:choose>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Lấy thông tin từ URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedYear = urlParams.get('year');
+        const selectedWeek = urlParams.get('week');
+        
+        if (selectedYear) {
+            console.log('Selected year:', selectedYear);
+        }
+        if (selectedWeek) {
+            console.log('Selected week:', selectedWeek);
+        }
+    </script>
 </body>
 </html>
