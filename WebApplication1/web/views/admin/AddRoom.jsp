@@ -304,7 +304,7 @@
                         <i class="fas fa-door-open"></i>Tên Phòng
                     </label>
                     <input type="text" id="roomName" name="roomName" value="${roomName}" 
-                           class="form-control" placeholder="Nhập tên phòng..." required>
+                           class="form-control" placeholder="Nhập tên phòng..." >
                 </div>
                 
                 <div class="form-group">
@@ -320,7 +320,7 @@
                         <i class="fas fa-user-md"></i>ID Bác Sĩ
                     </label>
                     <input type="number" id="doctorID" name="doctorID" value="${doctorID}" 
-                           class="form-control" placeholder="Nhập ID bác sĩ..." required>
+                           class="form-control" placeholder="Nhập ID bác sĩ..." >
                 </div>
                 
                 <div class="form-group">
@@ -328,7 +328,7 @@
                         <i class="fas fa-user-nurse"></i>ID Y Tá
                     </label>
                     <input type="number" id="nurseID" name="nurseID" value="${nurseID}" 
-                           class="form-control" placeholder="Nhập ID y tá..." required>
+                           class="form-control" placeholder="Nhập ID y tá..." >
                 </div>
                 
                 <div class="form-group">

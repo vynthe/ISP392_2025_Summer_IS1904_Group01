@@ -1,406 +1,307 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Làm Việc - ${employee.fullName}</title>
+    <title>Lịch Tuần</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 10px;
+            margin: 20px;
             background-color: #f5f5f5;
         }
-
+        
         .header {
+            display: flex;
+            gap: 10px;
             margin-bottom: 10px;
+            align-items: center;
         }
-
+        
         .header select {
-            margin-right: 10px;
-            padding: 5px 8px;
-            border: 1px solid #999;
+            padding: 2px 5px;
+            border: 1px solid #ccc;
             background-color: white;
-            font-size: 12px;
         }
-
+        
         .header label {
             font-weight: bold;
-            margin-right: 5px;
+            color: #333;
         }
-
-        table {
-            border-collapse: collapse;
+        
+        .schedule-table {
             width: 100%;
+            border-collapse: collapse;
             background-color: white;
-            font-size: 11px;
-            min-height: 600px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        th, td {
-            border: 1px solid #999;
-            padding: 4px;
+        
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
             text-align: left;
             vertical-align: top;
+            min-height: 80px;
         }
-
-        th {
-            background-color: #7ba5d4;
-            color: white;
+        
+        .schedule-table th {
+            background-color: #e6f3ff;
             font-weight: bold;
             text-align: center;
-            padding: 8px;
         }
-
-        .week-header {
-            background-color: #7ba5d4;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            width: 80px;
-            min-width: 80px;
-        }
-
-        .slot-header {
-            background-color: #7ba5d4;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            width: 80px;
-            min-width: 80px;
-            writing-mode: horizontal-tb;
-        }
-
-        .service-name {
-            background-color: #ffc107;
-            color: #000;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-right: 5px;
-            display: inline-block;
-        }
-
-        .room-info {
-            font-size: 10px;
+        
+        .day-header {
+            background-color: #b3d9ff;
             color: #333;
-            margin: 2px 0;
+            font-weight: bold;
         }
-
-        .slot-count {
-            background-color: #17a2b8;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-size: 9px;
-            margin: 2px 2px 2px 0;
-            display: inline-block;
+        
+        .slot-cell {
+            background-color: #f0f8ff;
+            font-weight: bold;
+            text-align: center;
+            width: 60px;
         }
-
-        .action-button {
-            background-color: #007bff;
+        
+        .class-item {
+            margin-bottom: 8px;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .class-code {
+            background-color: #ffa500;
             color: white;
             padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 8px;
-            margin: 1px 2px;
-            border: none;
-            cursor: pointer;
+            border-radius: 2px;
+            font-weight: bold;
             display: inline-block;
+            margin-bottom: 2px;
         }
-
-        .action-button:hover {
-            opacity: 0.8;
+        
+        .class-details {
+            margin-top: 2px;
+            font-size: 11px;
         }
-
-        .view-details {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .book-appointment {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .cell-content {
-            min-height: 80px;
-            line-height: 1.3;
-            padding: 5px;
-            overflow: auto;
-        }
-
-        .empty-cell {
-            text-align: center;
+        
+        .room-info {
             color: #666;
-            font-size: 14px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 11px;
         }
-
-        .day-column {
-            min-width: 150px;
-            width: 14.28%;
+        
+        .status-attended {
+            background-color: #90EE90;
+            color: #006400;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 10px;
         }
-
-        .service-block {
-            margin-bottom: 8px;
-            padding: 3px;
-            border-left: 3px solid #007bff;
-            background-color: #f8f9fa;
+        
+        .status-time {
+            background-color: #87CEEB;
+            color: #004080;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-left: 5px;
         }
-
-        .error-message {
-            color: red;
-            font-weight: bold;
-            margin-bottom: 10px;
+        
+        .eduNext {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-left: 5px;
         }
-
-        .message {
-            color: green;
-            font-weight: bold;
-            margin-bottom: 10px;
+        
+        .week-select {
+            background-color: #b3d9ff;
+        }
+        
+        .year-select {
+            background-color: #b3d9ff;
         }
     </style>
 </head>
 <body>
-    <c:if test="${not empty error}">
-        <div class="error-message">${error}</div>
-    </c:if>
-    <c:if test="${not empty message}">
-        <div class="message">${message}</div>
-    </c:if>
-
     <div class="header">
-        <label>NĂM</label>
-        <select id="yearSelect" onchange="updateWeeks()">
-            <option value="2025" ${year == 2025 ? 'selected' : ''}>2025</option>
-            <option value="2026" ${year == 2026 ? 'selected' : ''}>2026</option>
+        <label>YEAR</label>
+        <select class="year-select" name="year">
+            <option value="2025" selected>2025</option>
+            <option value="2024">2024</option>
+            <option value="2026">2026</option>
         </select>
-        <label>TUẦN</label>
-        <select id="weekSelect" onchange="updateDateHeader()">
-            <c:forEach var="i" begin="28" end="52" step="1">
-                <c:set var="startDate" value="${weekStart}"/>
-                <c:set var="weekStartDate" value="${startDate.plusDays((i - 28) * 7)}"/>
-                <c:set var="weekEndDate" value="${weekStartDate.plusDays(6)}"/>
-                <fmt:formatDate var="startFormatted" value="${weekStartDate}" pattern="dd/MM"/>
-                <fmt:formatDate var="endFormatted" value="${weekEndDate}" pattern="dd/MM"/>
-                <option value="${i} (${startFormatted} To ${endFormatted})" ${week == i ? 'selected' : ''}>
-                    ${i} (${startFormatted} To ${endFormatted})
-                </option>
-            </c:forEach>
+        <label>WEEK</label>
+        <select class="week-select" name="week">
+            <option value="23/06 To 29/06" selected>23/06 To 29/06</option>
+            <option value="16/06 To 22/06">16/06 To 22/06</option>
+            <option value="30/06 To 06/07">30/06 To 06/07</option>
         </select>
     </div>
-
-    <table>
+    
+    <table class="schedule-table">
         <thead>
             <tr>
-                <th class="week-header">NĂM</th>
-                <th class="day-column">THỨ HAI</th>
-                <th class="day-column">THỨ BA</th>
-                <th class="day-column">THỨ TƯ</th>
-                <th class="day-column">THỨ NĂM</th>
-                <th class="day-column">THỨ SÁU</th>
-                <th class="day-column">THỨ BẢY</th>
-                <th class="day-column">CHỦ NHẬT</th>
-            </tr>
-            <tr>
-                <th class="week-header">TUẦN</th>
-                <th id="mon-date"><fmt:formatDate value="${weekStart}" pattern="dd/MM"/></th>
-                <th id="tue-date"><fmt:formatDate value="${weekStart.plusDays(1)}" pattern="dd/MM"/></th>
-                <th id="wed-date"><fmt:formatDate value="${weekStart.plusDays(2)}" pattern="dd/MM"/></th>
-                <th id="thu-date"><fmt:formatDate value="${weekStart.plusDays(3)}" pattern="dd/MM"/></th>
-                <th id="fri-date"><fmt:formatDate value="${weekStart.plusDays(4)}" pattern="dd/MM"/></th>
-                <th id="sat-date"><fmt:formatDate value="${weekStart.plusDays(5)}" pattern="dd/MM"/></th>
-                <th id="sun-date"><fmt:formatDate value="${weekStart.plusDays(6)}" pattern="dd/MM"/></th>
+                <th></th>
+                <th class="day-header">MON<br>23/06</th>
+                <th class="day-header">TUE<br>24/06</th>
+                <th class="day-header">WED<br>25/06</th>
+                <th class="day-header">THU<br>26/06</th>
+                <th class="day-header">FRI<br>27/06</th>
+                <th class="day-header">SAT<br>28/06</th>
+                <th class="day-header">SUN<br>29/06</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Slot 1: 7:30-12:30 -->
             <tr>
-                <td class="slot-header">Ca 1<br>7:30-12:30</td>
-                <c:forEach var="dayOffset" begin="0" end="6">
-                    <c:set var="currentDate" value="${weekStart.plusDays(dayOffset)}"/>
-                    <td class="cell-content">
-                        <c:set var="schedule" value="${schedules.stream()
-                            .filter(s -> java.sql.Date.valueOf(s.scheduleDate).equals(currentDate) && 
-                                         s.startTime.equals(java.sql.Time.valueOf('07:30:00')) && 
-                                         s.endTime.equals(java.sql.Time.valueOf('12:30:00')))
-                            .findFirst().orElse(null)}"/>
-                        <c:choose>
-                            <c:when test="${schedule != null}">
-                                <div class="service-block">
-                                    <span class="service-name">${schedule.serviceName}</span>
-                                    <button class="action-button view-details" onclick="viewDetails(${schedule.id})">Xem chi tiết</button><br>
-                                    <span class="room-info">Phòng ${schedule.roomId}</span><br>
-                                    <span class="slot-count">Số slot: ${schedule.availableSlots}</span>
-                                    <button class="action-button book-appointment" onclick="bookAppointment(${schedule.id})">Đặt lịch</button>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="empty-cell">-</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </td>
-                </c:forEach>
+                <td class="slot-cell">Slot 0</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
             </tr>
-
-            <!-- Slot 2: 13:00-17:30 -->
             <tr>
-                <td class="slot-header">Ca 2<br>13:00-17:30</td>
-                <c:forEach var="dayOffset" begin="0" end="6">
-                    <c:set var="currentDate" value="${weekStart.plusDays(dayOffset)}"/>
-                    <td class="cell-content">
-                        <c:set var="schedule" value="${schedules.stream()
-                            .filter(s -> java.sql.Date.valueOf(s.scheduleDate).equals(currentDate) && 
-                                         s.startTime.equals(java.sql.Time.valueOf('13:00:00')) && 
-                                         s.endTime.equals(java.sql.Time.valueOf('17:30:00')))
-                            .findFirst().orElse(null)}"/>
-                        <c:choose>
-                            <c:when test="${schedule != null}">
-                                <div class="service-block">
-                                    <span class="service-name">${schedule.serviceName}</span>
-                                    <button class="action-button view-details" onclick="viewDetails(${schedule.id})">Xem chi tiết</button><br>
-                                    <span class="room-info">Phòng ${schedule.roomId}</span><br>
-                                    <span class="slot-count">Số slot: ${schedule.availableSlots}</span>
-                                    <button class="action-button book-appointment" onclick="bookAppointment(${schedule.id})">Đặt lịch</button>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="empty-cell">-</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </td>
-                </c:forEach>
+                <td class="slot-cell">Slot 1</td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">FIN202</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at BE-410 <span class="eduNext">EduNext</span>
+                        </div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ISP392</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at DE-412
+                        </div>
+                        <div class="room-info">(_ChangeRoom_)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                        <div class="eduNext">EduNext</div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                    </div>
+                </td>
+                <td>-</td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ISM302</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at BE-410
+                        </div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ITA301</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at EP-303
+                        </div>
+                        <div class="room-info">(_ChangeRoom)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                        <div class="eduNext">EduNext</div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(7:30-9:50)</div>
+                    </div>
+                </td>
+                <td>-</td>
+                <td>-</td>
             </tr>
-
-            <!-- Slot 3: 18:00-20:00 -->
             <tr>
-                <td class="slot-header">Ca 3<br>18:00-20:00</td>
-                <c:forEach var="dayOffset" begin="0" end="6">
-                    <c:set var="currentDate" value="${weekStart.plusDays(dayOffset)}"/>
-                    <td class="cell-content">
-                        <c:set var="schedule" value="${schedules.stream()
-                            .filter(s -> java.sql.Date.valueOf(s.scheduleDate).equals(currentDate) && 
-                                         s.startTime.equals(java.sql.Time.valueOf('18:00:00')) && 
-                                         s.endTime.equals(java.sql.Time.valueOf('20:00:00')))
-                            .findFirst().orElse(null)}"/>
-                        <c:choose>
-                            <c:when test="${schedule != null}">
-                                <div class="service-block">
-                                    <span class="service-name">${schedule.serviceName}</span>
-                                    <button class="action-button view-details" onclick="viewDetails(${schedule.id})">Xem chi tiết</button><br>
-                                    <span class="room-info">Phòng ${schedule.roomId}</span><br>
-                                    <span class="slot-count">Số slot: ${schedule.availableSlots}</span>
-                                    <button class="action-button book-appointment" onclick="bookAppointment(${schedule.id})">Đặt lịch</button>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="empty-cell">-</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </td>
-                </c:forEach>
+                <td class="slot-cell">Slot 2</td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ISM302</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at BE-410
+                        </div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ITA301</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at EP-303
+                        </div>
+                        <div class="room-info">(_ChangeRoom)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                        <div class="eduNext">EduNext</div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                    </div>
+                </td>
+                <td>-</td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">FIN202</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at BE-410 <span class="eduNext">EduNext</span>
+                        </div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="class-item">
+                        <span class="class-code">ISP392</span>
+                        <span class="class-code">New Materials</span>
+                        <div class="class-details">
+                            at DE-423
+                        </div>
+                        <div class="room-info">(_ChangeRoom_)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                        <div class="eduNext">EduNext</div>
+                        <div class="status-attended">(attended)</div>
+                        <div class="status-time">(10:00-12:20)</div>
+                    </div>
+                </td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td class="slot-cell">Slot 3</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
             </tr>
         </tbody>
     </table>
 
     <script>
-        const yearSelect = document.getElementById('yearSelect');
-        const weekSelect = document.getElementById('weekSelect');
-
-        function updateWeeks() {
-            const year = yearSelect.value;
-            const weeks = year === '2025' ? generateWeeks2025() : generateWeeks2026();
-            weekSelect.innerHTML = '';
-            weeks.forEach((week, index) => {
-                const option = document.createElement('option');
-                option.value = week;
-                option.textContent = week;
-                weekSelect.appendChild(option);
-            });
-            updateDateHeader();
-        }
-
-        function generateWeeks2025() {
-            const weeks = [];
-            for (let i = 28; i <= 52; i++) {
-                const weekStart = new Date(2025, 6, 14);
-                weekStart.setDate(weekStart.getDate() + (i - 28) * 7);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                const formatDate = (date) => {
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    return `${day}/${month}`;
-                };
-                weeks.push(`${i} (${formatDate(weekStart)} To ${formatDate(weekEnd)})`);
-            }
-            return weeks;
-        }
-
-        function generateWeeks2026() {
-            const weeks = [];
-            for (let i = 1; i <= 52; i++) {
-                const jan1 = new Date(2026, 0, 1);
-                const dayOfWeek = jan1.getDay();
-                let weekStart = new Date(2026, 0, 1 - dayOfWeek + 1 + (i - 1) * 7);
-                if (weekStart.getFullYear() < 2026) {
-                    weekStart.setDate(weekStart.getDate() + 7);
-                }
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                const formatDate = (date) => {
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    return `${day}/${month}`;
-                };
-                weeks.push(`${i} (${formatDate(weekStart)} To ${formatDate(weekEnd)})`);
-            }
-            return weeks;
-        }
-
-        function updateDateHeader() {
-            const selectedWeek = weekSelect.value;
-            const weekMatch = selectedWeek.match(/\d+ \((\d{2}\/\d{2}) To (\d{2}\/\d{2})\)/);
-            if (weekMatch) {
-                const startDate = weekMatch[1];
-                const [startDay, startMonth] = startDate.split('/');
-                const year = yearSelect.value;
-                const startDateObj = new Date(parseInt(year), parseInt(startMonth) - 1, parseInt(startDay));
-                const days = ['mon-date', 'tue-date', 'wed-date', 'thu-date', 'fri-date', 'sat-date', 'sun-date'];
-                days.forEach((dayId, index) => {
-                    const currentDate = new Date(startDateObj);
-                    currentDate.setDate(currentDate.getDate() + index);
-                    const formattedDate = String(currentDate.getDate()).padStart(2, '0') + '/' +
-                        String(currentDate.getMonth() + 1).padStart(2, '0');
-                    document.getElementById(dayId).textContent = formattedDate;
-                });
-            }
-        }
-
-        function viewDetails(scheduleId) {
-            console.log('View details for schedule ID:', scheduleId);
-            window.location.href = '${pageContext.request.contextPath}/ViewScheduleDetailServlet?id=' + scheduleId;
-        }
-
-        function bookAppointment(scheduleId) {
-            console.log('Book appointment for schedule ID:', scheduleId);
-            window.location.href = '${pageContext.request.contextPath}/BookAppointmentServlet?id=' + scheduleId;
-        }
-
-        // Event listeners
-        weekSelect.addEventListener('change', updateDateHeader);
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            updateWeeks();
-            updateDateHeader();
+        // Xử lý sự kiện thay đổi năm
+        document.querySelector('.year-select').addEventListener('change', function() {
+            // Có thể gửi Ajax request hoặc reload page
+            console.log('Year changed to: ' + this.value);
+        });
+        
+        // Xử lý sự kiện thay đổi tuần
+        document.querySelector('.week-select').addEventListener('change', function() {
+            // Có thể gửi Ajax request hoặc reload page
+            console.log('Week changed to: ' + this.value);
         });
     </script>
 </body>
