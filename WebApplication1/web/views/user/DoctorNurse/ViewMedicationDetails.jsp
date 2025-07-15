@@ -506,31 +506,7 @@
                                 </div>
                             </div>
 
-                            <!-- Availability Information -->
-                            <div class="details-section">
-                                <h2 class="section-title">
-                                    <i class="fas fa-warehouse"></i>
-                                    Thông Tin Tồn Kho
-                                </h2>
-                                <div class="details-grid">
-                                    <div class="detail-item">
-                                        <div class="detail-label">Số Lượng Hiện Có</div>
-                                        <div class="detail-value">${medication.quantity >= 0 ? medication.quantity : 0} đơn vị</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Giá Thuốc</div>
-                                        <div class="detail-value price-value">
-                                            <c:choose>
-                                                <c:when test="${medication.price != null and medication.price >= 0}">
-                                                    <fmt:setLocale value="vi_VN"/>
-                                                    <fmt:formatNumber value="${medication.price}" type="currency" currencySymbol="₫"/>
-                                                </c:when>
-                                                <c:otherwise>Liên hệ phòng tài chính</c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        
 
                             <!-- Description -->
                             <div class="description-section">
