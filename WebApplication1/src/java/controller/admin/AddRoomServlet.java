@@ -9,6 +9,7 @@ import model.service.RoomService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,69 +37,74 @@ public class AddRoomServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
 
-        // Lấy các tham số từ request
         String roomName = request.getParameter("roomName");
         String description = request.getParameter("description");
         String doctorIDStr = request.getParameter("doctorID");
         String nurseIDStr = request.getParameter("nurseID");
-        String createdByStr = request.getParameter("createdBy");
 
-        // Lưu giá trị vào request để hiển thị lại trên form nếu có lỗi
         request.setAttribute("roomName", roomName);
         request.setAttribute("description", description);
         request.setAttribute("doctorID", doctorIDStr);
         request.setAttribute("nurseID", nurseIDStr);
-        request.setAttribute("createdBy", createdByStr);
 
+        Integer doctorID;
+        Integer nurseID;
         try {
-            // Kiểm tra và chuyển đổi doctorID, nurseID
-            Integer doctorID = (doctorIDStr != null && !doctorIDStr.trim().isEmpty()) 
-                ? Integer.parseInt(doctorIDStr) 
-                : null;
-            Integer nurseID = (nurseIDStr != null && !nurseIDStr.trim().isEmpty()) 
-                ? Integer.parseInt(nurseIDStr) 
-                : null;
-            Integer createdBy = (createdByStr != null && !createdByStr.trim().isEmpty()) 
-                ? Integer.parseInt(createdByStr) 
-                : 1; // Mặc định createdBy = 1 nếu không có giá trị
-
-            // Kiểm tra cơ bản đầu vào
-            if (roomName == null || roomName.trim().isEmpty()) {
-                request.setAttribute("error", "Tên phòng không được để trống.");
-                request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
-                return;
-            }
+            doctorID = (doctorIDStr != null && !doctorIDStr.trim().isEmpty()) ? Integer.parseInt(doctorIDStr) : null;
+            nurseID = (nurseIDStr != null && !nurseIDStr.trim().isEmpty()) ? Integer.parseInt(nurseIDStr) : null;
             if (doctorID != null && doctorID <= 0) {
-                request.setAttribute("error", "Doctor ID phải là số nguyên dương.");
-                request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
-                return;
+                throw new NumberFormatException("Doctor ID must be a positive integer");
             }
             if (nurseID != null && nurseID <= 0) {
-                request.setAttribute("error", "Nurse ID phải là số nguyên dương.");
-                request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
-                return;
+                throw new NumberFormatException("Nurse ID must be a positive integer");
             }
-            if (createdBy <= 0) {
-                request.setAttribute("error", "ID người tạo không hợp lệ.");
-                request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
-                return;
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID format: DoctorID=" + doctorIDStr + ", NurseID=" + nurseIDStr + " at " + LocalDateTime.now() + " +07");
+            request.setAttribute("error", "Doctor ID và Nurse ID phải là số nguyên dương.");
+            request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
+            return;
+        }
+
+        // Set default status to "Available" instead of taking it from request
+        String status = "Available";
+
+        try {
+            String createdByStr = request.getParameter("createdBy");
+            Integer createdBy = null;
+            if (createdByStr == null || createdByStr.trim().isEmpty()) {
+                createdBy = 1;
+                System.out.println("createdBy not found in request, using default: " + createdBy + " at " + LocalDateTime.now() + " +07");
+            } else {
+                try {
+                    createdBy = Integer.parseInt(createdByStr);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid createdBy format: " + createdByStr + " at " + LocalDateTime.now() + " +07");
+                    request.setAttribute("error", "ID người tạo không hợp lệ.");
+                    request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
+                    return;
+                }
             }
 
-            // Gọi phương thức addRoom từ RoomService
-            boolean success = roomService.addRoom(roomName, description, doctorID, nurseID, "Available", createdBy);
+            roomName = roomName != null ? roomName.trim() : "";
+            description = description != null ? description.trim() : "";
+
+
+            boolean success = roomService.addRoom(roomName, description, doctorID, nurseID, status, createdBy);
             if (success) {
+                System.out.println("Room added successfully: RoomName=" + roomName + ", Status=" + status + " at " + LocalDateTime.now() + " +07");
                 response.sendRedirect(request.getContextPath() + "/ViewRoomServlet?success=Thêm phòng thành công!");
             } else {
+                System.out.println("Failed to add room: RoomName=" + roomName + " at " + LocalDateTime.now() + " +07");
                 request.setAttribute("error", "Không thể thêm phòng. Vui lòng thử lại.");
                 request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
             }
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "Doctor ID, Nurse ID hoặc ID người tạo phải là số nguyên hợp lệ.");
-            request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
         } catch (IllegalArgumentException e) {
+            System.out.println("Validation error: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             request.setAttribute("error", e.getMessage());
             request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
         } catch (SQLException e) {
+            System.out.println("Database error: " + e.getMessage() + ", SQLState: " + e.getSQLState() + ", ErrorCode: " + e.getErrorCode() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             request.setAttribute("error", "Lỗi cơ sở dữ liệu: " + e.getMessage());
             request.getRequestDispatcher("/views/admin/AddRoom.jsp").forward(request, response);
         } catch (ClassNotFoundException ex) {
