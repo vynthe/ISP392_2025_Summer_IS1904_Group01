@@ -17,51 +17,61 @@ public class RoomService {
         this.roomsDAO = new RoomsDAO();
     }
 
-    public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy) throws SQLException, ClassNotFoundException {
-        // Validate inputs
-        if (roomName == null || roomName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên phòng không được để trống.");
-        }
-        if (doctorID != null && doctorID <= 0 || !roomsDAO.isValidDoctor(doctorID)) {
+public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy)
+        throws SQLException, ClassNotFoundException {
+
+    // Validate inputs
+    if (roomName == null || roomName.trim().isEmpty()) {
+        throw new IllegalArgumentException("Tên phòng không được để trống.");
+    }
+
+    if (doctorID != null) {
+        if (doctorID <= 0 || !roomsDAO.isValidDoctor(doctorID)) {
             throw new IllegalArgumentException("Doctor ID không tồn tại hoặc không hợp lệ.");
         }
-        if (nurseID != null && nurseID <= 0 || !roomsDAO.isValidNurse(nurseID)) {
+    }
+
+    if (nurseID != null) {
+        if (nurseID <= 0 || !roomsDAO.isValidNurse(nurseID)) {
             throw new IllegalArgumentException("Nurse ID không tồn tại hoặc không hợp lệ.");
         }
-        if (createdBy <= 0) {
-            throw new IllegalArgumentException("ID người tạo không hợp lệ.");
-        }
-
-        // Normalize and default status
-        String finalStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "Available";
-        if (!finalStatus.equals("Available") && !finalStatus.equals("Not Available") && 
-            !finalStatus.equals("In Progress") && !finalStatus.equals("Completed")) {
-            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận 'Available', 'Not Available', 'In Progress', hoặc 'Completed'.");
-        }
-
-        // Create Room object
-        Rooms room = new Rooms();
-        room.setRoomName(roomName.trim());
-        room.setDescription(description != null ? description.trim() : null);
-        room.setDoctorID(doctorID);
-        room.setNurseID(nurseID);
-        room.setStatus(finalStatus);
-
-        // Kiểm tra xem có phòng nào không, nếu không thì tạo phòng mới
-        List<Integer> roomIds = roomsDAO.getAllRoomIds();
-        if (roomIds.isEmpty()) {
-            return roomsDAO.addRoom(room, createdBy);
-        } else {
-            // Lấy RoomID đầu tiên có sẵn hoặc tạo mới nếu cần
-            int firstAvailableRoomId = getFirstAvailableRoomId();
-            if (firstAvailableRoomId == -1) {
-                return roomsDAO.addRoom(room, createdBy);
-            }
-            // Nếu có phòng sẵn, gán thông tin vào phòng hiện có hoặc tạo mới
-            room.setRoomID(firstAvailableRoomId); // Có thể bỏ nếu không cần gán ID cụ thể
-            return roomsDAO.addRoom(room, createdBy); // Tạo phòng mới thay vì cập nhật
-        }
     }
+
+    if (createdBy <= 0) {
+        throw new IllegalArgumentException("ID người tạo không hợp lệ.");
+    }
+
+    // Normalize and default status
+    String finalStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "Available";
+    if (!finalStatus.equals("Available") && !finalStatus.equals("Not Available")
+            && !finalStatus.equals("In Progress") && !finalStatus.equals("Completed")) {
+        throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận 'Available', 'Not Available', 'In Progress', hoặc 'Completed'.");
+    }
+
+    // Create Room object
+    Rooms room = new Rooms();
+    room.setRoomName(roomName.trim());
+    room.setDescription(description != null ? description.trim() : null);
+    room.setDoctorID(doctorID);
+    room.setNurseID(nurseID);
+    room.setStatus(finalStatus);
+
+    // Kiểm tra xem có phòng nào không, nếu không thì tạo phòng mới
+    List<Integer> roomIds = roomsDAO.getAllRoomIds();
+    if (roomIds.isEmpty()) {
+        return roomsDAO.addRoom(room, createdBy);
+    } else {
+        // Lấy RoomID đầu tiên có sẵn hoặc tạo mới nếu cần
+        int firstAvailableRoomId = getFirstAvailableRoomId();
+        if (firstAvailableRoomId == -1) {
+            return roomsDAO.addRoom(room, createdBy);
+        }
+        // Nếu có phòng sẵn, gán thông tin vào phòng hiện có hoặc tạo mới
+        room.setRoomID(firstAvailableRoomId); // Có thể bỏ nếu ID tự tăng
+        return roomsDAO.addRoom(room, createdBy); // Tạo phòng mới
+    }
+}
+
 
     public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         return roomsDAO.isDoctorAssigned(doctorID);
@@ -146,18 +156,18 @@ public class RoomService {
 
     public String getDoctorNameByRoomId(int roomId) throws SQLException {
         Rooms room = getRoomByID(roomId);
-        if (room != null) {
-            return roomsDAO.getUserFullNameById(room.getDoctorID()); 
+        if (room == null || room.getDoctorID()==null) {
+            return null; 
         }
-        return null;
+        return getDoctorNameByRoomId(roomId);
     }
 
     public String getNurseNameByRoomId(int roomId) throws SQLException {
         Rooms room = getRoomByID(roomId);
-        if (room != null) {
-            return roomsDAO.getUserFullNameById(room.getNurseID()); 
+        if (room == null || room.getNurseID()==null) {
+            return null; 
         }
-        return null;
+        return getNurseNameByRoomId(roomId);
     }
 
     public boolean assignServiceToRoom(int roomId, int serviceId) {
