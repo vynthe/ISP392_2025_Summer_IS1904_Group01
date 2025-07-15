@@ -83,41 +83,43 @@ public class RoomsDAO {
         }
     }
 
-    public List<Rooms> searchRooms(String keyword) throws SQLException {
-        List<Rooms> roomList = new ArrayList<>();
-        String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
-                     "FROM Rooms " +
-                     "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ?";
+   public List<Rooms> searchRooms(String keyword) throws SQLException {
+    List<Rooms> roomList = new ArrayList<>();
+    String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
+                 "FROM Rooms " +
+                 "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ? OR [Status] LIKE ?";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            String searchPattern = "%" + (keyword != null ? keyword : "") + "%";
-            stmt.setString(1, searchPattern);
-            stmt.setString(2, searchPattern);
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Rooms room = new Rooms();
-                    room.setRoomID(rs.getInt("RoomID"));
-                    room.setRoomName(rs.getString("RoomName"));
-                    room.setDescription(rs.getString("Description"));
-                    
-                    // Safe null handling
-                    Object doctorIDObj = rs.getObject("DoctorID");
-                    Object nurseIDObj = rs.getObject("NurseID");
-                    
-                    room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
-                    room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
-                    room.setStatus(rs.getString("Status"));
-                    roomList.add(room);
-                }
+        String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
+        stmt.setString(1, searchPattern); // RoomName
+        stmt.setString(2, searchPattern); // RoomID (as text)
+        stmt.setString(3, searchPattern); // Status
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
+
+                Object doctorIDObj = rs.getObject("DoctorID");
+                Object nurseIDObj = rs.getObject("NurseID");
+
+                room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
+                room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
+                room.setStatus(rs.getString("Status"));
+                roomList.add(room);
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
         }
-        return roomList;
+    } catch (SQLException e) {
+        System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+        throw e;
     }
+    return roomList;
+}
+
 
     public List<Rooms> getAllRooms() throws SQLException {
         List<Rooms> roomList = new ArrayList<>();
