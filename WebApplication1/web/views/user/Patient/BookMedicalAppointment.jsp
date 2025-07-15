@@ -1,304 +1,710 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Book a Medical Appointment</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Đặt Lịch Hẹn Khám - Bệnh Viện</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-teal: #14b8a6;
+            --primary-teal-dark: #0f766e;
+            --primary-teal-light: #ccfbf1;
+            --accent-coral: #f87171;
+            --neutral-50: #fafafa;
+            --neutral-100: #f5f5f5;
+            --neutral-200: #e5e7eb;
+            --neutral-600: #4b5563;
+            --neutral-900: #111827;
+            --error-red: #dc2626;
+            --success-green: #10b981; /* Màu xanh lá cây đậm hơn */
+            --success-green-light: #d1fae5; /* Nền sáng hơn */
+            --success-green-border: #6ee7b7; /* Viền xanh tươi sáng */
+            --white: #ffffff;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --border-radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #e0f2fe;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            color: var(--neutral-900);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--neutral-100);
         }
-        .container {
-            max-width: 32rem;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: #f5f3ff;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        .header {
+            background: var(--primary-teal);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .form-group label {
-            color: #6b7280;
-            font-weight: 500;
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        select, input[type="text"], input[type="datetime-local"] {
-            background-color: #fef2f2;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-            width: 100%;
-            transition: border-color 0.2s;
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
         }
-        select:focus, input:focus {
-            outline: none;
-            border-color: #a5b4fc;
-            box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.3);
+
+        .logo img {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
         }
-        button {
-            background-color: #a5b4fc;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: none;
-            width: 100%;
+
+        .logo-text {
+            font-size: 1.75rem;
             font-weight: 600;
-            transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: #818cf8;
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
         }
-        .error {
-            color: #f87171;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background 0.2s ease;
         }
-        .loading {
-            color: #a5b4fc;
-            font-size: 0.875rem;
-            display: none;
+
+        .nav-link:hover {
+            background: var(--primary-teal-dark);
         }
-        h2 {
-            color: #4b5563;
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            flex: 1;
+        }
+
+        .page-header {
+            background: var(--primary-teal-light);
+            padding: 2.5rem;
             text-align: center;
         }
-        .tab-button {
-            padding: 0.5rem 1rem;
-            background-color: #e0f2fe;
+
+        .page-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--neutral-600);
+            margin-top: 0.5rem;
+        }
+
+        .stats-section {
+            padding: 2rem;
+            background: var(--neutral-50);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 1.75rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-teal);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--neutral-600);
+            margin-top: 0.5rem;
+        }
+
+        .content-section {
+            padding: 2.5rem;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.85rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--neutral-200);
+            font-size: 0.95rem;
+            min-width: 250px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+        }
+
+        .search-button {
+            background: var(--accent-coral);
+            color: var(--white);
+            padding: 0.85rem 1.75rem;
+            border-radius: 8px;
             border: none;
+            font-weight: 600;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .tab-button.active {
-            background-color: #a5b4fc;
-            color: white;
+
+        .search-button:hover {
+            background: #ef4444;
         }
-        .tab-content {
-            display: none;
+
+        .alert {
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
-        .tab-content.active {
-            display: block;
+
+        .alert-success {
+            background: var(--success-green-light);
+            color: var(--success-green);
+            border: 2px solid var(--success-green-border); /* Viền dày hơn */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success i {
+            font-size: 1.5rem; /* Tăng kích thước dấu tích */
+            color: var(--success-green);
+            margin-right: 0.75rem;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .table-container {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: var(--primary-teal-light);
+            color: var(--neutral-600);
+            font-weight: 600;
+            padding: 1.25rem;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--neutral-200);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--neutral-50);
+        }
+
+        td {
+            padding: 1.25rem;
+        }
+
+        .action-btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-view {
+            background: var(--primary-teal-light);
+            color: var(--primary-teal);
+        }
+
+        .btn-view:hover {
+            background: var(--primary-teal);
+            color: var(--white);
+        }
+
+        .btn-select {
+            background: #fee2e2;
+            color: var(--accent-coral);
+        }
+
+        .btn-select:hover {
+            background: var(--accent-coral);
+            color: var(--white);
+        }
+
+        .pagination-section {
+            padding: 1.5rem;
+            background: var(--neutral-50);
+            border-top: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            color: var(--neutral-600);
+            font-size: 0.9rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--neutral-200);
+            background: var(--white);
+            color: var(--neutral-600);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .page-btn.active {
+            background: var(--primary-teal);
+            color: var(--white);
+            border-color: var(--primary-teal);
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background: var(--primary-teal);
+            color: var(--white);
+        }
+
+        .page-btn.disabled {
+            color: var(--neutral-600);
+            background: var(--neutral-100);
+            cursor: not-allowed;
+        }
+
+        .footer {
+            background: var(--neutral-900);
+            color: var(--neutral-100);
+            padding: 3rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p, .footer-section ul li {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: var(--neutral-100);
+            text-decoration: none;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary-teal-light);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--neutral-600);
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            color: var(--neutral-200);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .table-container {
+                display: none;
+            }
+
+            .mobile-cards {
+                display: block;
+            }
+
+            .doctor-card {
+                background: var(--white);
+                border: 1px solid var(--neutral-200);
+                border-radius: var(--border-radius);
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                box-shadow: var(--shadow-md);
+            }
+
+            .doctor-card:hover {
+                transform: translateY(-2px);
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+
+            .card-number {
+                background: var(--primary-teal-light);
+                color: var(--primary-teal);
+                padding: 0.3rem 0.6rem;
+                border-radius: 6px;
+                font-size: 0.85rem;
+            }
+
+            .card-body {
+                margin-bottom: 1rem;
+            }
+
+            .card-field {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--neutral-200);
+            }
+
+            .card-field:last-child {
+                border-bottom: none;
+            }
+
+            .field-label {
+                font-weight: 600;
+                color: var(--neutral-900);
+            }
+
+            .field-value {
+                color: var(--neutral-600);
+            }
+
+            .card-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .pagination-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .pagination-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-cards {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="text-2xl font-bold mb-6">Book a Medical Appointment</h2>
-        <div class="mb-4">
-            <button class="tab-button active" onclick="showTab('detailed')">Detailed Booking</button>
-            <button class="tab-button" onclick="showTab('simple')">Simple Booking</button>
+    <header class="header">
+        <div class="header-container">            
+            <nav class="nav-menu">
+                <a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp" 
+                   class="nav-link active">
+                    <i class="fas fa-home"></i> Trang Chủ
+                </a>
+                <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" 
+                   class="nav-link">
+                    <i class="fas fa-calendar-check"></i> Đặt Lịch
+                </a>
+            </nav>
         </div>
-        <form id="appointmentForm" action="BookMedicalAppointmentServlet" method="post" class="space-y-4">
-            <input type="hidden" name="action" value="bookAppointment">
-            <input type="hidden" name="type" id="bookingType">
+    </header>
+    <div class="main-container">
+        <div class="page-header">
+            <h1 class="page-title">Đặt Lịch Hẹn Khám</h1>
+            <p class="page-subtitle">Tìm và đặt lịch với bác sĩ phù hợp</p>
+        </div>
 
-            <!-- Detailed Booking Tab -->
-            <div id="detailedTab" class="tab-content active">
-                <input type="hidden" name="patientID" value="${sessionScope.user.userID}">
-
-                <div class="form-group">
-                    <label for="serviceID" class="block mb-1">Select Service:</label>
-                    <select id="serviceID" name="serviceID" required onchange="loadRoomsAndDoctors()">
-                        <option value="">-- Select a Service --</option>
-                        <c:forEach var="service" items="${services}">
-                            <option value="${service.serviceID}">${service.serviceName}</option>
-                        </c:forEach>
-                    </select>
-                    <span id="serviceLoading" class="loading">Loading...</span>
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">${not empty totalRecords ? totalRecords : 0}</div>
+                    <div class="stat-label">Tổng số bác sĩ</div>
                 </div>
-
-                <div class="form-group">
-                    <label for="roomID" class="block mb-1">Select a Room:</label>
-                    <select id="roomID" name="roomID" required disabled>
-                        <option value="">-- Select a Room --</option>
-                    </select>
-                    <span id="roomLoading" class="loading">Loading rooms...</span>
+                <div class="stat-card">
+                    <div class="stat-value">${not empty currentPage ? currentPage : 1}</div>
+                    <div class="stat-label">Trang hiện tại</div>
                 </div>
-
-                <div class="form-group">
-                    <label for="doctorID" class="block mb-1">Select Doctor:</label>
-                    <select id="doctorID" name="doctorID" required disabled onchange="loadDoctorSchedule()">
-                        <option value="">-- Select a Doctor --</option>
-                    </select>
-                    <span id="doctorLoading" class="loading">Loading doctors...</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="scheduleID" class="block mb-1">Select Doctor Schedule:</label>
-                    <select id="scheduleID" name="scheduleID" required disabled onchange="setAppointmentTime()">
-                        <option value="">-- Select a Schedule --</option>
-                    </select>
-                    <span id="scheduleLoading" class="loading">Loading schedules...</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="appointmentTime" class="block mb-1">Appointment Time:</label>
-                    <input type="datetime-local" id="appointmentTime" name="appointmentTime" required readonly>
-                    <input type="hidden" id="shiftStart" name="shiftStart">
+                <div class="stat-card">
+                    <div class="stat-value">${not empty totalPages ? totalPages : 1}</div>
+                    <div class="stat-label">Tổng số trang</div>
                 </div>
             </div>
+        </div>
 
-            <!-- Simple Booking Tab -->
-            <div id="simpleTab" class="tab-content">
-                <div class="form-group">
-                    <label for="fullName" class="block mb-1">Full Name:</label>
-                    <input type="text" id="fullName" name="fullName" required>
+        <div class="content-section">
+            <form action="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" method="get" class="search-form">
+                <input type="text" name="nameKeyword" placeholder="Tìm theo tên bác sĩ..." 
+                       value="${fn:escapeXml(param.nameKeyword)}" class="search-input">
+                <input type="text" name="specialtyKeyword" placeholder="Tìm theo chuyên môn..." 
+                       value="${fn:escapeXml(param.specialtyKeyword)}" class="search-input">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </form>
+
+            <c:if test="${not empty sessionScope.statusMessage}">
+                <div class="alert ${fn:contains(sessionScope.statusMessage, 'thành công') ? 'alert-success' : 'alert-error'}">
+                    <i class="fas ${fn:contains(sessionScope.statusMessage, 'thành công') ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    ${fn:escapeXml(sessionScope.statusMessage)}
                 </div>
-                <div class="form-group">
-                    <label for="phoneNumber" class="block mb-1">Phone Number:</label>
-                    <input type="text" id="phoneNumber" name="phoneNumber" required>
+                <c:remove var="statusMessage" scope="session"/>
+            </c:if>
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${fn:escapeXml(errorMessage)}
                 </div>
-                <div class="form-group">
-                    <label for="email" class="block mb-1">Email:</label>
-                    <input type="text" id="email" name="email">
-                </div>
-                <div class="form-group">
-                    <label for="service" class="block mb-1">Service:</label>
-                    <select id="service" name="service" required>
-                        <option value="">-- Select a Service --</option>
-                        <c:forEach var="service" items="${services}">
-                            <option value="${service.serviceName}">${service.serviceName}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentTimeSimple" class="block mb-1">Appointment Time:</label>
-                    <input type="datetime-local" id="appointmentTimeSimple" name="appointmentTime" required>
-                </div>
+            </c:if>
+
+            <div class="table-container">
+                <c:choose>
+                    <c:when test="${empty doctors}">
+                        <div class="empty-state">
+                            <i class="fas fa-user-md empty-icon"></i>
+                            <h3 class="empty-title">Chưa có bác sĩ nào</h3>
+                            <p class="empty-description">Hiện tại không có bác sĩ nào trong hệ thống${not empty errorMessage ? ' hoặc có lỗi: ' + errorMessage : ''}</p>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên Bác Sĩ</th>
+                                    <th>Chuyên Môn</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="doctor" items="${doctors}" varStatus="status">
+                                    <tr>
+                                        <td>${(currentPage - 1) * 10 + status.count}</td>
+                                        <td>${fn:escapeXml(doctor.fullName)}</td>
+                                        <td>${fn:escapeXml(doctor.specialization)}</td>
+                                        <td>
+                                            <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" 
+                                               class="action-btn btn-view">
+                                                <i class="fas fa-eye"></i> Chi tiết
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?doctorId=${doctor.userID}&action=select" 
+                                               class="action-btn btn-select">
+                                                <i class="fas fa-check"></i> Chọn
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                        <div class="mobile-cards">
+                            <c:forEach var="doctor" items="${doctors}" varStatus="status">
+                                <div class="doctor-card">
+                                    <div class="card-header">
+                                        <div class="doctor-name">${fn:escapeXml(doctor.fullName)}</div>
+                                        <div class="card-number">#${(currentPage - 1) * 10 + status.count}</div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="card-field">
+                                            <span class="field-label">Chuyên môn:</span>
+                                            <span class="field-value">${fn:escapeXml(doctor.specialization)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-actions">
+                                        <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" 
+                                           class="action-btn btn-view">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </a>
+                                        <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?doctorId=${doctor.userID}&action=select" 
+                                           class="action-btn btn-select">
+                                            <i class="fas fa-check"></i> Chọn
+                                        </a>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
 
-            <button type="submit">Book Appointment</button>
-        </form>
+            <c:if test="${not empty doctors and totalPages > 1}">
+                <div class="pagination-section">
+                    <div class="pagination-info">
+                        Hiển thị <strong>${(currentPage - 1) * 10 + 1}</strong> - 
+                        <strong>${currentPage * 10 > totalRecords ? totalRecords : currentPage * 10}</strong> 
+                        trong tổng số <strong>${totalRecords}</strong> bác sĩ
+                    </div>
+                    <div class="pagination-controls">
+                        <c:choose>
+                            <c:when test="${currentPage > 1}">
+                                <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?page=1&nameKeyword=${fn:escapeXml(param.nameKeyword)}&specialtyKeyword=${fn:escapeXml(param.specialtyKeyword)}" 
+                                   class="page-btn"><i class="fas fa-angle-double-left"></i></a>
+                                <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?page=${currentPage - 1}&nameKeyword=${fn:escapeXml(param.nameKeyword)}&specialtyKeyword=${fn:escapeXml(param.specialtyKeyword)}" 
+                                   class="page-btn"><i class="fas fa-angle-left"></i></a>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="page-btn disabled"><i class="fas fa-angle-double-left"></i></span>
+                                <span class="page-btn disabled"><i class="fas fa-angle-left"></i></span>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:forEach var="i" begin="${currentPage - 2 > 0 ? currentPage - 2 : 1}" 
+                                  end="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}">
+                            <c:choose>
+                                <c:when test="${i == currentPage}">
+                                    <span class="page-btn active">${i}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?page=${i}&nameKeyword=${fn:escapeXml(param.nameKeyword)}&specialtyKeyword=${fn:escapeXml(param.specialtyKeyword)}" 
+                                       class="page-btn">${i}</a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                        <c:choose>
+                            <c:when test="${currentPage < totalPages}">
+                                <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?page=${currentPage + 1}&nameKeyword=${fn:escapeXml(param.nameKeyword)}&specialtyKeyword=${fn:escapeXml(param.specialtyKeyword)}" 
+                                   class="page-btn"><i class="fas fa-angle-right"></i></a>
+                                <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?page=${totalPages}&nameKeyword=${fn:escapeXml(param.nameKeyword)}&specialtyKeyword=${fn:escapeXml(param.specialtyKeyword)}" 
+                                   class="page-btn"><i class="fas fa-angle-double-right"></i></a>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="page-btn disabled"><i class="fas fa-angle-right"></i></span>
+                                <span class="page-btn disabled"><i class="fas fa-angle-double-right"></i></span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </c:if>
+        </div>
 
-        <div id="error" class="error">${sessionScope.error}</div>
-        <div id="success" class="success">${sessionScope.successMessage}</div>
-        <% session.removeAttribute("error"); session.removeAttribute("successMessage"); %>
-    </div>
-
-    <script>
-        $(document).ready(function() {
-            showTab('detailed'); // Default tab
-        });
-
-        function showTab(tabName) {
-            $('.tab-button').removeClass('active');
-            $('.tab-content').removeClass('active');
-            $(`.tab-button[onclick="showTab('${tabName}')"]`).addClass('active');
-            $(`#${tabName}Tab`).addClass('active');
-            $('#bookingType').val(tabName);
-        }
-
-        function loadRoomsAndDoctors() {
-            const serviceID = $('#serviceID').val();
-            if (!serviceID) {
-                disableSelect('roomID');
-                disableSelect('doctorID');
-                disableSelect('scheduleID');
-                $('#appointmentTime').val('');
-                return;
-            }
-
-            $('#roomLoading').show();
-            $('#doctorLoading').show();
-            $.ajax({
-                url: 'BookMedicalAppointmentServlet',
-                type: 'GET',
-                data: { action: 'getRoomsAndDoctors', serviceID: serviceID },
-                success: function(data) {
-                    const roomSelect = $('#roomID');
-                    const doctorSelect = $('#doctorID');
-                    roomSelect.html('<option value="">-- Select a Room --</option>');
-                    doctorSelect.html('<option value="">-- Select a Doctor --</option>');
-                    data.rooms.forEach(room => {
-                        roomSelect.append(`<option value="${room.roomID}">${room.roomName}</option>`);
-                    });
-                    data.doctors.forEach(doctor => {
-                        doctorSelect.append(`<option value="${doctor.userID}">${doctor.fullName}</option>`);
-                    });
-                    roomSelect.prop('disabled', false);
-                    doctorSelect.prop('disabled', false);
-                    $('#roomLoading').hide();
-                    $('#doctorLoading').hide();
-                    loadDoctorSchedule(); // Load schedules for the first doctor if selected
-                },
-                error: function(xhr) {
-                    $('#error').text('Error loading rooms and doctors: ' + xhr.responseText);
-                    disableSelect('roomID');
-                    disableSelect('doctorID');
-                    $('#roomLoading').hide();
-                    $('#doctorLoading').hide();
-                }
-            });
-        }
-
-        function loadDoctorSchedule() {
-            const doctorID = $('#doctorID').val();
-            if (!doctorID) {
-                disableSelect('scheduleID');
-                $('#appointmentTime').val('');
-                return;
-            }
-
-            $('#scheduleLoading').show();
-            $.ajax({
-                url: 'BookMedicalAppointmentServlet',
-                type: 'GET',
-                data: { action: 'getSchedules', doctorID: doctorID },
-                success: function(data) {
-                    const scheduleSelect = $('#scheduleID');
-                    scheduleSelect.html('<option value="">-- Select a Schedule --</option>');
-                    data.schedules.forEach(schedule => {
-                        const startDateTime = new Date(schedule.startTime).toISOString().slice(0, 16);
-                        scheduleSelect.append(`<option value="${schedule.scheduleID}" data-time="${startDateTime}">${schedule.startTime} - ${schedule.endTime} (${schedule.dayOfWeek})</option>`);
-                    });
-                    scheduleSelect.prop('disabled', false);
-                    $('#scheduleLoading').hide();
-                },
-                error: function(xhr) {
-                    $('#error').text('Error loading schedules: ' + xhr.responseText);
-                    disableSelect('scheduleID');
-                    $('#scheduleLoading').hide();
-                }
-            });
-        }
-
-        function setAppointmentTime() {
-            const scheduleSelect = $('#scheduleID');
-            const selectedOption = scheduleSelect.find(':selected');
-            const appointmentTime = selectedOption.data('time');
-            $('#appointmentTime').val(appointmentTime);
-        }
-
-        function disableSelect(id) {
-            const select = $(`#${id}`);
-            select.html('<option value="">-- Select an Option --</option>');
-            select.prop('disabled', true);
-        }
-
-        $('#appointmentForm').on('submit', function(e) {
-            const type = $('#bookingType').val();
-            if (type === 'detailed') {
-                const serviceID = $('#serviceID').val();
-                const roomID = $('#roomID').val();
-                const doctorID = $('#doctorID').val();
-                const scheduleID = $('#scheduleID').val();
-                const appointmentTime = $('#appointmentTime').val();
-                if (!serviceID || !roomID || !doctorID || !scheduleID || !appointmentTime) {
-                    e.preventDefault();
-                    $('#error').text('Please complete all fields.');
-                }
-            } else if (type === 'simple') {
-                const fullName = $('#fullName').val();
-                const phoneNumber = $('#phoneNumber').val();
-                const service = $('#service').val();
-                const appointmentTime = $('#appointmentTimeSimple').val();
-                if (!fullName || !phoneNumber || !service || !appointmentTime) {
-                    e.preventDefault();
-                    $('#error').text('Please complete all fields.');
-                }
-            }
-        });
-    </script>
-</body>
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h4>Về Chúng Tôi</h4>
+                    <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên Kết</h4>
+                    <ul>
+                        <li><a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet">Trang Chủ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên Hệ</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Đường Sức Khỏe, DH.FPT</li>
+                        <li><i class="fas fa-phone"></i> (028) 1234-5678</li>
+                        <li><i class="fas fa-envelope"></i> info@benhvien.com</li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </body>
 </html>
