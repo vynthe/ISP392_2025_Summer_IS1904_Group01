@@ -75,7 +75,7 @@ public class AddPatientServlet extends HttpServlet {
             Date dob;
             try {
                 dob = Date.valueOf(dobStr);
-                LocalDate currentDate = LocalDate.now(); // 10:15 AM +07, Monday, May 26, 2025
+                LocalDate currentDate = LocalDate.now(); 
                 LocalDate dobDate = dob.toLocalDate();
                 if (dobDate.isAfter(currentDate)) {
                     throw new IllegalArgumentException("Ngày sinh không được vượt quá thời gian thực.");

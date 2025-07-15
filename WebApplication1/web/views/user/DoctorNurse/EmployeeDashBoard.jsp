@@ -597,7 +597,7 @@
                             <i class="fas fa-prescription-bottle-alt"></i>
                         </div>
                         <div class="action-content">
-                            <h3>Thêm Đơn Thuốc</h3>
+                            <h3>Danh sách thuốc</h3>
                             <p>Kê đơn và quản lý thuốc cho bệnh nhân</p>
                         </div>
                     </a>
