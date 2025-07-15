@@ -8,7 +8,8 @@
     <title>Tạo Lịch Làm Việc Tự Động - Hospital Management</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/main.min.css' rel='stylesheet' />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -73,6 +74,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            display: none; /* Ẩn tạm thời nếu không dùng */
         }
         .special-schedule-item {
             border: 1px solid #dee2e6;
@@ -83,6 +85,14 @@
         }
         .special-schedule-item .form-check-inline {
             margin-right: 1rem;
+        }
+        #loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
         }
     </style>
 </head>
@@ -123,7 +133,7 @@
                             <li>Tạo lịch cho nhân viên theo vai trò được chọn</li>
                             <li>Lịch làm việc mặc định: Thứ 2 đến Thứ 7 (Ca sáng: 7:30-12:30, Ca chiều: 13:30-17:30)</li>
                             <li>Chủ nhật: Không tạo lịch mặc định (có thể thêm lịch đặc biệt)</li>
-                            <li>Phòng sẽ được phân bổ sau khi tạo lịch</li>
+                            <li><strong>Phòng sẽ được gán tự động</strong> dựa trên vai trò (ví dụ: Lễ tân dùng Phòng 1)</li>
                         </ul>
                     </div>
 
@@ -186,7 +196,7 @@
                         </button>
 
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitButton">
                                 <i class="fas fa-magic me-2"></i>Tạo Lịch Tự Động
                             </button>
                             <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn btn-primary btn-lg mt-3">
@@ -197,20 +207,24 @@
                 </div>
             </div>
 
-            <div id='calendar'></div>
+            <!-- Loading Spinner -->
+            <div id="loading" class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tạo lịch...</span>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Set default date to today
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('autoStartDate').value = today;
 
-        // Initialize FullCalendar
+        // Initialize FullCalendar (ẩn tạm thời nếu không dùng)
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -222,7 +236,7 @@
             },
             events: []
         });
-        calendar.render();
+        // calendar.render(); // Bỏ comment nếu muốn dùng
 
         // Special Schedule Logic
         let specialScheduleItemCount = 0;
@@ -273,31 +287,31 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Ngày Làm Việc: <span class="text-danger">*</span></label><br>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_mon" name="specialSchedules[${index}].days" value="Monday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_mon" name="specialSchedules[${index}].days" value="MONDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_mon">T2</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_tue" name="specialSchedules[${index}].days" value="Tuesday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_tue" name="specialSchedules[${index}].days" value="TUESDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_tue">T3</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_wed" name="specialSchedules[${index}].days" value="Wednesday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_wed" name="specialSchedules[${index}].days" value="WEDNESDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_wed">T4</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_thu" name="specialSchedules[${index}].days" value="Thursday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_thu" name="specialSchedules[${index}].days" value="THURSDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_thu">T5</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_fri" name="specialSchedules[${index}].days" value="Friday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_fri" name="specialSchedules[${index}].days" value="FRIDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_fri">T6</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_sat" name="specialSchedules[${index}].days" value="Saturday" checked>
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_sat" name="specialSchedules[${index}].days" value="SATURDAY" checked>
                         <label class="form-check-label" for="specialDay_${index}_sat">T7</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_sun" name="specialSchedules[${index}].days" value="Sunday">
+                        <input class="form-check-input" type="checkbox" id="specialDay_${index}_sun" name="specialSchedules[${index}].days" value="SUNDAY">
                         <label class="form-check-label" for="specialDay_${index}_sun">CN</label>
                     </div>
                     <div class="invalid-feedback">Vui lòng chọn ít nhất một ngày làm việc.</div>
@@ -330,8 +344,12 @@
         addSpecialScheduleBtn.addEventListener('click', addSpecialScheduleItem);
 
         // Form validation
-        document.getElementById('autoScheduleForm').addEventListener('submit', function (e) {
-            const requiredFields = this.querySelectorAll('[required]');
+        const form = document.getElementById('autoScheduleForm');
+        const submitButton = document.getElementById('submitButton');
+        const loading = document.getElementById('loading');
+
+        form.addEventListener('submit', function (e) {
+            const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
 
             requiredFields.forEach(field => {
@@ -376,6 +394,11 @@
 
             if (!isValid) {
                 e.preventDefault();
+            } else {
+                // Hiển thị loading khi submit
+                loading.style.display = 'block';
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo...';
             }
         });
     });

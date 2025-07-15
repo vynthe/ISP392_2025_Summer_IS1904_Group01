@@ -15,141 +15,164 @@ import model.entity.ScheduleEmployee;
 import model.entity.AppointmentQueue;
 import model.entity.DoctorAbsence;
 import model.entity.AppointmentLog;
+import model.entity.Rooms;
 import model.entity.SMSTemplate;
 
 public class ScheduleDAO {
     private final DBContext dbContext;
+    private final RoomsDAO roomsDAO;
 
     public ScheduleDAO() {
         this.dbContext = DBContext.getInstance();
+        this.roomsDAO = new RoomsDAO();
     }
-// Tạo lịch tự động
+
+    // Tạo lịch tự động
     public void addSchedule(List<Integer> userIds, List<String> roles, int roomId, int createdBy, LocalDate startDate, boolean isYearly) throws SQLException, ClassNotFoundException {
-    if (userIds.size() != roles.size()) {
-        throw new IllegalArgumentException("The number of userIds must match the number of roles.");
-    }
+        if (userIds.size() != roles.size()) {
+            throw new IllegalArgumentException("The number of userIds must match the number of roles.");
+        }
 
-    LocalDate endDate = isYearly ? startDate.plusYears(1) : startDate.plusWeeks(1);
-    LocalTime morningStart = LocalTime.of(7, 30);
-    LocalTime morningEnd = LocalTime.of(12, 30);
-    LocalTime afternoonStart = LocalTime.of(13, 30);
-    LocalTime afternoonEnd = LocalTime.of(17, 30); // Cập nhật thành 17h30
-    int receptionistRoomId = 1;
+        // Kiểm tra roomId hợp lệ
+        if (roomId > 0) {
+            Rooms room = roomsDAO.getRoomByID(roomId); // Kiểm tra bằng getRoomByID
+            if (room == null) {
+                throw new IllegalArgumentException("RoomID " + roomId + " does not exist.");
+            }
+        }
 
-    String insertScheduleSql = "INSERT INTO ScheduleEmployee (UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt) " +
-                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-    String checkConflictSql = "SELECT COUNT(*) FROM ScheduleEmployee WHERE UserID = ? AND SlotDate = ? AND " +
-                             "((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?)) AND Status != 'Cancelled'";
-    String checkAbsenceSql = "SELECT COUNT(*) FROM DoctorAbsences WHERE DoctorID = ? AND AbsenceDate = ? AND Status = 'Approved'";
-    String insertNotificationSql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) " +
-                                  "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        // Lấy RoomID hợp lệ cho phòng lễ tân thay vì cố định là 1
+        int receptionistRoomId = roomsDAO.getFirstAvailableRoomId();
+        if (receptionistRoomId == -1) {
+            throw new IllegalArgumentException("No available Receptionist RoomID exists. Please create a room first.");
+        }
 
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement insertStmt = conn.prepareStatement(insertScheduleSql);
-         PreparedStatement conflictStmt = conn.prepareStatement(checkConflictSql);
-         PreparedStatement absenceStmt = conn.prepareStatement(checkAbsenceSql);
-         PreparedStatement notifyStmt = conn.prepareStatement(insertNotificationSql)) {
-        
-        conn.setAutoCommit(false);
+        LocalDate endDate = isYearly ? startDate.plusYears(1) : startDate.plusWeeks(1);
+        LocalTime morningStart = LocalTime.of(7, 30);
+        LocalTime morningEnd = LocalTime.of(12, 30);
+        LocalTime afternoonStart = LocalTime.of(13, 30);
+        LocalTime afternoonEnd = LocalTime.of(17, 30);
 
-        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-            if (date.getDayOfWeek().getValue() <= 6) { // Không tạo lịch cho Chủ Nhật
-                for (int i = 0; i < userIds.size(); i++) {
-                    int userId = userIds.get(i);
-                    String role = roles.get(i);
-                    int currentRoomId = "Receptionist".equalsIgnoreCase(role) ? receptionistRoomId : roomId;
+        String insertScheduleSql = "INSERT INTO ScheduleEmployee (UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt) " +
+                                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        String checkConflictSql = "SELECT COUNT(*) FROM ScheduleEmployee WHERE UserID = ? AND SlotDate = ? AND " +
+                                 "((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?)) AND Status != 'Cancelled'";
+        String checkAbsenceSql = "SELECT COUNT(*) FROM DoctorAbsences WHERE DoctorID = ? AND AbsenceDate = ? AND Status = 'Approved'";
+        String insertNotificationSql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) " +
+                                      "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
 
-                    // Kiểm tra ngày nghỉ nếu là Doctor
-                    boolean isAbsent = false;
-                    if ("Doctor".equalsIgnoreCase(role)) {
-                        absenceStmt.setInt(1, userId);
-                        absenceStmt.setDate(2, Date.valueOf(date));
-                        try (ResultSet rs = absenceStmt.executeQuery()) {
-                            if (rs.next() && rs.getInt(1) > 0) {
-                                isAbsent = true; // Bác sĩ nghỉ, bỏ qua slot này
-                            }
-                        }
-                    }
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement insertStmt = conn.prepareStatement(insertScheduleSql);
+             PreparedStatement conflictStmt = conn.prepareStatement(checkConflictSql);
+             PreparedStatement absenceStmt = conn.prepareStatement(checkAbsenceSql);
+             PreparedStatement notifyStmt = conn.prepareStatement(insertNotificationSql)) {
 
-                    if (!isAbsent) {
-                        // Kiểm tra xung đột slot buổi sáng
-                        conflictStmt.setInt(1, userId);
-                        conflictStmt.setDate(2, Date.valueOf(date));
-                        conflictStmt.setTime(3, Time.valueOf(morningStart));
-                        conflictStmt.setTime(4, Time.valueOf(morningStart));
-                        conflictStmt.setTime(5, Time.valueOf(morningEnd));
-                        conflictStmt.setTime(6, Time.valueOf(morningEnd));
-                        try (ResultSet rs = conflictStmt.executeQuery()) {
-                            if (rs.next() && rs.getInt(1) == 0) { // Không có xung đột
-                                insertStmt.setInt(1, userId);
-                                insertStmt.setString(2, role);
-                                insertStmt.setInt(3, currentRoomId);
-                                insertStmt.setDate(4, Date.valueOf(date));
-                                insertStmt.setTime(5, Time.valueOf(morningStart));
-                                insertStmt.setTime(6, Time.valueOf(morningEnd));
-                                insertStmt.setString(7, "Available");
-                                insertStmt.setInt(8, createdBy);
-                                insertStmt.addBatch();
+            conn.setAutoCommit(false);
 
-                                // Thêm thông báo cho slot buổi sáng
-                                notifyStmt.setInt(1, createdBy);
-                                notifyStmt.setString(2, "Admin");
-                                notifyStmt.setInt(3, userId);
-                                notifyStmt.setString(4, role);
-                                notifyStmt.setString(5, "Lịch làm việc mới");
-                                notifyStmt.setString(6, "Bạn được phân lịch làm việc ngày " + date + " từ " + morningStart + " đến " + morningEnd + " tại phòng " + currentRoomId);
-                                notifyStmt.setBoolean(7, false);
-                                notifyStmt.addBatch();
+            for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+                if (date.getDayOfWeek().getValue() <= 6) { // Không tạo lịch cho Chủ Nhật
+                    for (int i = 0; i < userIds.size(); i++) {
+                        int userId = userIds.get(i);
+                        String role = roles.get(i);
+                        int currentRoomId = "Receptionist".equalsIgnoreCase(role) ? receptionistRoomId : roomId;
+
+                        // Kiểm tra ngày nghỉ nếu là Doctor
+                        boolean isAbsent = false;
+                        if ("Doctor".equalsIgnoreCase(role)) {
+                            absenceStmt.setInt(1, userId);
+                            absenceStmt.setDate(2, Date.valueOf(date));
+                            try (ResultSet rs = absenceStmt.executeQuery()) {
+                                if (rs.next() && rs.getInt(1) > 0) {
+                                    isAbsent = true;
+                                }
                             }
                         }
 
-                        // Kiểm tra xung đột slot buổi chiều
-                        conflictStmt.setInt(1, userId);
-                        conflictStmt.setDate(2, Date.valueOf(date));
-                        conflictStmt.setTime(3, Time.valueOf(afternoonStart));
-                        conflictStmt.setTime(4, Time.valueOf(afternoonStart));
-                        conflictStmt.setTime(5, Time.valueOf(afternoonEnd));
-                        conflictStmt.setTime(6, Time.valueOf(afternoonEnd));
-                        try (ResultSet rs = conflictStmt.executeQuery()) {
-                            if (rs.next() && rs.getInt(1) == 0) { // Không có xung đột
-                                insertStmt.setInt(1, userId);
-                                insertStmt.setString(2, role);
-                                insertStmt.setInt(3, currentRoomId);
-                                insertStmt.setDate(4, Date.valueOf(date));
-                                insertStmt.setTime(5, Time.valueOf(afternoonStart));
-                                insertStmt.setTime(6, Time.valueOf(afternoonEnd));
-                                insertStmt.setString(7, "Available");
-                                insertStmt.setInt(8, createdBy);
-                                insertStmt.addBatch();
+                        if (!isAbsent) {
+                            // Kiểm tra xung đột slot buổi sáng
+                            conflictStmt.setInt(1, userId);
+                            conflictStmt.setDate(2, Date.valueOf(date));
+                            conflictStmt.setTime(3, Time.valueOf(morningStart));
+                            conflictStmt.setTime(4, Time.valueOf(morningStart));
+                            conflictStmt.setTime(5, Time.valueOf(morningEnd));
+                            conflictStmt.setTime(6, Time.valueOf(morningEnd));
+                            try (ResultSet rs = conflictStmt.executeQuery()) {
+                                if (rs.next() && rs.getInt(1) == 0) {
+                                    insertStmt.setInt(1, userId);
+                                    insertStmt.setString(2, role);
+                                    insertStmt.setInt(3, currentRoomId);
+                                    insertStmt.setDate(4, Date.valueOf(date));
+                                    insertStmt.setTime(5, Time.valueOf(morningStart));
+                                    insertStmt.setTime(6, Time.valueOf(morningEnd));
+                                    insertStmt.setString(7, "Available");
+                                    insertStmt.setInt(8, createdBy);
+                                    insertStmt.addBatch();
 
-                                // Thêm thông báo cho slot buổi chiều
-                                notifyStmt.setInt(1, createdBy);
-                                notifyStmt.setString(2, "Admin");
-                                notifyStmt.setInt(3, userId);
-                                notifyStmt.setString(4, role);
-                                notifyStmt.setString(5, "Lịch làm việc mới");
-                                notifyStmt.setString(6, "Bạn được phân lịch làm việc ngày " + date + " từ " + afternoonStart + " đến " + afternoonEnd + " tại phòng " + currentRoomId);
-                                notifyStmt.setBoolean(7, false);
-                                notifyStmt.addBatch();
+                                    notifyStmt.setInt(1, createdBy);
+                                    notifyStmt.setString(2, "Admin");
+                                    notifyStmt.setInt(3, userId);
+                                    notifyStmt.setString(4, role);
+                                    notifyStmt.setString(5, "Lịch làm việc mới");
+                                    notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + morningStart + " đến " + morningEnd + " tại phòng " + currentRoomId);
+                                    notifyStmt.setBoolean(7, false);
+                                    notifyStmt.addBatch();
+                                }
+                            }
+
+                            // Kiểm tra xung đột slot buổi chiều
+                            conflictStmt.setInt(1, userId);
+                            conflictStmt.setDate(2, Date.valueOf(date));
+                            conflictStmt.setTime(3, Time.valueOf(afternoonStart));
+                            conflictStmt.setTime(4, Time.valueOf(afternoonStart));
+                            conflictStmt.setTime(5, Time.valueOf(afternoonEnd));
+                            conflictStmt.setTime(6, Time.valueOf(afternoonEnd));
+                            try (ResultSet rs = conflictStmt.executeQuery()) {
+                                if (rs.next() && rs.getInt(1) == 0) {
+                                    insertStmt.setInt(1, userId);
+                                    insertStmt.setString(2, role);
+                                    insertStmt.setInt(3, currentRoomId);
+                                    insertStmt.setDate(4, Date.valueOf(date));
+                                    insertStmt.setTime(5, Time.valueOf(afternoonStart));
+                                    insertStmt.setTime(6, Time.valueOf(afternoonEnd));
+                                    insertStmt.setString(7, "Available");
+                                    insertStmt.setInt(8, createdBy);
+                                    insertStmt.addBatch();
+
+                                    notifyStmt.setInt(1, createdBy);
+                                    notifyStmt.setString(2, "Admin");
+                                    notifyStmt.setInt(3, userId);
+                                    notifyStmt.setString(4, role);
+                                    notifyStmt.setString(5, "Lịch làm việc mới");
+                                    notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + afternoonStart + " đến " + afternoonEnd + " tại phòng " + currentRoomId);
+                                    notifyStmt.setBoolean(7, false);
+                                    notifyStmt.addBatch();
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // Thực thi batch
-        insertStmt.executeBatch();
-        notifyStmt.executeBatch();
-        conn.commit();
-    } catch (SQLException e) {
-        System.err.println("Lỗi khi tạo lịch làm việc: " + e.getMessage());
-        throw e;
+            // Thực thi batch
+            insertStmt.executeBatch();
+            notifyStmt.executeBatch();
+            conn.commit();
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi tạo lịch làm việc: " + e.getMessage());
+            throw e;
+        }
     }
-}
 
     // Thêm slot
     public boolean addScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
+        // Kiểm tra roomId hợp lệ
+        if (slot.getRoomId() > 0) {
+            Rooms room = roomsDAO.getRoomByID(slot.getRoomId()); // Kiểm tra bằng getRoomByID
+            if (room == null) {
+                throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " does not exist.");
+            }
+        }
+
         String sql = "INSERT INTO ScheduleEmployee (UserID, Role, RoomID, SlotDate, StartTime, EndTime, IsAbsent, AbsenceReason, Status, CreatedBy, CreatedAt, UpdatedAt) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
         try (Connection conn = dbContext.getConnection();
@@ -174,6 +197,14 @@ public class ScheduleDAO {
 
     // Cập nhật slot
     public boolean updateScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
+        // Kiểm tra roomId hợp lệ
+        if (slot.getRoomId() > 0) {
+            Rooms room = roomsDAO.getRoomByID(slot.getRoomId()); // Kiểm tra bằng getRoomByID
+            if (room == null) {
+                throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " does not exist.");
+            }
+        }
+
         String sql = "UPDATE ScheduleEmployee SET UserID = ?, Role = ?, RoomID = ?, SlotDate = ?, StartTime = ?, EndTime = ?, IsAbsent = ?, AbsenceReason = ?, Status = ?, CreatedBy = ?, UpdatedAt = GETDATE() WHERE SlotID = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -196,7 +227,7 @@ public class ScheduleDAO {
         }
     }
 
-    // Lấy tất cả slot
+    // Các phương thức khác giữ nguyên
     public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException, ClassNotFoundException {
         List<ScheduleEmployee> slots = new ArrayList<>();
         String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, IsAbsent, AbsenceReason, Status, CreatedBy, CreatedAt, UpdatedAt FROM ScheduleEmployee";
@@ -224,9 +255,8 @@ public class ScheduleDAO {
         return slots;
     }
 
-    // Lấy slot theo ID
     public ScheduleEmployee getScheduleEmployeeById(int slotId) throws SQLException, ClassNotFoundException {
-        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, IsAbsent, AbsenceReason, Status, CreatedBy, CreatedAt, UpdatedAt FROM ScheduleEmployee WHERE SlotID= ?";
+        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, IsAbsent, AbsenceReason, Status, CreatedBy, CreatedAt, UpdatedAt FROM ScheduleEmployee WHERE SlotID = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, slotId);
@@ -253,7 +283,6 @@ public class ScheduleDAO {
         return null;
     }
 
-    // Xóa slot
     public boolean deleteScheduleEmployee(int slotId) throws SQLException, ClassNotFoundException {
         String sql = "DELETE FROM ScheduleEmployee WHERE SlotID = ?";
         try (Connection conn = dbContext.getConnection();
@@ -267,7 +296,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Gán STT cho bệnh nhân trong slot
     public boolean addAppointmentQueue(AppointmentQueue queue) throws SQLException, ClassNotFoundException {
         int queueNumber = getNextQueueNumber(queue.getSlotId());
         queue.setQueueNumber(queueNumber);
@@ -286,7 +314,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Lấy số thứ tự tiếp theo trong hàng đợi
     private int getNextQueueNumber(int slotId) throws SQLException, ClassNotFoundException {
         String sql = "SELECT COALESCE(MAX(QueueNumber), 0) + 1 AS NextQueue FROM AppointmentQueue WHERE SlotID = ?";
         try (Connection conn = dbContext.getConnection();
@@ -301,7 +328,6 @@ public class ScheduleDAO {
         return 1;
     }
 
-    // Thêm lịch nghỉ
     public boolean addDoctorAbsence(DoctorAbsence absence) throws SQLException, ClassNotFoundException {
         String sql = "INSERT INTO DoctorAbsences (DoctorID, AbsenceDate, Reason, Status, CreatedAt, ApprovedBy, ApprovedAt) VALUES (?, ?, ?, ?, GETDATE(), ?, ?)";
         try (Connection conn = dbContext.getConnection();
@@ -323,7 +349,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Cập nhật slot khi bác sĩ vắng mặt
     private void updateSlotsForAbsence(DoctorAbsence absence) throws SQLException, ClassNotFoundException {
         String sql = "UPDATE ScheduleEmployee SET IsAbsent = 1, AbsenceReason = ?, Status = 'Cancelled', UpdatedAt = GETDATE() WHERE UserID = ? AND SlotDate = ? AND IsAbsent = 0 AND Role = 'Doctor'";
         try (Connection conn = dbContext.getConnection();
@@ -342,7 +367,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Thêm log thay đổi
     public boolean addAppointmentLog(AppointmentLog log) throws SQLException, ClassNotFoundException {
         String sql = "INSERT INTO AppointmentLogs (AppointmentID, Action, OldDoctorID, NewDoctorID, OldSlotID, NewSlotID, PerformedBy, Notes, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
         try (Connection conn = dbContext.getConnection();
@@ -363,7 +387,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Thêm mẫu tin nhắn SMS
     public boolean addSMSTemplate(SMSTemplate template) throws SQLException, ClassNotFoundException {
         String sql = "INSERT INTO SMSTemplates (TemplateCode, Message, UseCase, IsActive, CreatedAt) VALUES (?, ?, ?, ?, GETDATE())";
         try (Connection conn = dbContext.getConnection();
@@ -380,7 +403,6 @@ public class ScheduleDAO {
         }
     }
 
-    // Lấy mẫu tin nhắn SMS theo UseCase
     public SMSTemplate getSMSTemplateByUseCase(String useCase) throws SQLException, ClassNotFoundException {
         String sql = "SELECT TemplateID, TemplateCode, Message, UseCase, IsActive, CreatedAt FROM SMSTemplates WHERE UseCase = ? AND IsActive = 1";
         try (Connection conn = dbContext.getConnection();
@@ -402,7 +424,6 @@ public class ScheduleDAO {
         return null;
     }
 
-    // Gửi SMS (mô phỏng)
     public boolean sendSMS(int appointmentId, String useCase) throws SQLException, ClassNotFoundException {
         SMSTemplate template = getSMSTemplateByUseCase(useCase);
         if (template != null && template.isIsActive()) {
@@ -411,6 +432,7 @@ public class ScheduleDAO {
         }
         return false;
     }
+
     public List<ScheduleEmployee> getScheduleEmployeesByDateRange(LocalDate startDate, LocalDate endDate) throws SQLException {
         List<ScheduleEmployee> slots = new ArrayList<>();
         String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, IsAbsent, AbsenceReason, Status " +
@@ -438,5 +460,4 @@ public class ScheduleDAO {
         }
         return slots;
     }
-    
 }

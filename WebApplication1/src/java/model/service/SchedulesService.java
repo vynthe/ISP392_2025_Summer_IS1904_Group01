@@ -1,221 +1,249 @@
 package model.service;
 
-import model.dao.SchedulesDAO;
+import model.dao.ScheduleDAO;
+import model.entity.ScheduleEmployee;
+import model.entity.AppointmentQueue;
+import model.entity.DoctorAbsence;
+import model.entity.AppointmentLog;
+import model.entity.SMSTemplate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import model.dao.RoomsDAO;
+import model.dao.DBContext;
 import model.entity.Rooms;
-import model.entity.Schedules;
 
 public class SchedulesService {
-
-    private final SchedulesDAO schedulesDAO;
+    private final ScheduleDAO scheduleDAO;
+    private final RoomService roomService;
 
     public SchedulesService() {
-        this.schedulesDAO = new SchedulesDAO();
+        this.scheduleDAO = new ScheduleDAO();
+        this.roomService = new RoomService();
     }
 
-    public List<Map<String, Object>> getAllSchedules() throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getAllSchedulesWithUserInfo(); // Trả về Map với thông tin user
-    }
-
-    public List<Schedules> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getSchedulesByRoleAndUserId(role, userId);
-    }
-
-    public boolean addSchedule(Schedules schedule) throws SQLException, ClassNotFoundException {
-        try {
-            return schedulesDAO.addSchedule(schedule);
-        } catch (SQLException | ClassNotFoundException e) {
-            System.err.println("Error in SchedulesService.addSchedule: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    // Delegates conflict check to DAO, now only checking room conflicts
-    public boolean isScheduleConflict(Schedules schedule) throws SQLException, ClassNotFoundException {
-        return schedulesDAO.isScheduleConflict(schedule);
-    }
-    public boolean checkScheduleExists(LocalDate startDate, LocalDate endDate, String role)
-            throws SQLException, ClassNotFoundException {
-        return schedulesDAO.hasScheduleForRoleInPeriod(role, startDate, endDate);
-    }
-
-    public boolean updateSchedule(Map<String, Object> scheduleData) throws SQLException, ClassNotFoundException {
-        Schedules entity = new Schedules();
-        entity.setScheduleID((Integer) scheduleData.get("scheduleId"));
-        entity.setEmployeeID((Integer) scheduleData.get("employeeId"));
-        entity.setRole((String) scheduleData.get("role"));
-        entity.setStartTime((Date) scheduleData.get("startTime"));
-        entity.setEndTime((Date) scheduleData.get("endTime"));
-        entity.setDayOfWeek((String) scheduleData.get("dayOfWeek"));
-        entity.setRoomID((Integer) scheduleData.get("roomId"));
-        entity.setStatus((String) scheduleData.get("status"));
-        entity.setCreatedBy((Integer) scheduleData.get("createdBy"));
-        entity.setShiftStart((Time) scheduleData.get("shiftStart"));
-        entity.setShiftEnd((Time) scheduleData.get("shiftEnd"));
-
-        return schedulesDAO.updateSchedule(entity);
-    }
-
-    public boolean updateScheduleWithOldParams(Map<String, Object> scheduleData) throws SQLException, ClassNotFoundException {
-        Schedules entity = new Schedules();
-        entity.setScheduleID((Integer) scheduleData.get("scheduleId"));
-
-        // Xử lý role và employeeID dựa trên tham số cũ
-        if (scheduleData.containsKey("doctorId") && scheduleData.get("doctorId") != null) {
-            entity.setEmployeeID((Integer) scheduleData.get("doctorId"));
-            entity.setRole("Doctor");
-        } else if (scheduleData.containsKey("nurseId") && scheduleData.get("nurseId") != null) {
-            entity.setEmployeeID((Integer) scheduleData.get("nurseId"));
-            entity.setRole("Nurse");
-        } else if (scheduleData.containsKey("receptionistId") && scheduleData.get("receptionistId") != null) {
-            entity.setEmployeeID((Integer) scheduleData.get("receptionistId"));
-            entity.setRole("Receptionist");
+    // Tạo lịch làm việc tự động
+    public void generateSchedule(List<Integer> userIds, List<String> roles, int roomId, int createdBy, LocalDate startDate, boolean isYearly) throws SQLException, ClassNotFoundException {
+        // Kiểm tra dữ liệu đầu vào
+        if (userIds == null || roles == null || userIds.size() != roles.size()) {
+            throw new IllegalArgumentException("Invalid input: userIds and roles must not be null and must have the same size.");
         }
 
-        entity.setStartTime((Date) scheduleData.get("startTime"));
-        entity.setEndTime((Date) scheduleData.get("endTime"));
-        entity.setDayOfWeek((String) scheduleData.get("dayOfWeek"));
-        entity.setRoomID((Integer) scheduleData.get("roomId"));
-        entity.setStatus((String) scheduleData.get("status"));
-        entity.setCreatedBy((Integer) scheduleData.get("createdBy"));
-        entity.setShiftStart((Time) scheduleData.get("shiftStart"));
-        entity.setShiftEnd((Time) scheduleData.get("shiftEnd"));
+        // Kiểm tra và lấy RoomID hợp lệ
+        if (roomId <= 0) {
+            roomId = roomService.getFirstAvailableRoomId();
+            if (roomId == -1) {
+                throw new IllegalArgumentException("No available rooms found.");
+            }
+        } else {
+            try {
+                Rooms room = roomService.getRoomByID(roomId); // Kiểm tra bằng getRoomByID
+                if (room == null) {
+                    throw new IllegalArgumentException("RoomID " + roomId + " does not exist.");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("RoomID " + roomId + " is invalid: " + e.getMessage());
+            }
+        }
 
-        return schedulesDAO.updateSchedule(entity);
+        // Kiểm tra vai trò hợp lệ và phòng
+        for (int i = 0; i < userIds.size(); i++) {
+            String role = roles.get(i);
+            if (!isValidRole(role)) {
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+            if (!isValidUser(userIds.get(i), role)) {
+                throw new IllegalArgumentException("User ID " + userIds.get(i) + " does not match role " + role);
+            }
+        }
+
+        // Gọi DAO để tạo lịch
+        scheduleDAO.addSchedule(userIds, roles, roomId, createdBy, startDate, isYearly);
     }
 
-    public boolean deleteSchedule(int scheduleId) throws SQLException, ClassNotFoundException {
-        Schedules entity = schedulesDAO.getScheduleById(scheduleId);
-        if (entity != null) {
-            return schedulesDAO.deleteSchedule(scheduleId);
+    // Thêm slot
+    public boolean addScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
+        // Kiểm tra dữ liệu đầu vào
+        if (slot == null || slot.getUserId() <= 0 || slot.getRole() == null || slot.getSlotDate() == null) {
+            throw new IllegalArgumentException("Invalid schedule employee data.");
+        }
+
+        // Kiểm tra vai trò hợp lệ
+        if (!isValidRole(slot.getRole())) {
+            throw new IllegalArgumentException("Invalid role: " + slot.getRole());
+        }
+
+        // Kiểm tra UserID và Role
+        if (!isValidUser(slot.getUserId(), slot.getRole())) {
+            throw new IllegalArgumentException("User ID " + slot.getUserId() + " does not match role " + slot.getRole());
+        }
+
+        // Kiểm tra RoomID
+        if (slot.getRoomId() <= 0) {
+            int defaultRoomId = roomService.getFirstAvailableRoomId();
+            if (defaultRoomId == -1) {
+                throw new IllegalArgumentException("No available rooms found.");
+            }
+            slot.setRoomId(defaultRoomId); // Gán RoomID mặc định nếu không có
+        } else {
+            try {
+                Rooms room = roomService.getRoomByID(slot.getRoomId()); // Kiểm tra bằng getRoomByID
+                if (room == null) {
+                    throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " does not exist.");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " is invalid: " + e.getMessage());
+            }
+        }
+
+        // Thay vì cố định RoomID = 1 cho Receptionist, sử dụng RoomID hợp lệ
+        if ("Receptionist".equalsIgnoreCase(slot.getRole()) && slot.getRoomId() <= 0) {
+            int defaultRoomId = roomService.getFirstAvailableRoomId();
+            if (defaultRoomId == -1) {
+                throw new IllegalArgumentException("No available rooms found for Receptionist.");
+            }
+            slot.setRoomId(defaultRoomId); // Gán RoomID hợp lệ thay vì 1
+        }
+
+        return scheduleDAO.addScheduleEmployee(slot);
+    }
+
+    // Cập nhật slot
+    public boolean updateScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
+        // Kiểm tra dữ liệu đầu vào
+        if (slot == null || slot.getSlotId() <= 0 || slot.getUserId() <= 0 || slot.getRole() == null) {
+            throw new IllegalArgumentException("Invalid schedule employee data.");
+        }
+
+        // Kiểm tra vai trò hợp lệ
+        if (!isValidRole(slot.getRole())) {
+            throw new IllegalArgumentException("Invalid role: " + slot.getRole());
+        }
+
+        // Kiểm tra UserID và Role
+        if (!isValidUser(slot.getUserId(), slot.getRole())) {
+            throw new IllegalArgumentException("User ID " + slot.getUserId() + " does not match role " + slot.getRole());
+        }
+
+        // Kiểm tra RoomID
+        if (slot.getRoomId() <= 0) {
+            int defaultRoomId = roomService.getFirstAvailableRoomId();
+            if (defaultRoomId == -1) {
+                throw new IllegalArgumentException("No available rooms found.");
+            }
+            slot.setRoomId(defaultRoomId); // Gán RoomID mặc định nếu không có
+        } else {
+            try {
+                Rooms room = roomService.getRoomByID(slot.getRoomId()); // Kiểm tra bằng getRoomByID
+                if (room == null) {
+                    throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " does not exist.");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("RoomID " + slot.getRoomId() + " is invalid: " + e.getMessage());
+            }
+        }
+
+        // Thay vì cố định RoomID = 1 cho Receptionist, sử dụng RoomID hợp lệ
+        if ("Receptionist".equalsIgnoreCase(slot.getRole()) && slot.getRoomId() <= 0) {
+            int defaultRoomId = roomService.getFirstAvailableRoomId();
+            if (defaultRoomId == -1) {
+                throw new IllegalArgumentException("No available rooms found for Receptionist.");
+            }
+            slot.setRoomId(defaultRoomId); // Gán RoomID hợp lệ thay vì 1
+        }
+
+        return scheduleDAO.updateScheduleEmployee(slot);
+    }
+
+    // Các phương thức khác giữ nguyên
+    public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException, ClassNotFoundException {
+        return scheduleDAO.getAllScheduleEmployees();
+    }
+
+    public ScheduleEmployee getScheduleEmployeeById(int slotId) throws SQLException, ClassNotFoundException {
+        if (slotId <= 0) {
+            throw new IllegalArgumentException("Invalid slot ID.");
+        }
+        return scheduleDAO.getScheduleEmployeeById(slotId);
+    }
+
+    public boolean deleteScheduleEmployee(int slotId) throws SQLException, ClassNotFoundException {
+        if (slotId <= 0) {
+            throw new IllegalArgumentException("Invalid slot ID.");
+        }
+        return scheduleDAO.deleteScheduleEmployee(slotId);
+    }
+
+    public boolean addAppointmentQueue(AppointmentQueue queue) throws SQLException, ClassNotFoundException {
+        if (queue == null || queue.getSlotId() <= 0 || queue.getAppointmentId() <= 0) {
+            throw new IllegalArgumentException("Invalid appointment queue data.");
+        }
+        return scheduleDAO.addAppointmentQueue(queue);
+    }
+
+    public boolean addDoctorAbsence(DoctorAbsence absence) throws SQLException, ClassNotFoundException {
+        if (absence == null || absence.getDoctorId() <= 0 || absence.getAbsenceDate() == null) {
+            throw new IllegalArgumentException("Invalid doctor absence data.");
+        }
+        if (!isValidUser(absence.getDoctorId(), "Doctor")) {
+            throw new IllegalArgumentException("User ID " + absence.getDoctorId() + " is not a Doctor.");
+        }
+        return scheduleDAO.addDoctorAbsence(absence);
+    }
+
+    public boolean addAppointmentLog(AppointmentLog log) throws SQLException, ClassNotFoundException {
+        if (log == null || log.getAppointmentId() <= 0) {
+            throw new IllegalArgumentException("Invalid appointment log data.");
+        }
+        return scheduleDAO.addAppointmentLog(log);
+    }
+
+    public boolean addSMSTemplate(SMSTemplate template) throws SQLException, ClassNotFoundException {
+        if (template == null || template.getTemplateCode() == null || template.getMessage() == null) {
+            throw new IllegalArgumentException("Invalid SMS template data.");
+        }
+        return scheduleDAO.addSMSTemplate(template);
+    }
+
+    public SMSTemplate getSMSTemplateByUseCase(String useCase) throws SQLException, ClassNotFoundException {
+        if (useCase == null || useCase.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid use case.");
+        }
+        return scheduleDAO.getSMSTemplateByUseCase(useCase);
+    }
+
+    public boolean sendSMS(int appointmentId, String useCase) throws SQLException, ClassNotFoundException {
+        if (appointmentId <= 0 || useCase == null || useCase.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid appointment ID or use case.");
+        }
+        return scheduleDAO.sendSMS(appointmentId, useCase);
+    }
+
+    private boolean isValidRole(String role) {
+        return role != null && ("Doctor".equalsIgnoreCase(role) || "Nurse".equalsIgnoreCase(role) || "Receptionist".equalsIgnoreCase(role));
+    }
+
+    private boolean isValidUser(int userId, String role) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT Role FROM Users WHERE UserID = ?";
+        try (Connection conn = DBContext.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String dbRole = rs.getString("Role");
+                    return role.equalsIgnoreCase(dbRole);
+                }
+            }
         }
         return false;
     }
 
-    public List<Schedules> getSchedulesByRole(String role) throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getSchedulesByRole(role);
-    }
-
-    public List<Schedules> getSchedulesByEmployeeId(int employeeId) throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getSchedulesByEmployeeId(employeeId);
-    }
-
-    public Schedules getScheduleById(int scheduleId) throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getScheduleById(scheduleId);
-    }
-
-    public boolean createScheduleForEmployee(int employeeId, String role, Date startTime, Date endTime,
-            Time shiftStart, Time shiftEnd, String dayOfWeek, int roomId, int createdBy)
-            throws SQLException, ClassNotFoundException {
-        Schedules schedule = new Schedules();
-        schedule.setEmployeeID(employeeId);
-        schedule.setRole(role);
-        schedule.setStartTime(startTime);
-        schedule.setEndTime(endTime);
-        schedule.setDayOfWeek(dayOfWeek);
-        schedule.setRoomID(roomId);
-        schedule.setStatus("Available");
-        schedule.setCreatedBy(createdBy);
-        schedule.setShiftStart(shiftStart);
-        schedule.setShiftEnd(shiftEnd);
-
-        return schedulesDAO.addSchedule(schedule);
-    }
-
-    // Phương thức kiểm tra lịch theo role trong khoảng thời gian
-    public boolean hasGeneralScheduleForRoleInPeriod(String role, LocalDate startDate, LocalDate endDate)
-            throws SQLException, ClassNotFoundException {
-        // Service có thể thêm logic nghiệp vụ ở đây trước khi gọi DAO
-        // Ví dụ: kiểm tra tính hợp lệ của role, startDate, endDate
-        if (role == null || role.trim().isEmpty()) {
-            throw new IllegalArgumentException("Role cannot be null or empty");
+    public List<ScheduleEmployee> getScheduleEmployeesByDateRange(LocalDate startDate, LocalDate endDate) throws SQLException {
+        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Invalid date range.");
         }
-        if (startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Start date and end date cannot be null");
-        }
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date cannot be after end date");
-        }
-
-        return schedulesDAO.hasScheduleForRoleInPeriod(role, startDate, endDate);
-    }
-
-    // Phương thức lấy tất cả schedules (trả về List<Schedules> thay vì Map)
-    public List<Schedules> getAllSchedulesAsList() throws SQLException, ClassNotFoundException {
-        return schedulesDAO.getAllSchedules();
-    }
-
-    // Phương thức validate schedule trước khi thêm/cập nhật
-    public boolean validateSchedule(Schedules schedule) {
-        if (schedule == null) {
-            return false;
-        }
-        if (schedule.getEmployeeID() <= 0) {
-            return false;
-        }
-        if (schedule.getRole() == null || schedule.getRole().trim().isEmpty()) {
-            return false;
-        }
-        if (schedule.getStartTime() == null || schedule.getEndTime() == null) {
-            return false;
-        }
-        if (schedule.getShiftStart() == null || schedule.getShiftEnd() == null) {
-            return false;
-        }
-        if (schedule.getDayOfWeek() == null || schedule.getDayOfWeek().trim().isEmpty()) {
-            return false;
-        }
-        if (schedule.getRoomID() <= 0) {
-            return false;
-        }
-
-        // Kiểm tra startTime không sau endTime
-        if (schedule.getStartTime().after(schedule.getEndTime())) {
-            return false;
-        }
-
-        // Kiểm tra shiftStart không sau shiftEnd
-        if (schedule.getShiftStart().after(schedule.getShiftEnd())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    // Phương thức thêm schedule với validation
-    public boolean addScheduleWithValidation(Schedules schedule) throws SQLException, ClassNotFoundException {
-        if (!validateSchedule(schedule)) {
-            throw new IllegalArgumentException("Invalid schedule data");
-        }
-        // Kiểm tra conflict trước khi thêm
-        if (isScheduleConflict(schedule)) {
-            throw new IllegalStateException("Schedule conflict detected");
-        }
-
-        return schedulesDAO.addSchedule(schedule);
-    }
-public List<Map<String, Object>> searchSchedule(String employeeName, String role, String employeeID, LocalDate searchDate) throws SQLException, ClassNotFoundException {
-    return schedulesDAO.searchSchedule(employeeName, role, employeeID, searchDate);
-}
-public Map<String, Object> viewDetailSchedule(int scheduleID) throws SQLException, ClassNotFoundException {
-        try {
-            // Gọi phương thức từ DAO
-            Map<String, Object> scheduleDetails = schedulesDAO.ViewDetailSchedule(scheduleID);
-            return scheduleDetails;
-        } catch (SQLException e) {
-            System.err.println("Lỗi khi lấy chi tiết lịch từ Service: " + e.getMessage() + " tại " + java.time.LocalDateTime.now() + " +07");
-            throw e;
-        } catch (ClassNotFoundException e) {
-            System.err.println("Lỗi ClassNotFound khi lấy chi tiết lịch: " + e.getMessage() + " tại " + java.time.LocalDateTime.now() + " +07");
-            throw e;
-        }
+        return scheduleDAO.getScheduleEmployeesByDateRange(startDate, endDate);
     }
 }
-

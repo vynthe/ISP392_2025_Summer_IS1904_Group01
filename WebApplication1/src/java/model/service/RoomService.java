@@ -1,7 +1,3 @@
-/*
- * Click nfs://netbeans/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nfs://netbeans/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.service;
 
 import java.sql.SQLException;
@@ -21,7 +17,7 @@ public class RoomService {
         this.roomsDAO = new RoomsDAO();
     }
 
-    public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy) throws SQLException {
+    public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy) throws SQLException, ClassNotFoundException {
         // Validate inputs
         if (roomName == null || roomName.trim().isEmpty()) {
             throw new IllegalArgumentException("Tên phòng không được để trống.");
@@ -51,11 +47,23 @@ public class RoomService {
         room.setNurseID(nurseID);
         room.setStatus(finalStatus);
 
-        // Call DAO to insert room
-        return roomsDAO.addRoom(room, createdBy);
+        // Kiểm tra xem có phòng nào không, nếu không thì tạo phòng mới
+        List<Integer> roomIds = roomsDAO.getAllRoomIds();
+        if (roomIds.isEmpty()) {
+            return roomsDAO.addRoom(room, createdBy);
+        } else {
+            // Lấy RoomID đầu tiên có sẵn hoặc tạo mới nếu cần
+            int firstAvailableRoomId = getFirstAvailableRoomId();
+            if (firstAvailableRoomId == -1) {
+                return roomsDAO.addRoom(room, createdBy);
+            }
+            // Nếu có phòng sẵn, gán thông tin vào phòng hiện có hoặc tạo mới
+            room.setRoomID(firstAvailableRoomId); // Có thể bỏ nếu không cần gán ID cụ thể
+            return roomsDAO.addRoom(room, createdBy); // Tạo phòng mới thay vì cập nhật
+        }
     }
 
-public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
+    public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         return roomsDAO.isDoctorAssigned(doctorID);
     }
 
@@ -110,7 +118,8 @@ public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         }
         roomsDAO.deleteRoom(roomID);
     }
-      public List<Integer> getAllRoomIds() throws SQLException, ClassNotFoundException {
+
+    public List<Integer> getAllRoomIds() throws SQLException, ClassNotFoundException {
         try {
             return roomsDAO.getAllRoomIds(); // Gọi phương thức từ DAO
         } catch (SQLException e) {
@@ -118,10 +127,12 @@ public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
             throw e; 
         }
     }
- public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
-    return roomsDAO.getRoomByID(userId, role);  // phương thức này bạn đã viết rồi
-}
-public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nurseID, int excludeRoomID) throws SQLException {
+
+    public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
+        return roomsDAO.getRoomByID(userId, role);  // phương thức này bạn đã viết rồi
+    }
+
+    public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nurseID, int excludeRoomID) throws SQLException {
         return roomsDAO.isDoctorOrNurseAssignedToAnotherRoom(doctorID, nurseID, excludeRoomID);
     }
 
@@ -132,6 +143,7 @@ public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nu
     public List<String> getServicesByRoomId(int roomId) throws SQLException {
         return roomsDAO.getServicesByRoomId(roomId);
     }
+
     public String getDoctorNameByRoomId(int roomId) throws SQLException {
         Rooms room = getRoomByID(roomId);
         if (room != null) {
@@ -147,10 +159,12 @@ public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nu
         }
         return null;
     }
+
     public boolean assignServiceToRoom(int roomId, int serviceId) {
-    return roomsDAO.addServiceToRoom(roomId, serviceId);
-}
-public List<Services> getServicesByRoom(int roomId) {
+        return roomsDAO.addServiceToRoom(roomId, serviceId);
+    }
+
+    public List<Services> getServicesByRoom(int roomId) {
         try {
             return roomsDAO.getServicesByRoom(roomId);
         } catch (SQLException e) {
@@ -158,15 +172,24 @@ public List<Services> getServicesByRoom(int roomId) {
             return List.of(); // Trả về list rỗng nếu lỗi
         }
     }
- public boolean assignServiceToRoom(int roomId, int serviceId, int createdBy) {
+
+    public boolean assignServiceToRoom(int roomId, int serviceId, int createdBy) {
         return roomsDAO.assignServiceToRoom(roomId, serviceId, createdBy);
     }
 
-public List<Services> getAllActiveServices() throws SQLException {
-    return roomsDAO.getAllActiveServices();
-}
+    public List<Services> getAllActiveServices() throws SQLException {
+        return roomsDAO.getAllActiveServices();
+    }
 
-  public int countAvailableRooms() throws SQLException {
+    public int countAvailableRooms() throws SQLException {
         return roomsDAO.countAvailableRooms();
+    }
+
+    // Thêm phương thức lấy RoomID đầu tiên có sẵn
+    public int getFirstAvailableRoomId() throws SQLException, ClassNotFoundException {
+        List<Rooms> availableRooms = getAllRooms().stream()
+                .filter(room -> "Available".equalsIgnoreCase(room.getStatus()))
+                .toList();
+        return availableRooms.isEmpty() ? -1 : availableRooms.get(0).getRoomID();
     }
 }

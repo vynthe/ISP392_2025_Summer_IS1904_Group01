@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -659,7 +659,7 @@
                                             </td>
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${not empty room.description}">
+                                                    <c:when test="${room.description}">
                                                         ${room.description}
                                                     </c:when>
                                                     <c:otherwise>
@@ -669,7 +669,7 @@
                                             </td>
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${not empty room.doctorID}">
+                                                    <c:when test="${ not empty room.doctorID}">
                                                         <div class="staff-info">
                                                             <span class="staff-name">${room.doctorName}</span>
                                                             <span class="staff-id">ID: ${room.doctorID}</span>
@@ -684,7 +684,7 @@
                                             </td>
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${not empty room.nurseID}">
+                                                    <c:when test="${ not empty room.nurseID}">
                                                         <div class="staff-info">
                                                             <span class="staff-name">${room.nurseName}</span>
                                                             <span class="staff-id">ID: ${room.nurseID}</span>
@@ -796,48 +796,32 @@
         </div>
     </div>
 
-    <script>
-        // Enhanced form submission with loading state
-        document.querySelector('.search-form').addEventListener('submit', function(e) {
+   <script>
+        // Thêm hiệu ứng loading khi submit form
+        document.querySelector('form').addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> Đang tìm kiếm...';
-            submitBtn.disabled = true;
-            
-            // Re-enable after 5 seconds as failsafe
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 5000);
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tìm...';
         });
 
-        // Enhanced delete confirmation with room details
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const roomId = this.dataset.roomId;
-                const roomName = this.dataset.roomName;
-                
-                const isConfirmed = confirm(
-                    `⚠️ Xác nhận xóa phòng\n\n` +
-                    `Mã phòng: ${roomId}\n` +
-                    `Tên phòng: ${roomName}\n\n` +
-                    `Bạn có chắc chắn muốn xóa phòng này không?\n` +
-                    `Hành động này không thể hoàn tác!`
-                );
-                
-                if (isConfirmed) {
-                    // Show loading state
-                    this.innerHTML = '<span class="loading-spinner"></span> Đang xóa...';
-                    this.style.pointerEvents = 'none';
-                    
-                    // Navigate to delete URL
-                    window.location.href = `${pageContext.request.contextPath}/DeleteRoomServlet?id=${roomId}`;
-                }
+        // Thêm hiệu ứng hover cho các hàng trong bảng
+        document.querySelectorAll('.table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.01)';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
             });
         });
 
-        // Add hover effects and tooltips
-        document.quer
+        // Confirm delete với style đẹp hơn
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('⚠️ Bạn có chắc chắn muốn xóa phòng này không?\n\nHành động này không thể hoàn tác!')) {
+                    window.location.href = this.href;
+                }
+            });
+        });
+    </script>
+</body>

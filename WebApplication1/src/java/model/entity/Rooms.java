@@ -12,8 +12,8 @@ public class Rooms {
     private int roomID;
     private String roomName;
     private String description;
-    private int doctorID;
-    private int nurseID;
+    private Integer doctorID;
+    private Integer nurseID;
     private String status;
     private int createdBy;
     private Date createdAt;
@@ -78,19 +78,19 @@ public class Rooms {
         this.description = description;
     }
 
-    public int getDoctorID() {
+    public Integer getDoctorID() {
         return doctorID;
     }
 
-    public void setDoctorID(int doctorID) {
+    public void setDoctorID(Integer doctorID) {
         this.doctorID = doctorID;
     }
 
-    public int getNurseID() {
+    public Integer getNurseID() {
         return nurseID;
     }
 
-    public void setNurseID(int nurseID) {
+    public void setNurseID(Integer nurseID) {
         this.nurseID = nurseID;
     }
 
