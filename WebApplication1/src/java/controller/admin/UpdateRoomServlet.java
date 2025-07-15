@@ -88,8 +88,24 @@ public class UpdateRoomServlet extends HttpServlet {
                 throw new IllegalArgumentException("Tên phòng không được để trống.");
             }
 
-            int doctorID = Integer.parseInt(doctorIDParam);
-            int nurseID = Integer.parseInt(nurseIDParam);
+                            Integer doctorID = null;
+                 if (doctorIDParam != null && !doctorIDParam.trim().isEmpty()) {
+                     try {
+                         doctorID = Integer.parseInt(doctorIDParam.trim());
+                     } catch (NumberFormatException e) {
+                         throw new IllegalArgumentException("Mã bác sĩ phải là số hoặc để trống.");
+                     }
+                 }
+
+                 Integer nurseID = null;
+                 if (nurseIDParam != null && !nurseIDParam.trim().isEmpty()) {
+                     try {
+                         nurseID = Integer.parseInt(nurseIDParam.trim());
+                     } catch (NumberFormatException e) {
+                         throw new IllegalArgumentException("Mã y tá phải là số hoặc để trống.");
+                     }
+                 }
+
 
             // Validate và chuẩn hóa status theo constraint DB
             String[] validStatuses = {"Completed", "In Progress", "Not Available", "Available"};
