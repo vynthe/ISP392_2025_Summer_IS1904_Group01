@@ -93,4 +93,16 @@ public class AppointmentService {
         }
         return appointmentDAO.getUserFullNameById(userId);
     }
+     public boolean bookAppointment(int doctorId, int patientId, String appointmentDate, String dayOfWeek, String shiftStart, String shiftEnd) throws SQLException {
+        if (doctorId <= 0 || patientId <= 0) {
+            throw new IllegalArgumentException("Invalid doctor or patient ID");
+        }
+        if (appointmentDate == null || appointmentDate.trim().isEmpty() || 
+            dayOfWeek == null || dayOfWeek.trim().isEmpty() ||
+            shiftStart == null || shiftStart.trim().isEmpty() ||
+            shiftEnd == null || shiftEnd.trim().isEmpty()) {
+            throw new IllegalArgumentException("Appointment details cannot be null or empty");
+        }
+        return appointmentDAO.bookAppointment(doctorId, patientId, appointmentDate, dayOfWeek, shiftStart, shiftEnd);
+    }
 }

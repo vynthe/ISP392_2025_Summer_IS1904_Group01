@@ -16,7 +16,7 @@
             --primary-teal-light: #ccfbf1;
             --accent-coral: #f87171;
             --neutral-50: #fafafa;
-            --neutral-100: #f5f5f5;
+            --neutral-100: #f5f5f50;
             --neutral-200: #e5e7eb;
             --neutral-600: #4b5563;
             --neutral-900: #111827;
@@ -177,64 +177,40 @@
             color: var(--neutral-600);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.5rem;
         }
 
-        .services-list li::before, .schedule-list li::before {
+        .services-list li::before {
             content: "•";
             color: var(--primary-teal);
             font-weight: bold;
             margin-right: 0.5rem;
         }
 
-        .booking-form {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: var(--neutral-50);
-            border: 1px solid var(--neutral-200);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
+        .schedule-list li::before {
+            content: "•";
+            color: var(--primary-teal);
+            font-weight: bold;
+            margin-right: 0.5rem;
         }
 
-        .booking-form label {
-            display: block;
-            font-weight: 500;
-            color: var(--neutral-600);
-            margin-bottom: 0.5rem;
-        }
-
-        .booking-form input {
-            width: 100%;
-            padding: 0.85rem;
-            border-radius: 8px;
-            border: 1px solid var(--neutral-200);
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .booking-form input:focus {
-            outline: none;
-            border-color: var(--primary-teal);
-        }
-
-        .booking-form button {
+        .schedule-book-btn {
             background: var(--accent-coral);
             color: var(--white);
-            padding: 0.85rem 1.75rem;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
             border: none;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s ease;
-            width: 100%;
-            justify-content: center;
+            text-decoration: none;
         }
 
-        .booking-form button:hover {
+        .schedule-book-btn:hover {
             background: #ef4444;
             transform: translateY(-2px);
         }
@@ -345,6 +321,17 @@
             .detail-value {
                 text-align: left;
             }
+
+            .schedule-list li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .schedule-book-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -401,7 +388,8 @@
                             <c:choose>
                                 <c:when test="${not empty doctorDetails.services and fn:length(doctorDetails.services) > 0 and doctorDetails.services[0].serviceName != 'N/A'}">
                                     <c:forEach var="service" items="${doctorDetails.services}">
-                                        <li>${fn:escapeXml(service.serviceName)} - ${fn:escapeXml(service.description)} (Giá: ${service.price} VND)</li>
+                                        <li>${fn:escapeXml(service.serviceName)} - ${fn:escapeXml(service.description)} </li>
+                                        <li>Giá dịch vụ: ${service.price} VND</li>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
@@ -418,9 +406,22 @@
                                 <c:when test="${not empty doctorDetails.schedules and fn:length(doctorDetails.schedules) > 0 and doctorDetails.schedules[0].scheduleID != null}">
                                     <c:forEach var="schedule" items="${doctorDetails.schedules}">
                                         <li>
-                                            ${fn:escapeXml(schedule.dayOfWeek)}: 
-                                            ${fn:escapeXml(schedule.startTime)} đến ${fn:escapeXml(schedule.endTime)} 
-                                            (${fn:escapeXml(schedule.shiftStart)} - ${fn:escapeXml(schedule.shiftEnd)})
+                                            <span>
+                                                ${fn:escapeXml(schedule.dayOfWeek)}: 
+                                                ${fn:escapeXml(schedule.startTime)} - ${fn:escapeXml(schedule.endTime)} 
+                                                (${fn:escapeXml(schedule.shiftStart)} - ${fn:escapeXml(schedule.shiftEnd)})
+                                            </span>
+                                            <form action="${pageContext.request.contextPath}/ViewDetailBookServlet" method="post">
+                                                <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
+                                                <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.startTime)}">
+                                                <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.endTime)}">
+                                                <input type="hidden" name="dayOfWeek" value="${fn:escapeXml(schedule.dayOfWeek)}">
+                                                <input type="hidden" name="shiftStart" value="${fn:escapeXml(schedule.shiftStart)}">
+                                                <input type="hidden" name="shiftEnd" value="${fn:escapeXml(schedule.shiftEnd)}">
+                                                <button type="submit" class="schedule-book-btn">
+                                                    <i class="fas fa-calendar-check"></i> Đặt
+                                                </button>
+                                            </form>
                                         </li>
                                     </c:forEach>
                                 </c:when>
@@ -430,16 +431,6 @@
                             </c:choose>
                         </ul>
                     </div>
-
-                    <form action="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" method="post" class="booking-form">
-                        <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
-                        <label for="appointmentDate">Ngày Đặt Lịch:</label>
-                        <input type="date" id="appointmentDate" name="appointmentDate" 
-                               value="${fn:escapeXml(appointmentDate)}" required>
-                        <button type="submit">
-                            <i class="fas fa-calendar-check"></i> Đặt Lịch
-                        </button>
-                    </form>
                 </c:otherwise>
             </c:choose>
 
@@ -466,7 +457,7 @@
                 <ul>
                     <li><i class="fas fa-map-marker-alt"></i> 123 Đường Sức Khỏe, DH.FPT</li>
                     <li><i class="fas fa-phone"></i> (028) 1234-5678</li>
-                    <li><i class="fas fa-envelope"></i> info@benhvien.com</li>
+                    <li><i class="fas fa-envelope"></i> NhaKhoaPDC@benhvien.com</li>
                 </ul>
             </div>
         </div>

@@ -5,6 +5,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.entity.Users;
 import model.service.AppointmentService;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class ViewDetailBookServlet extends HttpServlet {
     private AppointmentService appointmentService;
 
     @Override
-    public void init() throws ServletException {
+  public void init() throws ServletException {
         appointmentService = new AppointmentService();
     }
 
@@ -78,18 +80,60 @@ public class ViewDetailBookServlet extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
-        String doctorId = request.getParameter("doctorId");
-        String appointmentDate = request.getParameter("appointmentDate");
-
-        // Build redirect URL
-        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/ViewDetailBookServlet");
-        if (doctorId != null && !doctorId.trim().isEmpty()) {
-            redirectUrl.append("?doctorId=").append(doctorId.trim());
-            if (appointmentDate != null && !appointmentDate.trim().isEmpty()) {
-                redirectUrl.append("&appointmentDate=").append(appointmentDate.trim());
-            }
+        HttpSession session = request.getSession();
+        if (session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/views/common/login.jsp");
+            return;
         }
 
-        response.sendRedirect(redirectUrl.toString());
+        String doctorIdParam = request.getParameter("doctorId");
+        String appointmentDate = request.getParameter("appointmentDate");
+        String dayOfWeek = request.getParameter("dayOfWeek");
+        String shiftStart = request.getParameter("shiftStart");
+        String shiftEnd = request.getParameter("shiftEnd");
+
+        try {
+            // Validate doctorId parameter
+            if (doctorIdParam == null || doctorIdParam.trim().isEmpty()) {
+                session.setAttribute("statusMessage", "Lỗi: Vui lòng cung cấp ID bác sĩ hợp lệ");
+                response.sendRedirect(request.getContextPath() + "/BookMedicalAppointmentServlet");
+                return;
+            }
+
+            int doctorId;
+            try {
+                doctorId = Integer.parseInt(doctorIdParam.trim());
+            } catch (NumberFormatException e) {
+                session.setAttribute("statusMessage", "Lỗi: ID bác sĩ không hợp lệ");
+                response.sendRedirect(request.getContextPath() + "/BookMedicalAppointmentServlet");
+                return;
+            }
+
+            // Get logged-in user
+            Users user = (Users) session.getAttribute("user");
+            if (user == null) {
+                session.setAttribute("statusMessage", "Lỗi: Vui lòng đăng nhập để đặt lịch");
+                response.sendRedirect(request.getContextPath() + "/views/common/login.jsp");
+                return;
+            }
+
+            // Book appointment (assuming AppointmentService has a method to handle this)
+            boolean booked = appointmentService.bookAppointment(doctorId, user.getUserID(), appointmentDate, dayOfWeek, shiftStart, shiftEnd);
+            if (booked) {
+                session.setAttribute("statusMessage", "Đặt lịch thành công");
+            } else {
+                session.setAttribute("statusMessage", "Lỗi: Không thể đặt lịch, vui lòng thử lại");
+            }
+
+            // Redirect to BookMedicalAppointmentServlet to display the message
+            response.sendRedirect(request.getContextPath() + "/BookMedicalAppointmentServlet");
+
+        } catch (SQLException e) {
+            session.setAttribute("statusMessage", "Lỗi cơ sở dữ liệu: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/BookMedicalAppointmentServlet");
+        } catch (Exception e) {
+            session.setAttribute("statusMessage", "Lỗi hệ thống: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/BookMedicalAppointmentServlet");
+        }
     }
 }

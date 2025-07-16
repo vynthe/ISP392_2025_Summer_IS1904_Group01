@@ -348,4 +348,72 @@ public class AppointmentDAO {
 
     return details;
 }
+ public boolean bookAppointment(int doctorId, int patientId, String appointmentDate, String dayOfWeek, String shiftStart, String shiftEnd) throws SQLException {
+        // Validate schedule availability
+        String checkScheduleSql = "SELECT ScheduleID, RoomID FROM Schedules " +
+                                 "WHERE EmployeeID = ? AND Role = 'Doctor' " +
+                                 "AND StartTime = ? AND DayOfWeek = ? " +
+                                 "AND ShiftStartTime = ? AND ShiftEndTime = ? AND Status = 'Available'";
+        int scheduleId = -1;
+        int roomId = -1;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(checkScheduleSql)) {
+            pstmt.setInt(1, doctorId);
+            pstmt.setDate(2, Date.valueOf(appointmentDate));
+            pstmt.setString(3, dayOfWeek);
+            pstmt.setTime(4, Time.valueOf(shiftStart));
+            pstmt.setTime(5, Time.valueOf(shiftEnd));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    scheduleId = rs.getInt("ScheduleID");
+                    roomId = rs.getInt("RoomID");
+                } else {
+                    System.err.println("No available schedule found for doctorId: " + doctorId + " on " + appointmentDate + " at " + shiftStart + " - " + shiftEnd);
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in bookAppointment (check schedule) at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            throw e;
+        }
+
+        // Check if the appointment already exists
+        String checkDuplicateSql = "SELECT COUNT(*) FROM Appointments WHERE ScheduleID = ? AND PatientID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(checkDuplicateSql)) {
+            pstmt.setInt(1, scheduleId);
+            pstmt.setInt(2, patientId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    System.err.println("Duplicate appointment found for patientId: " + patientId + " on scheduleId: " + scheduleId);
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in bookAppointment (check duplicate) at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            throw e;
+        }
+
+        // Insert new appointment
+        String insertSql = "INSERT INTO Appointments (ScheduleID, PatientID, RoomID, DoctorID, AppointmentDate, DayOfWeek, ShiftStartTime, ShiftEndTime, Status, CreatedBy, CreatedAt) " +
+                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, GETDATE())";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
+            pstmt.setInt(1, scheduleId);
+            pstmt.setInt(2, patientId);
+            pstmt.setInt(3, roomId);
+            pstmt.setInt(4, doctorId);
+            pstmt.setDate(5, Date.valueOf(appointmentDate));
+            pstmt.setString(6, dayOfWeek);
+            pstmt.setTime(7, Time.valueOf(shiftStart));
+            pstmt.setTime(8, Time.valueOf(shiftEnd));
+            pstmt.setInt(9, patientId); // Assuming CreatedBy is the patient who created the appointment
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("SQLException in bookAppointment (insert) at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            throw e;
+        }
+    }
 }
+

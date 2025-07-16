@@ -19,9 +19,9 @@
             --neutral-600: #4b5563;
             --neutral-900: #111827;
             --error-red: #dc2626;
-            --success-green: #10b981; /* Màu xanh lá cây đậm hơn */
-            --success-green-light: #d1fae5; /* Nền sáng hơn */
-            --success-green-border: #6ee7b7; /* Viền xanh tươi sáng */
+            --success-green: #10b981;
+            --success-green-light: #d1fae5;
+            --success-green-border: #6ee7b7;
             --white: #ffffff;
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -219,12 +219,12 @@
         .alert-success {
             background: var(--success-green-light);
             color: var(--success-green);
-            border: 2px solid var(--success-green-border); /* Viền dày hơn */
+            border: 2px solid var(--success-green-border);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .alert-success i {
-            font-size: 1.5rem; /* Tăng kích thước dấu tích */
+            font-size: 1.5rem;
             color: var(--success-green);
             margin-right: 0.75rem;
         }
@@ -276,16 +276,6 @@
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s ease;
-        }
-
-        .btn-view {
-            background: var(--primary-teal-light);
-            color: var(--primary-teal);
-        }
-
-        .btn-view:hover {
-            background: var(--primary-teal);
-            color: var(--white);
         }
 
         .btn-select {
@@ -593,10 +583,6 @@
                                         <td>${fn:escapeXml(doctor.specialization)}</td>
                                         <td>
                                             <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" 
-                                               class="action-btn btn-view">
-                                                <i class="fas fa-eye"></i> Chi tiết
-                                            </a>
-                                            <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?doctorId=${doctor.userID}&action=select" 
                                                class="action-btn btn-select">
                                                 <i class="fas fa-check"></i> Chọn
                                             </a>
@@ -620,10 +606,6 @@
                                     </div>
                                     <div class="card-actions">
                                         <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" 
-                                           class="action-btn btn-view">
-                                            <i class="fas fa-eye"></i> Chi tiết
-                                        </a>
-                                        <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet?doctorId=${doctor.userID}&action=select" 
                                            class="action-btn btn-select">
                                             <i class="fas fa-check"></i> Chọn
                                         </a>
