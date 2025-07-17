@@ -3,7 +3,6 @@ package controller.admin;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.service.UserService;
-import org.mindrot.jbcrypt.BCrypt; 
+// import org.mindrot.jbcrypt.BCrypt; // KHÔNG CẦN DÙNG TRỰC TIẾP BCrypt Ở ĐÂY NỮA
 
 @WebServlet(name = "AddPatientServlet", urlPatterns = {"/AddPatientServlet"})
 public class AddPatientServlet extends HttpServlet {
@@ -50,87 +49,30 @@ public class AddPatientServlet extends HttpServlet {
         request.setAttribute("phone", phone);
         request.setAttribute("address", address);
         request.setAttribute("username", username);
-        request.setAttribute("password", password);
+        request.setAttribute("password", password); 
 
-        // Validate inputs
+        Date dob = null;
         try {
-            // Validate fullName: chỉ chứa chữ cái (Unicode) và dấu cách
-            if (fullName == null || fullName.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tên không được để trống.");
-            }
-            if (!fullName.matches("^[\\p{L}\\s]+$")) {
-                throw new IllegalArgumentException("Tên chỉ được chứa chữ cái và dấu cách.");
-            }
-
-            // Validate gender: phải là "Nam", "Nữ", hoặc "Khác"
-            if (gender == null || gender.trim().isEmpty()) {
-                throw new IllegalArgumentException("Giới tính không được để trống.");
-            }
-            String trimmedGender = gender.trim();
-            if (!trimmedGender.equals("Nam") && !trimmedGender.equals("Nữ") && !trimmedGender.equals("Khác")) {
-                throw new IllegalArgumentException("Giới tính phải là 'Nam', 'Nữ', hoặc 'Khác'.");
-            }
-
-            // Validate dob: không vượt quá ngày hiện tại
-            Date dob;
-            try {
+            if (dobStr != null && !dobStr.trim().isEmpty()) {
                 dob = Date.valueOf(dobStr);
-                LocalDate currentDate = LocalDate.now(); 
-                LocalDate dobDate = dob.toLocalDate();
-                if (dobDate.isAfter(currentDate)) {
-                    throw new IllegalArgumentException("Ngày sinh không được vượt quá thời gian thực.");
-                }
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Ngày sinh không hợp lệ.");
             }
+        } catch (IllegalArgumentException e) {
+           
+        }
 
-            // Validate email: phải kết thúc bằng "@gmail.com"
-            if (email == null || email.trim().isEmpty() || !email.endsWith("@gmail.com") || email.equals("@gmail.com")) {
-                throw new IllegalArgumentException("Email phải có đuôi @gmail.com.");
-            }
+        // Get the admin ID from session
+        HttpSession session = request.getSession();
+        // Lấy UserID của admin đang đăng nhập.
+        Integer createdBy = (Integer) session.getAttribute("loggedInUserId"); // Sử dụng tên thuộc tính session hợp lý
+        if (createdBy == null) {
+            System.err.println("Admin ID not found in session, defaulting to 1.");
+            createdBy = 1; // Giá trị mặc định 
+        }
 
-            // Validate phone: nếu không rỗng, phải là 10 chữ số
-            if (phone != null && !phone.trim().isEmpty() && !phone.matches("\\d{10}")) {
-                throw new IllegalArgumentException("Số điện thoại phải là 10 chữ số.");
-            }
+        try {
+           
+            boolean success = userService.addUser(fullName, gender, dob, null, "patient", "Active", email, phone, address, username, password, createdBy);
 
-            // Validate address: không được để trống
-            if (address == null || address.trim().isEmpty()) {
-                throw new IllegalArgumentException("Địa chỉ không được để trống.");
-            }
-
-            // Validate username: chỉ chứa chữ cái và số
-            if (username == null || username.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tên đăng nhập không được để trống.");
-            }
-            if (!username.matches("^[a-zA-Z0-9]+$")) {
-                throw new IllegalArgumentException("Tên đăng nhập chỉ được chứa chữ cái và số.");
-            }
-
-            // Validate password: ít nhất 8 ký tự, 1 chữ cái in hoa, 1 ký tự đặc biệt, 1 số
-            if (password == null || password.length() < 8 || 
-                !password.matches("^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\\d).+$")) {
-                throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự, 1 chữ cái in hoa, 1 ký tự đặc biệt và 1 số.");
-            }
-
-            // Mã hóa mật khẩu bằng BCrypt
-            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-
-            // Get the admin ID from session
-            HttpSession session = request.getSession();
-            Integer createdBy = (Integer) session.getAttribute("adminId");
-            if (createdBy == null) {
-                createdBy = 1; // Gán admin ID khớp với database
-                System.out.println("Không tìm thấy adminId trong session, sử dụng giá trị mặc định: " + createdBy);
-            }
-
-            // Role mặc định là "patient"
-            String role = "patient";
-            // Status mặc định "Active"
-            String status = "Active";
-
-            // Call UserService to add the user with hashed password
-            boolean success = userService.addUser(fullName, gender, dob, null, role, status, email, phone, address, username, hashedPassword, createdBy);
             if (success) {
                 System.out.println("Thêm bệnh nhân thành công: " + fullName + ", Email: " + email);
                 session.setAttribute("successMessage", "Thêm bệnh nhân thành công!");
@@ -140,15 +82,10 @@ public class AddPatientServlet extends HttpServlet {
                 request.setAttribute("error", "Không thể thêm bệnh nhân. Email, username hoặc số điện thoại có thể đã tồn tại.");
                 request.getRequestDispatcher("/views/admin/AddPatient.jsp").forward(request, response);
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println("Lỗi dữ liệu: " + e.getMessage());
+        } catch (SQLException | IllegalArgumentException e) { // Bắt cả SQLException và IllegalArgumentException từ UserService
+            System.err.println("Lỗi khi thêm bệnh nhân: " + e.getMessage());
             e.printStackTrace();
-            request.setAttribute("error", e.getMessage());
-            request.getRequestDispatcher("/views/admin/AddPatient.jsp").forward(request, response);
-        } catch (SQLException e) {
-            System.out.println("Lỗi SQL: " + e.getMessage() + ", SQLState: " + e.getSQLState() + ", Error Code: " + e.getErrorCode());
-            e.printStackTrace();
-            request.setAttribute("error", "Lỗi khi thêm bệnh nhân: " + e.getMessage());
+            request.setAttribute("error", "Lỗi: " + e.getMessage()); // Hiển thị thông báo lỗi chi tiết từ Service
             request.getRequestDispatcher("/views/admin/AddPatient.jsp").forward(request, response);
         }
     }
