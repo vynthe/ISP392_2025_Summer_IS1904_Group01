@@ -1,308 +1,269 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Tuần</title>
+    <title>Lịch làm việc - ID ${userId}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
         }
-        
-        .header {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        
-        .header select {
-            padding: 2px 5px;
-            border: 1px solid #ccc;
-            background-color: white;
-        }
-        
-        .header label {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .schedule-table {
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+            z-index: -1;
         }
-        
-        .schedule-table th, .schedule-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-            min-height: 80px;
+
+        .main-container {
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
         }
-        
-        .schedule-table th {
-            background-color: #e6f3ff;
-            font-weight: bold;
+
+        .header-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            min-height: calc(100vh - 200px);
+        }
+
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .page-title {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
             text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .day-header {
-            background-color: #b3d9ff;
-            color: #333;
-            font-weight: bold;
-        }
-        
-        .slot-cell {
-            background-color: #f0f8ff;
-            font-weight: bold;
+
+        .page-subtitle {
             text-align: center;
-            width: 60px;
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
         }
-        
-        .class-item {
-            margin-bottom: 8px;
-            padding: 4px;
-            border-radius: 4px;
-            font-size: 12px;
+
+        .modern-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: none;
         }
-        
-        .class-code {
-            background-color: #ffa500;
-            color: white;
-            padding: 2px 4px;
-            border-radius: 2px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 2px;
+
+        .modern-table thead {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
         }
-        
-        .class-details {
-            margin-top: 2px;
-            font-size: 11px;
+
+        .modern-table th {
+            border: none;
+            padding: 20px 15px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-        .room-info {
-            color: #666;
-            font-size: 11px;
+
+        .modern-table td {
+            border: none;
+            padding: 20px 15px;
+            color: #4a5568;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        
-        .status-attended {
-            background-color: #90EE90;
-            color: #006400;
-            padding: 1px 3px;
-            border-radius: 2px;
-            font-size: 10px;
+
+        .modern-table tbody tr {
+            transition: all 0.3s ease;
         }
-        
-        .status-time {
-            background-color: #87CEEB;
-            color: #004080;
-            padding: 1px 3px;
-            border-radius: 2px;
-            font-size: 10px;
-            margin-left: 5px;
+
+        .modern-table tbody tr:hover {
+            background: linear-gradient(135deg, #f8faff, #f1f5f9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        
-        .eduNext {
-            background-color: #4CAF50;
-            color: white;
-            padding: 1px 3px;
-            border-radius: 2px;
-            font-size: 10px;
-            margin-left: 5px;
+
+        .modern-table tbody tr:last-child td {
+            border-bottom: none;
         }
-        
-        .week-select {
-            background-color: #b3d9ff;
+
+        p {
+            text-align: center;
+            margin: 10px 0;
         }
-        
-        .year-select {
-            background-color: #b3d9ff;
+
+        p.error {
+            color: #e74c3c;
+        }
+
+        p.message {
+            color: #2ecc71;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            
+            .header-card {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .content-card {
+                padding: 20px;
+                min-height: calc(100vh - 140px);
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .modern-table {
+                font-size: 12px;
+            }
+            
+            .modern-table th,
+            .modern-table td {
+                padding: 12px 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <label>YEAR</label>
-        <select class="year-select" name="year">
-            <option value="2025" selected>2025</option>
-            <option value="2024">2024</option>
-            <option value="2026">2026</option>
-        </select>
-        <label>WEEK</label>
-        <select class="week-select" name="week">
-            <option value="23/06 To 29/06" selected>23/06 To 29/06</option>
-            <option value="16/06 To 22/06">16/06 To 22/06</option>
-            <option value="30/06 To 06/07">30/06 To 06/07</option>
-        </select>
-    </div>
-    
-    <table class="schedule-table">
-        <thead>
-            <tr>
-                <th></th>
-                <th class="day-header">MON<br>23/06</th>
-                <th class="day-header">TUE<br>24/06</th>
-                <th class="day-header">WED<br>25/06</th>
-                <th class="day-header">THU<br>26/06</th>
-                <th class="day-header">FRI<br>27/06</th>
-                <th class="day-header">SAT<br>28/06</th>
-                <th class="day-header">SUN<br>29/06</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="slot-cell">Slot 0</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td class="slot-cell">Slot 1</td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">FIN202</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at BE-410 <span class="eduNext">EduNext</span>
-                        </div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                    </div>
-                </td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ISP392</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at DE-412
-                        </div>
-                        <div class="room-info">(_ChangeRoom_)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                        <div class="eduNext">EduNext</div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                    </div>
-                </td>
-                <td>-</td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ISM302</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at BE-410
-                        </div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                    </div>
-                </td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ITA301</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at EP-303
-                        </div>
-                        <div class="room-info">(_ChangeRoom)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                        <div class="eduNext">EduNext</div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(7:30-9:50)</div>
-                    </div>
-                </td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td class="slot-cell">Slot 2</td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ISM302</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at BE-410
-                        </div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                    </div>
-                </td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ITA301</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at EP-303
-                        </div>
-                        <div class="room-info">(_ChangeRoom)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                        <div class="eduNext">EduNext</div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                    </div>
-                </td>
-                <td>-</td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">FIN202</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at BE-410 <span class="eduNext">EduNext</span>
-                        </div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                    </div>
-                </td>
-                <td>
-                    <div class="class-item">
-                        <span class="class-code">ISP392</span>
-                        <span class="class-code">New Materials</span>
-                        <div class="class-details">
-                            at DE-423
-                        </div>
-                        <div class="room-info">(_ChangeRoom_)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                        <div class="eduNext">EduNext</div>
-                        <div class="status-attended">(attended)</div>
-                        <div class="status-time">(10:00-12:20)</div>
-                    </div>
-                </td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td class="slot-cell">Slot 3</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn btn-modern btn-success-modern">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+            <h1 class="page-title">
+                <i class="fas fa-calendar-alt"></i> Lịch làm việc - ID ${userId}
+            </h1>
+            <p class="page-subtitle">Lịch làm việc cho ngày ${viewDate}</p>
+        </div>
 
-    <script>
-        // Xử lý sự kiện thay đổi năm
-        document.querySelector('.year-select').addEventListener('change', function() {
-            // Có thể gửi Ajax request hoặc reload page
-            console.log('Year changed to: ' + this.value);
-        });
-        
-        // Xử lý sự kiện thay đổi tuần
-        document.querySelector('.week-select').addEventListener('change', function() {
-            // Có thể gửi Ajax request hoặc reload page
-            console.log('Week changed to: ' + this.value);
-        });
-    </script>
+        <!-- Content -->
+        <div class="content-card">
+            <!-- Success Message -->
+            <c:if test="${not empty sessionScope.successMessage}">
+                <div class="success-alert">
+                    <i class="fas fa-check-circle"></i>
+                    ${sessionScope.successMessage}
+                </div>
+                <% session.removeAttribute("successMessage"); %>
+            </c:if>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-clock me-2"></i>Slot</th>
+                            <th><i class="fas fa-clock me-2"></i>Thời gian</th>
+                            <th><i class="fas fa-hospital me-2"></i>Phòng</th>
+                            <th><i class="fas fa-tools me-2"></i>Dịch vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${not empty schedules}">
+                                <c:forEach var="schedule" items="${schedules}">
+                                    <c:set var="roomKey" value="room_${schedule.slotId}" />
+                                    <c:set var="serviceKey" value="services_${schedule.slotId}" />
+                                    <c:set var="room" value="${requestScope[roomKey]}" />
+                                    <c:set var="service" value="${requestScope[serviceKey]}" />
+                                    <tr>
+                                        <td>Slot ${schedule.slotId}</td>
+                                        <td>
+                                            ${not empty schedule.startTime ? schedule.startTime : 'Chưa có'} - 
+                                            ${not empty schedule.endTime ? schedule.endTime : 'Chưa có'}
+                                        </td>
+                                        <td>
+                                            ${not empty room ? room.roomName : 'Chưa gán phòng'} 
+                                            (${not empty room ? room.status : ''})
+                                        </td>
+                                        <td>${not empty service ? service : 'Chưa gán dịch vụ'}</td>
+                                    </tr>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <tr>
+                                    <td colspan="4" class="no-data">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <div>Không có lịch nào</div>
+                                        <small>Hãy thêm lịch để bắt đầu quản lý</small>
+                                    </td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

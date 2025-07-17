@@ -98,7 +98,7 @@
             </div>
         </c:if>
         <div class="mt-6 text-center">
-        <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp">
+        <a href="${pageContext.request.contextPath}/views/user/Receptionist/ReceptionistDashBoard.jsp">
             <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200">
                 Quay lại trang chủ
             </button>

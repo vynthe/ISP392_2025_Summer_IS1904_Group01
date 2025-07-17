@@ -20,18 +20,14 @@ public class Users {
     private Integer createdBy;
     private Date createdAt;
     private Date updatedAt;
-    // Thêm các thuộc tính mới
-    private String verificationCode;
-    private Timestamp verificationCodeExpiry;
-    private boolean isVerified;
+   
 
     public Users() {
     }
 
     public Users(int userID, String username, String password, String email, String fullName, Date dob, String gender, 
                  String phone, String address, String medicalHistory, String specialization, String role, String status, 
-                 Integer createdBy, Date createdAt, Date updatedAt, String verificationCode, 
-                 Timestamp verificationCodeExpiry, boolean isVerified) {
+                 Integer createdBy, Date createdAt, Date updatedAt) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -47,10 +43,7 @@ public class Users {
         this.status = status;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.verificationCode = verificationCode;
-        this.verificationCodeExpiry = verificationCodeExpiry;
-        this.isVerified = isVerified;
+       
     }
 
     // Getters và Setters cho các thuộc tính hiện có
@@ -182,31 +175,7 @@ public class Users {
         this.updatedAt = updatedAt;
     }
 
-    // Getters và Setters cho các thuộc tính mới
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public Timestamp getVerificationCodeExpiry() {
-        return verificationCodeExpiry;
-    }
-
-    public void setVerificationCodeExpiry(Timestamp verificationCodeExpiry) {
-        this.verificationCodeExpiry = verificationCodeExpiry;
-    }
-
-    public boolean isVerified() {
-        return isVerified;
-    }
-
-    public void setVerified(boolean isVerified) {
-        this.isVerified = isVerified;
-    }
-
+  
     @Override
     public String toString() {
         return "Users{" +
@@ -226,9 +195,6 @@ public class Users {
                 ", createdBy=" + createdBy +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", verificationCode='" + verificationCode + '\'' +
-                ", verificationCodeExpiry=" + verificationCodeExpiry +
-                ", isVerified=" + isVerified +
                 '}';
     }
 

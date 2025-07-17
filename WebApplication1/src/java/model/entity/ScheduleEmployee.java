@@ -5,16 +5,13 @@ import java.time.LocalTime;
 import java.time.LocalDateTime;
 
 public class ScheduleEmployee {
-
     private int slotId;
     private int userId; // ID của nhân viên (Doctor, Nurse, Receptionist)
     private String role; // Vai trò: Doctor, Nurse, Receptionist
-    private int roomId; // ID phòng
+    private Integer roomId; // ID phòng, dùng Integer để hỗ trợ NULL
     private LocalDate slotDate; // Ngày làm việc
     private LocalTime startTime; // Giờ bắt đầu
     private LocalTime endTime; // Giờ kết thúc
-    private boolean isAbsent; // Có vắng mặt không
-    private String absenceReason; // Lý do vắng mặt
     private String status; // Trạng thái: Available, Booked, Completed, Cancelled
     private int createdBy; // ID của admin tạo lịch
     private LocalDateTime createdAt; // Thời gian tạo
@@ -24,26 +21,25 @@ public class ScheduleEmployee {
     public ScheduleEmployee() {
     }
 
-    // Constructor đầy đủ
-    public ScheduleEmployee(int slotId, int userId, String role, int roomId, LocalDate slotDate,
+    // Constructor đầy đủ (cập nhật roomId thành Integer)
+    public ScheduleEmployee(int slotId, int userId, String role, Integer roomId, LocalDate slotDate,
             LocalTime startTime, LocalTime endTime, boolean isAbsent, String absenceReason,
             String status, int createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.slotId = slotId;
         this.userId = userId;
         this.role = role;
-        this.roomId = roomId;
+        this.roomId = roomId; // Có thể là null
         this.slotDate = slotDate;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.isAbsent = isAbsent;
-        this.absenceReason = absenceReason;
+  
         this.status = status;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // Getters và Setters
+    // Getters và Setters (cập nhật roomId)
     public int getSlotId() {
         return slotId;
     }
@@ -68,11 +64,11 @@ public class ScheduleEmployee {
         this.role = role;
     }
 
-    public int getRoomId() {
+    public Integer getRoomId() {
         return roomId;
     }
 
-    public void setRoomId(int roomId) {
+    public void setRoomId(Integer roomId) {
         this.roomId = roomId;
     }
 
@@ -98,22 +94,6 @@ public class ScheduleEmployee {
 
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
-    }
-
-    public boolean isAbsent() {
-        return isAbsent;
-    }
-
-    public void setAbsent(boolean isAbsent) {
-        this.isAbsent = isAbsent;
-    }
-
-    public String getAbsenceReason() {
-        return absenceReason;
-    }
-
-    public void setAbsenceReason(String absenceReason) {
-        this.absenceReason = absenceReason;
     }
 
     public String getStatus() {
@@ -159,8 +139,7 @@ public class ScheduleEmployee {
                 + ", slotDate=" + slotDate
                 + ", startTime=" + startTime
                 + ", endTime=" + endTime
-                + ", isAbsent=" + isAbsent
-                + ", absenceReason='" + absenceReason + '\''
+         
                 + ", status='" + status + '\''
                 + ", createdBy=" + createdBy
                 + ", createdAt=" + createdAt

@@ -8,16 +8,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.dao.UserDAO;
+import model.entity.ScheduleEmployee;
 import model.entity.Users;
 import org.mindrot.jbcrypt.BCrypt;
+import model.dao.ScheduleDAO;
 
 public class UserService {
 
     private final UserDAO userDAO;
+    private final ScheduleDAO scheduleDAO;
 
     public UserService() {
         this.userDAO = new UserDAO();
-    }  
+        this.scheduleDAO = new ScheduleDAO();
+    }
 
     public boolean registerUser(String username, String email, String password, String role, String phone) throws SQLException {
         username = (username != null) ? username.trim() : null;
@@ -150,14 +154,30 @@ public class UserService {
             throw new SQLException("Thông tin người dùng không được để trống.");
         }
 
-        if (user.getUsername() != null) user.setUsername(user.getUsername().trim());
-        if (user.getEmail() != null) user.setEmail(user.getEmail().trim());
-        if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
-        if (user.getPhone() != null) user.setPhone(user.getPhone().trim());
-        if (user.getAddress() != null) user.setAddress(user.getAddress().trim());
-        if (user.getMedicalHistory() != null) user.setMedicalHistory(user.getMedicalHistory().trim());
-        if (user.getSpecialization() != null) user.setSpecialization(user.getSpecialization().trim());
-        if (user.getGender() != null) user.setGender(user.getGender().trim());
+        if (user.getUsername() != null) {
+            user.setUsername(user.getUsername().trim());
+        }
+        if (user.getEmail() != null) {
+            user.setEmail(user.getEmail().trim());
+        }
+        if (user.getFullName() != null) {
+            user.setFullName(user.getFullName().trim());
+        }
+        if (user.getPhone() != null) {
+            user.setPhone(user.getPhone().trim());
+        }
+        if (user.getAddress() != null) {
+            user.setAddress(user.getAddress().trim());
+        }
+        if (user.getMedicalHistory() != null) {
+            user.setMedicalHistory(user.getMedicalHistory().trim());
+        }
+        if (user.getSpecialization() != null) {
+            user.setSpecialization(user.getSpecialization().trim());
+        }
+        if (user.getGender() != null) {
+            user.setGender(user.getGender().trim());
+        }
 
         validateUsername(user.getUsername());
         validateEmail(user.getEmail());
@@ -165,12 +185,24 @@ public class UserService {
         validateFullName(user.getFullName());
         validateDob(user.getDob());
 
-        if (user.getUsername() != null && user.getUsername().length() > 20) throw new SQLException("Tên đăng nhập không được vượt quá 20 ký tự.");
-        if (user.getEmail() != null && user.getEmail().length() > 50) throw new SQLException("Email không được vượt quá 50 ký tự.");
-        if (user.getFullName() != null && user.getFullName().length() > 100) throw new SQLException("Họ và tên không được vượt quá 100 ký tự.");
-        if (user.getPhone() != null && user.getPhone().length() > 10) throw new SQLException("Số điện thoại không được vượt quá 10 ký tự.");
-        if (user.getAddress() != null && user.getAddress().length() > 255) throw new SQLException("Địa chỉ không được vượt quá 255 ký tự.");
-        if (user.getSpecialization() != null && user.getSpecialization().length() > 100) throw new SQLException("Trình độ chuyên môn không được vượt quá 100 ký tự.");
+        if (user.getUsername() != null && user.getUsername().length() > 20) {
+            throw new SQLException("Tên đăng nhập không được vượt quá 20 ký tự.");
+        }
+        if (user.getEmail() != null && user.getEmail().length() > 50) {
+            throw new SQLException("Email không được vượt quá 50 ký tự.");
+        }
+        if (user.getFullName() != null && user.getFullName().length() > 100) {
+            throw new SQLException("Họ và tên không được vượt quá 100 ký tự.");
+        }
+        if (user.getPhone() != null && user.getPhone().length() > 10) {
+            throw new SQLException("Số điện thoại không được vượt quá 10 ký tự.");
+        }
+        if (user.getAddress() != null && user.getAddress().length() > 255) {
+            throw new SQLException("Địa chỉ không được vượt quá 255 ký tự.");
+        }
+        if (user.getSpecialization() != null && user.getSpecialization().length() > 100) {
+            throw new SQLException("Trình độ chuyên môn không được vượt quá 100 ký tự.");
+        }
 
         userDAO.updateUserProfile(user);
     }
@@ -191,9 +223,15 @@ public class UserService {
 
     public void validateUsername(String username) throws SQLException {
         String trimmedUsername = (username != null) ? username.trim() : null;
-        if (trimmedUsername == null || trimmedUsername.isEmpty()) throw new SQLException("Tên đăng nhập không được để trống.");
-        if (!trimmedUsername.matches("^[a-zA-Z0-9]+$")) throw new SQLException("Tên đăng nhập chỉ được chứa chữ cái và số.");
-        if (trimmedUsername.length() > 20) throw new SQLException("Tên đăng nhập không được vượt quá 20 ký tự.");
+        if (trimmedUsername == null || trimmedUsername.isEmpty()) {
+            throw new SQLException("Tên đăng nhập không được để trống.");
+        }
+        if (!trimmedUsername.matches("^[a-zA-Z0-9]+$")) {
+            throw new SQLException("Tên đăng nhập chỉ được chứa chữ cái và số.");
+        }
+        if (trimmedUsername.length() > 20) {
+            throw new SQLException("Tên đăng nhập không được vượt quá 20 ký tự.");
+        }
     }
 
     private void validateEmail(String email) throws IllegalArgumentException {
@@ -201,7 +239,9 @@ public class UserService {
         if (trimmedEmail == null || trimmedEmail.isEmpty() || !trimmedEmail.endsWith("@gmail.com") || trimmedEmail.equals("@gmail.com")) {
             throw new IllegalArgumentException("Email phải có đuôi @gmail.com và không được để trống.");
         }
-        if (trimmedEmail.length() > 50) throw new IllegalArgumentException("Email không được vượt quá 50 ký tự.");
+        if (trimmedEmail.length() > 50) {
+            throw new IllegalArgumentException("Email không được vượt quá 50 ký tự.");
+        }
     }
 
     private void validatePassword(String password) throws IllegalArgumentException {
@@ -218,11 +258,17 @@ public class UserService {
     }
 
     private void validateDob(Date dob) throws IllegalArgumentException {
-        if (dob == null) throw new IllegalArgumentException("Ngày sinh không được để trống.");
+        if (dob == null) {
+            throw new IllegalArgumentException("Ngày sinh không được để trống.");
+        }
         LocalDate currentDate = LocalDate.now();
         LocalDate dobDate = dob.toLocalDate();
-        if (dobDate.isAfter(currentDate)) throw new IllegalArgumentException("Ngày sinh không được vượt quá thời gian thực.");
-        if (dobDate.getYear() < 1915) throw new IllegalArgumentException("Năm sinh phải từ năm 1915 trở lên.");
+        if (dobDate.isAfter(currentDate)) {
+            throw new IllegalArgumentException("Ngày sinh không được vượt quá thời gian thực.");
+        }
+        if (dobDate.getYear() < 1915) {
+            throw new IllegalArgumentException("Năm sinh phải từ năm 1915 trở lên.");
+        }
     }
 
     public boolean updatePassword(String email, String newPassword) throws SQLException {
@@ -329,10 +375,18 @@ public class UserService {
             throw new SQLException("Thông tin người dùng không được để trống.");
         }
 
-        if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
-        if (user.getGender() != null) user.setGender(user.getGender().trim());
-        if (user.getSpecialization() != null) user.setSpecialization(user.getSpecialization().trim());
-        if (user.getStatus() != null) user.setStatus(user.getStatus().trim());
+        if (user.getFullName() != null) {
+            user.setFullName(user.getFullName().trim());
+        }
+        if (user.getGender() != null) {
+            user.setGender(user.getGender().trim());
+        }
+        if (user.getSpecialization() != null) {
+            user.setSpecialization(user.getSpecialization().trim());
+        }
+        if (user.getStatus() != null) {
+            user.setStatus(user.getStatus().trim());
+        }
 
         validateFullName(user.getFullName());
         validateDob(user.getDob());
@@ -376,11 +430,21 @@ public class UserService {
             throw new SQLException("Thông tin người dùng không được để trống.");
         }
 
-        if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
-        if (user.getGender() != null) user.setGender(user.getGender().trim());
-        if (user.getPhone() != null) user.setPhone(user.getPhone().trim());
-        if (user.getAddress() != null) user.setAddress(user.getAddress().trim());
-        if (user.getStatus() != null) user.setStatus(user.getStatus().trim());
+        if (user.getFullName() != null) {
+            user.setFullName(user.getFullName().trim());
+        }
+        if (user.getGender() != null) {
+            user.setGender(user.getGender().trim());
+        }
+        if (user.getPhone() != null) {
+            user.setPhone(user.getPhone().trim());
+        }
+        if (user.getAddress() != null) {
+            user.setAddress(user.getAddress().trim());
+        }
+        if (user.getStatus() != null) {
+            user.setStatus(user.getStatus().trim());
+        }
 
         validateFullName(user.getFullName());
         validateDob(user.getDob());
@@ -424,7 +488,7 @@ public class UserService {
     public List<Users> getUsersByRole(String role) throws SQLException {
         return userDAO.getUsersByRole((role != null) ? role.trim() : "");
     }
-    
+
     public Map<Integer, String> getEmployeeNameMap() throws SQLException {
         Map<Integer, String> employeeMap = new HashMap<>();
         List<Users> employees = userDAO.getAllEmployee();
@@ -443,8 +507,19 @@ public class UserService {
     public int countEmployee() throws SQLException {
         return userDAO.countEmployee();
     }
-     public boolean changePassword(Users user, String newPassword) throws SQLException {
-    String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-    return new UserDAO().changePassword(user.getEmail(), hashed);
-}
+
+    public boolean changePassword(Users user, String newPassword) throws SQLException {
+        String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+        return new UserDAO().changePassword(user.getEmail(), hashed);
+    }
+
+    // Get personal schedules with service and room details for Doctors and Nurses
+    public List<ScheduleEmployee> getUserSchedulesWithDetails(int userId) throws SQLException {
+        return userDAO.getUserSchedulesWithDetails(userId);
+    }
+
+    // Get personal schedules with only room details for Receptionists
+    public List<ScheduleEmployee> getUserSchedulesForReceptionist(int userId) throws SQLException {
+        return userDAO.getUserSchedulesForReceptionist(userId);
+    }
 }

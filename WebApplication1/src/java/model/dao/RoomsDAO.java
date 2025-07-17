@@ -1,7 +1,3 @@
-/*
- * Click nfs://netbeans/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nfs://netbeans/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.dao;
 
 import java.sql.Connection;
@@ -83,50 +79,48 @@ public class RoomsDAO {
         }
     }
 
-   public List<Rooms> searchRooms(String keyword) throws SQLException {
-    List<Rooms> roomList = new ArrayList<>();
-    String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
-                 "FROM Rooms " +
-                 "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ? OR [Status] LIKE ?";
+    public List<Rooms> searchRooms(String keyword) throws SQLException {
+        List<Rooms> roomList = new ArrayList<>();
+        String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
+                     "FROM Rooms " +
+                     "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ? OR [Status] LIKE ?";
 
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
-        stmt.setString(1, searchPattern); // RoomName
-        stmt.setString(2, searchPattern); // RoomID (as text)
-        stmt.setString(3, searchPattern); // Status
+            String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
 
-        try (ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Rooms room = new Rooms();
-                room.setRoomID(rs.getInt("RoomID"));
-                room.setRoomName(rs.getString("RoomName"));
-                room.setDescription(rs.getString("Description"));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Rooms room = new Rooms();
+                    room.setRoomID(rs.getInt("RoomID"));
+                    room.setRoomName(rs.getString("RoomName"));
+                    room.setDescription(rs.getString("Description"));
 
-                Object doctorIDObj = rs.getObject("DoctorID");
-                Object nurseIDObj = rs.getObject("NurseID");
+                    Object doctorIDObj = rs.getObject("DoctorID");
+                    Object nurseIDObj = rs.getObject("NurseID");
 
-                room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
-                room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
-                room.setStatus(rs.getString("Status"));
-                roomList.add(room);
+                    room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
+                    room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
+                    room.setStatus(rs.getString("Status"));
+                    roomList.add(room);
+                }
             }
+        } catch (SQLException e) {
+            System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+            throw e;
         }
-    } catch (SQLException e) {
-        System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-        throw e;
+        return roomList;
     }
-    return roomList;
-}
-
 
     public List<Rooms> getAllRooms() throws SQLException {
         List<Rooms> roomList = new ArrayList<>();
 
         String sql = "SELECT r.RoomID, r.RoomName, r.[Description], r.DoctorID, r.NurseID, r.[Status], " +
-                     "d.fullName AS doctorName, " +
-                     "n.fullName AS nurseName " +
+                     "d.fullName AS doctorName, n.fullName AS nurseName " +
                      "FROM Rooms r " +
                      "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
                      "LEFT JOIN Users n ON r.NurseID = n.UserID";
@@ -141,23 +135,19 @@ public class RoomsDAO {
                 room.setRoomName(rs.getString("RoomName"));
                 room.setDescription(rs.getString("Description"));
 
-                // Safe null handling
                 Object doctorIDObj = rs.getObject("DoctorID");
                 Object nurseIDObj = rs.getObject("NurseID");
 
-                // Debug: Log raw values from ResultSet
                 System.out.println("RoomID: " + rs.getInt("RoomID") + 
                                  ", DoctorID (raw): " + doctorIDObj + 
                                  ", NurseID (raw): " + nurseIDObj);
 
-                // Safe assignment
                 Integer doctorID = (doctorIDObj != null) ? (Integer) doctorIDObj : null;
                 Integer nurseID = (nurseIDObj != null) ? (Integer) nurseIDObj : null;
                 
                 room.setDoctorID(doctorID);
                 room.setNurseID(nurseID);
 
-                // Debug: Log values after setting
                 System.out.println("RoomID: " + room.getRoomID() + 
                                  ", DoctorID (set): " + room.getDoctorID() + 
                                  ", NurseID (set): " + room.getNurseID());
@@ -168,7 +158,6 @@ public class RoomsDAO {
 
                 roomList.add(room);
             }
-
         } catch (SQLException e) {
             System.err.println("SQLException in getAllRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
             throw e;
@@ -218,7 +207,6 @@ public class RoomsDAO {
                     room.setRoomName(rs.getString("RoomName"));
                     room.setDescription(rs.getString("Description"));
                     
-                    // Safe null handling
                     Object doctorIDObj = rs.getObject("DoctorID");
                     Object nurseIDObj = rs.getObject("NurseID");
                     
@@ -247,7 +235,7 @@ public class RoomsDAO {
         } else if ("nurse".equalsIgnoreCase(role)) {
             sql = "SELECT * FROM Rooms WHERE NurseID = ?";
         } else {
-            return roomList; // không hỗ trợ vai trò khác
+            return roomList;
         }
 
         try (Connection conn = dbContext.getConnection();
@@ -260,7 +248,6 @@ public class RoomsDAO {
                     room.setRoomName(rs.getString("RoomName"));
                     room.setDescription(rs.getString("Description"));
                     
-                    // Safe null handling
                     Object doctorIDObj = rs.getObject("DoctorID");
                     Object nurseIDObj = rs.getObject("NurseID");
                     
@@ -285,7 +272,7 @@ public class RoomsDAO {
         String deleteRoom = "DELETE FROM Rooms WHERE RoomID = ?";
 
         try (Connection conn = dbContext.getConnection()) {
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
             try (PreparedStatement ps1 = conn.prepareStatement(deleteSchedules);
                  PreparedStatement ps2 = conn.prepareStatement(deleteRoomServices);
@@ -312,7 +299,7 @@ public class RoomsDAO {
                 conn.commit();
                 System.out.println("✅ Đã xóa phòng và dữ liệu liên quan.");
             } catch (SQLException ex) {
-                conn.rollback(); // Lỗi thì rollback lại toàn bộ
+                conn.rollback();
                 throw ex;
             }
         }
@@ -325,7 +312,7 @@ public class RoomsDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, doctorID);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next(); // Returns true if a row is found
+                return rs.next();
             }
         }
     }
@@ -337,7 +324,7 @@ public class RoomsDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, nurseID);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next(); // Returns true if a row is found
+                return rs.next();
             }
         }
     }
@@ -366,7 +353,7 @@ public class RoomsDAO {
             if (rs.next()) {
                 return rs.getInt("RoomID");
             }
-            return -1; // Không có phòng nào có trạng thái Available
+            return -1;
         } catch (SQLException e) {
             System.err.println("SQLException in getFirstAvailableRoomId: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
             throw e;
@@ -422,9 +409,8 @@ public class RoomsDAO {
                 s.setUpdatedAt(rs.getDate("UpdatedAt"));
                 services.add(s);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace(); // log lỗi
+            e.printStackTrace();
         }
 
         return services;
@@ -477,7 +463,6 @@ public class RoomsDAO {
         return false;
     }
 
-    // Lấy danh sách bệnh nhân đã đặt lịch trong phòng
     public List<String> getPatientsByRoomId(int roomId) throws SQLException {
         List<String> patients = new ArrayList<>();
         String sql = "SELECT DISTINCT u.FullName " +
@@ -499,7 +484,6 @@ public class RoomsDAO {
         return patients;
     }
 
-    // Lấy danh sách dịch vụ liên quan đến phòng
     public List<String> getServicesByRoomId(int roomId) throws SQLException {
         List<String> services = new ArrayList<>();
         String sql = "SELECT DISTINCT s.ServiceName " +
@@ -562,5 +546,43 @@ public class RoomsDAO {
             throw e;
         }
         return services;
+    }
+
+    public List<Rooms> getAvailableRooms() throws SQLException, ClassNotFoundException {
+        List<Rooms> availableRooms = new ArrayList<>();
+        String sql = "SELECT r.RoomID, r.RoomName, r.[Description], r.DoctorID, r.NurseID, r.[Status], " +
+                     "d.fullName AS doctorName, n.fullName AS nurseName " +
+                     "FROM Rooms r " +
+                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                     "WHERE r.[Status] = 'Available'";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
+
+                Object doctorIDObj = rs.getObject("DoctorID");
+                Object nurseIDObj = rs.getObject("NurseID");
+
+                room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
+                room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
+                room.setDoctorName(rs.getString("doctorName"));
+                room.setNurseName(rs.getString("nurseName"));
+                room.setStatus(rs.getString("Status"));
+
+                availableRooms.add(room);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAvailableRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+            throw e;
+        }
+
+        return availableRooms;
     }
 }

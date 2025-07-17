@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.entity.Users;
 import org.mindrot.jbcrypt.BCrypt;
-
+import model.entity.ScheduleEmployee;
 public class UserDAO {
 
     private final DBContext dbContext;
@@ -459,5 +459,68 @@ public class UserDAO {
         return stmt.executeUpdate() > 0;
     }
 }
+   // Get personal schedules with service and room details for Doctors and Nurses
+public List<ScheduleEmployee> getUserSchedulesWithDetails(int userId) throws SQLException {
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.slotId, se.userId, se.role, se.roomId, r.roomName, se.slotDate, se.startTime, se.endTime, " +
+                 "se.isAbsent, se.absenceReason, se.status, se.createdBy, se.createdAt, se.updatedAt, " +
+                 "sv.serviceID, sv.serviceName " +
+                 "FROM ScheduleEmployee se " +
+                 "LEFT JOIN ScheduleServices ss ON se.slotId = ss.slotId " +
+                 "LEFT JOIN Services sv ON ss.serviceID = sv.serviceID " +
+                 "LEFT JOIN Rooms r ON se.roomId = r.roomID " +
+                 "WHERE se.userId = ? AND se.role IN ('doctor', 'nurse') " +
+                 "ORDER BY se.slotDate, se.startTime";
 
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                schedules.add(mapResultSetToScheduleEmployee(rs));
+            }
+        }
+    }
+    return schedules;
+}
+
+// Get personal schedules with only room details for Receptionists
+public List<ScheduleEmployee> getUserSchedulesForReceptionist(int userId) throws SQLException {
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.slotId, se.userId, se.role, se.roomId, r.roomName, se.slotDate, se.startTime, se.endTime, " +
+                 "se.isAbsent, se.absenceReason, se.status, se.createdBy, se.createdAt, se.updatedAt " +
+                 "FROM ScheduleEmployee se " +
+                 "LEFT JOIN Rooms r ON se.roomId = r.roomID " +
+                 "WHERE se.userId = ? AND se.role = 'receptionist' " +
+                 "ORDER BY se.slotDate, se.startTime";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                schedules.add(mapResultSetToScheduleEmployee(rs));
+            }
+        }
+    }
+    return schedules;
+}
+
+
+    // Helper method to map ResultSet to ScheduleEmployee object
+    private ScheduleEmployee mapResultSetToScheduleEmployee(ResultSet rs) throws SQLException {
+        ScheduleEmployee schedule = new ScheduleEmployee();
+        schedule.setSlotId(rs.getInt("slotId"));
+        schedule.setUserId(rs.getInt("userId"));
+        schedule.setRole(rs.getString("role"));
+        schedule.setSlotDate(rs.getDate("slotDate") != null ? rs.getDate("slotDate").toLocalDate() : null);
+        schedule.setStartTime(rs.getTime("startTime") != null ? rs.getTime("startTime").toLocalTime() : null);
+        schedule.setEndTime(rs.getTime("endTime") != null ? rs.getTime("endTime").toLocalTime() : null);
+        schedule.setStatus(rs.getString("status"));
+        schedule.setCreatedBy(rs.getInt("createdBy"));
+        schedule.setCreatedAt(rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt").toLocalDateTime() : null);
+        schedule.setUpdatedAt(rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
+        return schedule;
+    }
+    
 }

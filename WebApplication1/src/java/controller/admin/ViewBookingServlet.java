@@ -20,7 +20,7 @@ import java.util.List;
  * @author exorc
  */
 @WebServlet(name = "BookingServlet", urlPatterns = {"/BookingServlet","/admin/bookings"})
-public class BookingServlet extends HttpServlet {
+public class ViewBookingServlet extends HttpServlet {
 
     private final BookingService bookingService = new BookingService();
 
