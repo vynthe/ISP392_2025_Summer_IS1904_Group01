@@ -16,7 +16,7 @@
             --primary-teal-light: #ccfbf1;
             --accent-coral: #f87171;
             --neutral-50: #fafafa;
-            --neutral-100: #f5f5f50;
+            --neutral-100: #f5f5f5;
             --neutral-200: #e5e7eb;
             --neutral-600: #4b5563;
             --neutral-900: #111827;
@@ -60,25 +60,6 @@
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--white);
-        }
-
-        .logo img {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-        }
-
-        .logo-text {
-            font-size: 1.75rem;
-            font-weight: 600;
         }
 
         .nav-menu {
@@ -388,8 +369,10 @@
                             <c:choose>
                                 <c:when test="${not empty doctorDetails.services and fn:length(doctorDetails.services) > 0 and doctorDetails.services[0].serviceName != 'N/A'}">
                                     <c:forEach var="service" items="${doctorDetails.services}">
-                                        <li>${fn:escapeXml(service.serviceName)} - ${fn:escapeXml(service.description)} </li>
-                                        <li>Giá dịch vụ: ${service.price} VND</li>
+                                        <li>
+                                            ${fn:escapeXml(service.serviceName)} - ${fn:escapeXml(service.description)}
+                                            <span class="detail-value">Giá: ${service.price} VND</span>
+                                        </li>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
@@ -414,11 +397,10 @@
                                             <form action="${pageContext.request.contextPath}/ViewDetailBookServlet" method="post">
                                                 <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
                                                 <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.startTime)}">
-                                                <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.endTime)}">
                                                 <input type="hidden" name="dayOfWeek" value="${fn:escapeXml(schedule.dayOfWeek)}">
                                                 <input type="hidden" name="shiftStart" value="${fn:escapeXml(schedule.shiftStart)}">
                                                 <input type="hidden" name="shiftEnd" value="${fn:escapeXml(schedule.shiftEnd)}">
-                                                <button type="submit" class="schedule-book-btn">
+                                                <button type="submit" class="schedule-book-btn" onclick="return confirm('Bạn có chắc muốn đặt lịch này?');">
                                                     <i class="fas fa-calendar-check"></i> Đặt
                                                 </button>
                                             </form>

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -282,138 +283,94 @@ public class AppointmentDAO {
 
     // Hàm viewDetailBook hiển thị lịch trình, phòng, tên bác sĩ, và dịch vụ
     public Map<String, Object> viewDetailBook(int doctorId) throws SQLException {
-    Map<String, Object> details = new HashMap<>();
+        Map<String, Object> details = new HashMap<>();
 
-    // Lấy thông tin bác sĩ
-    String doctorSql = "SELECT FullName, Specialization FROM Users WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Active'";
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
-        pstmt.setInt(1, doctorId);
-        try (ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                details.put("doctorName", rs.getString("FullName"));
-                details.put("specialization", rs.getString("Specialization"));
-            } else {
-                details.put("doctorName", "N/A");
-                details.put("specialization", "N/A");
-            }
-        }
-    }
-
-    // Lấy thông tin phòng
-    String roomSql = "SELECT RoomID, RoomName FROM Rooms WHERE DoctorID = ? AND Status = 'Available'";
-    int roomId = -1;
-    String roomName = "N/A";
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(roomSql)) {
-        pstmt.setInt(1, doctorId);
-        try (ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                roomId = rs.getInt("RoomID");
-                roomName = rs.getString("RoomName");
-            }
-        }
-    }
-    details.put("roomID", roomId == -1 ? "N/A" : roomId);
-    details.put("roomName", roomName);
-
-    // Lấy danh sách dịch vụ
-    List<Map<String, Object>> services = new ArrayList<>();
-    if (roomId != -1) {
-        for (Services service : getServicesByRoom(roomId)) {
-            Map<String, Object> serviceMap = new HashMap<>();
-            serviceMap.put("serviceID", service.getServiceID());
-            serviceMap.put("serviceName", service.getServiceName());
-            serviceMap.put("description", service.getDescription());
-            serviceMap.put("price", service.getPrice());
-            services.add(serviceMap);
-        }
-    }
-    details.put("services", services.isEmpty() ? List.of(Map.of("serviceName", "N/A", "description", "N/A", "price", 0.0)) : services);
-
-    // Lấy danh sách lịch trình
-    List<Map<String, Object>> schedules = new ArrayList<>();
-    for (Schedules schedule : getSchedulesByRoleAndUserId("Doctor", doctorId)) {
-        Map<String, Object> scheduleMap = new HashMap<>();
-        scheduleMap.put("scheduleID", schedule.getScheduleID());
-        scheduleMap.put("startTime", schedule.getStartTime());
-        scheduleMap.put("endTime", schedule.getEndTime());
-        scheduleMap.put("shiftStart", schedule.getShiftStart());
-        scheduleMap.put("shiftEnd", schedule.getShiftEnd());
-        scheduleMap.put("dayOfWeek", schedule.getDayOfWeek());
-        scheduleMap.put("status", schedule.getStatus());
-        schedules.add(scheduleMap);
-    }
-    details.put("schedules", schedules.isEmpty() ? List.of(Map.of("scheduleInfo", "N/A")) : schedules);
-
-    return details;
-}
- public boolean bookAppointment(int doctorId, int patientId, String appointmentDate, String dayOfWeek, String shiftStart, String shiftEnd) throws SQLException {
-        // Validate schedule availability
-        String checkScheduleSql = "SELECT ScheduleID, RoomID FROM Schedules " +
-                                 "WHERE EmployeeID = ? AND Role = 'Doctor' " +
-                                 "AND StartTime = ? AND DayOfWeek = ? " +
-                                 "AND ShiftStartTime = ? AND ShiftEndTime = ? AND Status = 'Available'";
-        int scheduleId = -1;
-        int roomId = -1;
+        // Lấy thông tin bác sĩ
+        String doctorSql = "SELECT FullName, Specialization FROM Users WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Active'";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(checkScheduleSql)) {
+             PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
             pstmt.setInt(1, doctorId);
-            pstmt.setDate(2, Date.valueOf(appointmentDate));
-            pstmt.setString(3, dayOfWeek);
-            pstmt.setTime(4, Time.valueOf(shiftStart));
-            pstmt.setTime(5, Time.valueOf(shiftEnd));
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    scheduleId = rs.getInt("ScheduleID");
-                    roomId = rs.getInt("RoomID");
+                    details.put("doctorName", rs.getString("FullName"));
+                    details.put("specialization", rs.getString("Specialization"));
                 } else {
-                    System.err.println("No available schedule found for doctorId: " + doctorId + " on " + appointmentDate + " at " + shiftStart + " - " + shiftEnd);
-                    return false;
+                    details.put("doctorName", "N/A");
+                    details.put("specialization", "N/A");
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in bookAppointment (check schedule) at " + LocalDateTime.now() + " +07: " + e.getMessage());
-            throw e;
         }
 
-        // Check if the appointment already exists
-        String checkDuplicateSql = "SELECT COUNT(*) FROM Appointments WHERE ScheduleID = ? AND PatientID = ?";
+        // Lấy thông tin phòng
+        String roomSql = "SELECT RoomID, RoomName FROM Rooms WHERE DoctorID = ? AND Status = 'Available'";
+        int roomId = -1;
+        String roomName = "N/A";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(checkDuplicateSql)) {
-            pstmt.setInt(1, scheduleId);
-            pstmt.setInt(2, patientId);
+             PreparedStatement pstmt = conn.prepareStatement(roomSql)) {
+            pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    System.err.println("Duplicate appointment found for patientId: " + patientId + " on scheduleId: " + scheduleId);
-                    return false;
+                if (rs.next()) {
+                    roomId = rs.getInt("RoomID");
+                    roomName = rs.getString("RoomName");
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in bookAppointment (check duplicate) at " + LocalDateTime.now() + " +07: " + e.getMessage());
-            throw e;
         }
+        details.put("roomID", roomId == -1 ? "N/A" : roomId);
+        details.put("roomName", roomName);
 
-        // Insert new appointment
-        String insertSql = "INSERT INTO Appointments (ScheduleID, PatientID, RoomID, DoctorID, AppointmentDate, DayOfWeek, ShiftStartTime, ShiftEndTime, Status, CreatedBy, CreatedAt) " +
-                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, GETDATE())";
+        // Lấy danh sách dịch vụ
+        List<Map<String, Object>> services = new ArrayList<>();
+        if (roomId != -1) {
+            for (Services service : getServicesByRoom(roomId)) {
+                Map<String, Object> serviceMap = new HashMap<>();
+                serviceMap.put("serviceID", service.getServiceID());
+                serviceMap.put("serviceName", service.getServiceName());
+                serviceMap.put("description", service.getDescription());
+                serviceMap.put("price", service.getPrice());
+                services.add(serviceMap);
+            }
+        }
+        details.put("services", services.isEmpty() ? List.of(Map.of("serviceName", "N/A", "description", "N/A", "price", 0.0)) : services);
+
+        // Lấy danh sách lịch trình
+        List<Map<String, Object>> schedules = new ArrayList<>();
+        for (Schedules schedule : getSchedulesByRoleAndUserId("Doctor", doctorId)) {
+            Map<String, Object> scheduleMap = new HashMap<>();
+            scheduleMap.put("scheduleID", schedule.getScheduleID());
+            scheduleMap.put("startTime", schedule.getStartTime());
+            scheduleMap.put("endTime", schedule.getEndTime());
+            scheduleMap.put("shiftStart", schedule.getShiftStart());
+            scheduleMap.put("shiftEnd", schedule.getShiftEnd());
+            scheduleMap.put("dayOfWeek", schedule.getDayOfWeek());
+            scheduleMap.put("status", schedule.getStatus());
+            schedules.add(scheduleMap);
+        }
+        details.put("schedules", schedules.isEmpty() ? List.of(Map.of("scheduleInfo", "N/A")) : schedules);
+
+        return details;
+    }
+
+    // Tạo mới một lịch hẹn
+    public boolean createAppointment(int patientId, int doctorId, int serviceId, int scheduleId, int roomId, Timestamp appointmentTime) throws SQLException {
+        String sql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, ScheduleID, RoomID, AppointmentTime, Status, CreatedAt, UpdatedAt) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?)";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
-            pstmt.setInt(1, scheduleId);
-            pstmt.setInt(2, patientId);
-            pstmt.setInt(3, roomId);
-            pstmt.setInt(4, doctorId);
-            pstmt.setDate(5, Date.valueOf(appointmentDate));
-            pstmt.setString(6, dayOfWeek);
-            pstmt.setTime(7, Time.valueOf(shiftStart));
-            pstmt.setTime(8, Time.valueOf(shiftEnd));
-            pstmt.setInt(9, patientId); // Assuming CreatedBy is the patient who created the appointment
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, patientId);
+            pstmt.setInt(2, doctorId);
+            pstmt.setInt(3, serviceId);
+            pstmt.setInt(4, scheduleId);
+            pstmt.setInt(5, roomId);
+            pstmt.setTimestamp(6, appointmentTime);
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            pstmt.setTimestamp(7, now);
+            pstmt.setTimestamp(8, now);
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            System.err.println("SQLException in bookAppointment (insert) at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            System.err.println("SQLException in createAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
     }
 }
-
