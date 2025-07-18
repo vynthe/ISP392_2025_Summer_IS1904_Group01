@@ -2,10 +2,11 @@ package model.service;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import model.entity.Rooms;
 import model.dao.RoomsDAO;
-import model.entity.ScheduleEmployee;
-import model.dao.ScheduleDAO;
 import model.entity.Services;
 
 /**
@@ -14,61 +15,66 @@ import model.entity.Services;
  */
 public class RoomService {
     private final RoomsDAO roomsDAO;
-    private final ScheduleDAO scheduleDAO;
 
     public RoomService() {
         this.roomsDAO = new RoomsDAO();
-        this.scheduleDAO = new ScheduleDAO();
     }
 
-    public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy)
-            throws SQLException, ClassNotFoundException {
+public boolean addRoom(String roomName, String description, Integer doctorID, Integer nurseID, String status, int createdBy)
+        throws SQLException, ClassNotFoundException {
 
-        if (roomName == null || roomName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên phòng không được để trống.");
-        }
+    // Validate inputs
+    if (roomName == null || roomName.trim().isEmpty()) {
+        throw new IllegalArgumentException("Tên phòng không được để trống.");
+    }
 
-        if (doctorID != null) {
-            if (doctorID <= 0 || !roomsDAO.isValidDoctor(doctorID)) {
-                throw new IllegalArgumentException("Doctor ID không tồn tại hoặc không hợp lệ.");
-            }
-        }
-
-        if (nurseID != null) {
-            if (nurseID <= 0 || !roomsDAO.isValidNurse(nurseID)) {
-                throw new IllegalArgumentException("Nurse ID không tồn tại hoặc không hợp lệ.");
-            }
-        }
-
-        if (createdBy <= 0) {
-            throw new IllegalArgumentException("ID người tạo không hợp lệ.");
-        }
-
-        String finalStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "Available";
-        if (!finalStatus.equals("Available") && !finalStatus.equals("Not Available")
-                && !finalStatus.equals("In Progress") && !finalStatus.equals("Completed")) {
-            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận 'Available', 'Not Available', 'In Progress', hoặc 'Completed'.");
-        }
-
-        Rooms room = new Rooms();
-        room.setRoomName(roomName.trim());
-        room.setDescription(description != null ? description.trim() : null);
-        room.setDoctorID(doctorID);
-        room.setNurseID(nurseID);
-        room.setStatus(finalStatus);
-
-        List<Integer> roomIds = roomsDAO.getAllRoomIds();
-        if (roomIds.isEmpty()) {
-            return roomsDAO.addRoom(room, createdBy);
-        } else {
-            int firstAvailableRoomId = getFirstAvailableRoomId();
-            if (firstAvailableRoomId == -1) {
-                return roomsDAO.addRoom(room, createdBy);
-            }
-            room.setRoomID(firstAvailableRoomId);
-            return roomsDAO.addRoom(room, createdBy);
+    if (doctorID != null) {
+        if (doctorID <= 0 || !roomsDAO.isValidDoctor(doctorID)) {
+            throw new IllegalArgumentException("Doctor ID không tồn tại hoặc không hợp lệ.");
         }
     }
+
+    if (nurseID != null) {
+        if (nurseID <= 0 || !roomsDAO.isValidNurse(nurseID)) {
+            throw new IllegalArgumentException("Nurse ID không tồn tại hoặc không hợp lệ.");
+        }
+    }
+
+    if (createdBy <= 0) {
+        throw new IllegalArgumentException("ID người tạo không hợp lệ.");
+    }
+
+    // Normalize and default status
+    String finalStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "Available";
+    if (!finalStatus.equals("Available") && !finalStatus.equals("Not Available")
+            && !finalStatus.equals("In Progress") && !finalStatus.equals("Completed")) {
+        throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận 'Available', 'Not Available', 'In Progress', hoặc 'Completed'.");
+    }
+
+    // Create Room object
+    Rooms room = new Rooms();
+    room.setRoomName(roomName.trim());
+    room.setDescription(description != null ? description.trim() : null);
+    room.setDoctorID(doctorID);
+    room.setNurseID(nurseID);
+    room.setStatus(finalStatus);
+
+    // Kiểm tra xem có phòng nào không, nếu không thì tạo phòng mới
+    List<Integer> roomIds = roomsDAO.getAllRoomIds();
+    if (roomIds.isEmpty()) {
+        return roomsDAO.addRoom(room, createdBy);
+    } else {
+        // Lấy RoomID đầu tiên có sẵn hoặc tạo mới nếu cần
+        int firstAvailableRoomId = getFirstAvailableRoomId();
+        if (firstAvailableRoomId == -1) {
+            return roomsDAO.addRoom(room, createdBy);
+        }
+        // Nếu có phòng sẵn, gán thông tin vào phòng hiện có hoặc tạo mới
+        room.setRoomID(firstAvailableRoomId); // Có thể bỏ nếu ID tự tăng
+        return roomsDAO.addRoom(room, createdBy); // Tạo phòng mới
+    }
+}
+
 
     public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         return roomsDAO.isDoctorAssigned(doctorID);
@@ -128,15 +134,15 @@ public class RoomService {
 
     public List<Integer> getAllRoomIds() throws SQLException, ClassNotFoundException {
         try {
-            return roomsDAO.getAllRoomIds();
+            return roomsDAO.getAllRoomIds(); // Gọi phương thức từ DAO
         } catch (SQLException e) {
             System.err.println("Error in RoomService.getAllRoomIds: " + e.getMessage());
-            throw e;
+            throw e; 
         }
     }
 
     public List<Rooms> getRoomsByUserIdAndRole(int userId, String role) throws SQLException {
-        return roomsDAO.getRoomByID(userId, role);
+        return roomsDAO.getRoomByID(userId, role);  // phương thức này bạn đã viết rồi
     }
 
     public boolean isDoctorOrNurseAssignedToAnotherRoom(Integer doctorID, Integer nurseID, int excludeRoomID) throws SQLException {
@@ -154,17 +160,17 @@ public class RoomService {
     public String getDoctorNameByRoomId(int roomId) throws SQLException {
         Rooms room = getRoomByID(roomId);
         if (room == null || room.getDoctorID() == null) {
-            return null;
+            return null; 
         }
-        return roomsDAO.getUserFullNameById(room.getDoctorID());
+        return getDoctorNameByRoomId(roomId);
     }
 
     public String getNurseNameByRoomId(int roomId) throws SQLException {
         Rooms room = getRoomByID(roomId);
-        if (room == null || room.getNurseID() == null) {
-            return null;
+        if (room == null || room.getNurseID()==null) {
+            return null; 
         }
-        return roomsDAO.getUserFullNameById(room.getNurseID());
+        return getNurseNameByRoomId(roomId);
     }
 
     public boolean assignServiceToRoom(int roomId, int serviceId) {
@@ -176,7 +182,7 @@ public class RoomService {
             return roomsDAO.getServicesByRoom(roomId);
         } catch (SQLException e) {
             System.err.println("Error in RoomService.getServicesByRoom: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            return List.of();
+            return new ArrayList<>(); // Trả về list rỗng nếu lỗi
         }
     }
 
@@ -192,18 +198,19 @@ public class RoomService {
         return roomsDAO.countAvailableRooms();
     }
 
+    // Thêm phương thức lấy RoomID đầu tiên có sẵn
     public int getFirstAvailableRoomId() throws SQLException, ClassNotFoundException {
-        return roomsDAO.getFirstAvailableRoomId();
+        List<Rooms> availableRooms = getAllRooms().stream()
+                .filter(room -> "Available".equalsIgnoreCase(room.getStatus()))
+                .collect(Collectors.toList());
+        return availableRooms.isEmpty() ? -1 : availableRooms.get(0).getRoomID();
     }
 
-    public List<Rooms> getAvailableRooms() throws SQLException, ClassNotFoundException {
-        try {
-            return roomsDAO.getAvailableRooms();
-        } catch (SQLException e) {
-            System.err.println("Error in RoomService.getAvailableRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
-        }
+    public Map<String, Object> getWeeklyScheduleFull() throws SQLException {
+        return roomsDAO.getWeeklyScheduleFull();
     }
 
-
+    public Map<String, Object> getWeeklyScheduleByRange(String startDate, String endDate) throws SQLException {
+        return roomsDAO.getWeeklyScheduleByRange(startDate, endDate);
+    }
 }
