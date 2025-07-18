@@ -541,8 +541,6 @@
                 <form action="${pageContext.request.contextPath}/ViewPrescriptionServlet" method="get" class="search-form">
                     <input type="text" name="patientNameKeyword" placeholder="Tìm theo tên bệnh nhân..." 
                            value="${patientNameKeyword}" class="search-input">
-                    <input type="text" name="medicationNameKeyword" placeholder="Tìm theo tên thuốc..." 
-                           value="${medicationNameKeyword}" class="search-input">
                     <button type="submit" class="search-button">
                         <i class="fas fa-search"></i> Tìm kiếm
                     </button>

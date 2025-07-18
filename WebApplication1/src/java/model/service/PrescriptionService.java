@@ -58,9 +58,9 @@ public class PrescriptionService {
                         prescriptionDetails.append(" | ");
                     }
                 }
-                if (prescriptionDetails.length() > 4000) { // TEXT field can handle large data, but setting a reasonable limit
-                    log.warn("Prescription details exceed 4000 characters, truncating");
-                    prescriptionDetails.setLength(4000);
+                if (prescriptionDetails.length() > 200) { // TEXT field can handle large data, but setting a reasonable limit
+                    log.warn("Prescription details exceed 200 characters, truncating");
+                    prescriptionDetails.setLength(200);
                 }
                 prescription.setPrescriptionDetails(prescriptionDetails.toString());
             } catch (SQLException e) {

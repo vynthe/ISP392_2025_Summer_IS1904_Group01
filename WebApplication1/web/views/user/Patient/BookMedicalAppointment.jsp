@@ -675,14 +675,14 @@
                 <div class="footer-section">
                     <h4>Liên Kết</h4>
                     <ul>
-                        <li><a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet">Trang Chủ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp">Trang Chủ</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Liên Hệ</h4>
                     <ul>
                         <li><i class="fas fa-map-marker-alt"></i> DH FPT , HOA LAC</li>
-                        <li><i class="fas fa-phone"></i> (028) 1234-5678</li>
+                        <li><i class="fas fa-phone"></i> (098) 1234-5678</li>
                         <li><i class="fas fa-envelope"></i> PhongKhamPDC@benhvien.com</li>
                     </ul>
                 </div>

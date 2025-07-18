@@ -33,13 +33,18 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
             return;
         }
 
+        // Lấy tham số tìm kiếm và trang hiện tại
         String nameKeyword = request.getParameter("nameKeyword");
         String specialtyKeyword = request.getParameter("specialtyKeyword");
         int page = parseIntOrDefault(request.getParameter("page"), 1);
         int pageSize = 10;
 
+        // Xử lý tham số tìm kiếm để tránh null hoặc chuỗi rỗng
+        nameKeyword = (nameKeyword != null && !nameKeyword.trim().isEmpty()) ? nameKeyword.trim() : "";
+        specialtyKeyword = (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty()) ? specialtyKeyword.trim() : "";
+
         try {
-            // Lấy danh sách bác sĩ
+            // Gọi service để lấy danh sách bác sĩ
             List<Users> doctors = appointmentService.searchDoctorsByNameAndSpecialty(nameKeyword, specialtyKeyword, page, pageSize);
             int totalRecords = appointmentService.getTotalDoctorRecords(nameKeyword, specialtyKeyword);
             int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
@@ -50,6 +55,7 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
 
+            // Chuyển tiếp đến trang JSP
             request.getRequestDispatcher("/views/user/Patient/BookMedicalAppointment.jsp").forward(request, response);
 
         } catch (SQLException e) {
@@ -89,25 +95,25 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
             if ("bookAppointment".equals(action) && doctorIdStr != null && !doctorIdStr.trim().isEmpty()) {
                 int doctorId = Integer.parseInt(doctorIdStr.trim());
                 Users currentUser = (Users) session.getAttribute("user");
-                
-                // Thực hiện đặt lịch (cần implement logic thực tế trong service)
-                // Ví dụ: appointmentService.bookAppointment(currentUser.getUserID(), doctorId, appointmentDate, dayOfWeek, shiftStart, shiftEnd);
-                
+
+                // Thực hiện đặt lịch (cần triển khai logic thực tế trong service)
+                // appointmentService.bookAppointment(currentUser.getUserID(), doctorId, appointmentDate, dayOfWeek, shiftStart, shiftEnd);
+
                 // Đặt thông báo thành công
-                session.setAttribute("statusMessage", "Đặt lịch hẹn thành công  ");
+                session.setAttribute("statusMessage", "Đặt lịch hẹn thành công");
 
                 // Chuyển hướng lại trang danh sách bác sĩ
                 String redirectUrl = request.getContextPath() + "/BookMedicalAppointmentServlet?page=" + page +
-                    (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
-                    (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
+                        (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
+                        (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
                 response.sendRedirect(redirectUrl);
                 return;
             }
 
             // Nếu không có action hoặc doctorId, chuyển hướng lại trang tìm kiếm
             String redirectUrl = request.getContextPath() + "/BookMedicalAppointmentServlet?page=" + page +
-                (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
-                (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
+                    (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
+                    (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
             response.sendRedirect(redirectUrl);
 
         } catch (NumberFormatException e) {
@@ -115,16 +121,16 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
             session.setAttribute("statusMessage", "Lỗi: ID bác sĩ không hợp lệ");
             System.err.println("NumberFormatException at " + new java.util.Date() + " +07: " + e.getMessage());
             String redirectUrl = request.getContextPath() + "/BookMedicalAppointmentServlet?page=" + page +
-                (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
-                (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
+                    (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
+                    (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
             response.sendRedirect(redirectUrl);
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("statusMessage", "Lỗi hệ thống: " + e.getMessage());
             System.err.println("Exception at " + new java.util.Date() + " +07: " + e.getMessage());
             String redirectUrl = request.getContextPath() + "/BookMedicalAppointmentServlet?page=" + page +
-                (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
-                (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
+                    (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "&nameKeyword=" + URLEncoder.encode(nameKeyword, StandardCharsets.UTF_8) : "") +
+                    (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "&specialtyKeyword=" + URLEncoder.encode(specialtyKeyword, StandardCharsets.UTF_8) : "");
             response.sendRedirect(redirectUrl);
         }
     }

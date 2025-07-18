@@ -382,38 +382,48 @@
                             </ul>
                         </div>
 
-                        <div class="detail-card">
-                            <h2>Lịch Làm Việc</h2>
-                            <ul class="schedule-list">
-                                <c:choose>
-                                    <c:when test="${not empty doctorDetails.schedules and fn:length(doctorDetails.schedules) > 0 and doctorDetails.schedules[0].scheduleID != null}">
-                                        <c:forEach var="schedule" items="${doctorDetails.schedules}">
-                                            <li>
-                                                <span>
-                                                    ${fn:escapeXml(schedule.dayOfWeek)}: 
-                                                    ${fn:escapeXml(schedule.startTime)}  
-                                                    (${fn:escapeXml(schedule.shiftStart)} - ${fn:escapeXml(schedule.shiftEnd)})
-                                                </span>
-                                                <form action="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" method="post">
-                                                    <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
-                                                    <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.startTime)}">
-                                                    <input type="hidden" name="dayOfWeek" value="${fn:escapeXml(schedule.dayOfWeek)}">
-                                                    <input type="hidden" name="shiftStart" value="${fn:escapeXml(schedule.shiftStart)}">
-                                                    <input type="hidden" name="shiftEnd" value="${fn:escapeXml(schedule.shiftEnd)}">
-                                                    <input type="hidden" name="action" value="bookAppointment">
-                                                    <button type="submit" class="schedule-book-btn" onclick="return confirm('Bạn có chắc muốn đặt lịch này?');">
-                                                        <i class="fas fa-calendar-check"></i> Đặt
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </c:forEach>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <li>Không có lịch làm việc</li>
-                                        </c:otherwise>
-                                    </c:choose>
-                            </ul>
-                        </div>
+                       <div class="detail-card">
+    <h2>Lịch Làm Việc</h2>
+    <ul class="schedule-list">
+        <c:choose>
+            <c:when test="${not empty doctorDetails.schedules and fn:length(doctorDetails.schedules) > 0 and doctorDetails.schedules[0].scheduleID != null}">
+                <c:forEach var="schedule" items="${doctorDetails.schedules}">
+                    <li>
+                        <span>
+                            <c:set var="dayOfWeek" value="${fn:toLowerCase(schedule.dayOfWeek)}"/>
+                            <c:choose>
+                                <c:when test="${dayOfWeek == 'monday'}">Thứ Hai</c:when>
+                                <c:when test="${dayOfWeek == 'tuesday'}">Thứ Ba</c:when>
+                                <c:when test="${dayOfWeek == 'wednesday'}">Thứ Tư</c:when>
+                                <c:when test="${dayOfWeek == 'thursday'}">Thứ Năm</c:when>
+                                <c:when test="${dayOfWeek == 'friday'}">Thứ Sáu</c:when>
+                                <c:when test="${dayOfWeek == 'saturday'}">Thứ Bảy</c:when>
+                                <c:when test="${dayOfWeek == 'sunday'}">Chủ Nhật</c:when>
+                                <c:otherwise>${fn:escapeXml(schedule.dayOfWeek)}</c:otherwise>
+                            </c:choose>: 
+                            ${fn:escapeXml(schedule.startTime)}  
+                            (${fn:escapeXml(schedule.shiftStart)} - ${fn:escapeXml(schedule.shiftEnd)})
+                        </span>
+                        <form action="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" method="post">
+                            <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
+                            <input type="hidden" name="appointmentDate" value="${fn:escapeXml(schedule.startTime)}">
+                            <input type="hidden" name="dayOfWeek" value="${fn:escapeXml(schedule.dayOfWeek)}">
+                            <input type="hidden" name="shiftStart" value="${fn:escapeXml(schedule.shiftStart)}">
+                            <input type="hidden" name="shiftEnd" value="${fn:escapeXml(schedule.shiftEnd)}">
+                            <input type="hidden" name="action" value="bookAppointment">
+                            <button type="submit" class="schedule-book-btn" onclick="return confirm('Bạn có chắc muốn đặt lịch này?');">
+                                <i class="fas fa-calendar-check"></i> Đặt
+                            </button>
+                        </form>
+                    </li>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <li>Không có lịch làm việc</li>
+            </c:otherwise>
+        </c:choose>
+    </ul>
+</div>
                     </c:otherwise>
                 </c:choose>
 
@@ -432,14 +442,14 @@
                 <div class="footer-section">
                     <h4>Liên Kết</h4>
                     <ul>
-                        <li><a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet">Trang Chủ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp">Trang Chủ</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Liên Hệ</h4>
                     <ul>
                         <li><i class="fas fa-map-marker-alt"></i> DH FPT , HOA LAC</li>
-                        <li><i class="fas fa-phone"></i> (028) 1234-5678</li>
+                        <li><i class="fas fa-phone"></i> (098) 1234-5678</li>
                         <li><i class="fas fa-envelope"></i> NhaKhoaPDC@benhvien.com</li>
                     </ul>
                 </div>

@@ -1,4 +1,4 @@
-<%-- 
+<%--
     Document   : BookMedical
     Created on : Jun 17, 2025, 11:23:01 AM
     Author     : ASUS
@@ -282,6 +282,55 @@
                 transform: translateY(0) scale(1);
             }
         }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-link {
+            color: #334155;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #0ea5e9;
+            transform: translateY(-1px);
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            padding: 4rem 1rem;
+        }
+
+        .footer-link {
+            color: #cbd5e1;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #0ea5e9;
+            text-decoration: underline;
+        }
+
+        .footer-icon {
+            color: #0ea5e9;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-icon:hover {
+            transform: scale(1.2);
+        }
     </style>
     <script>
         function validateForm() {
@@ -399,6 +448,24 @@
     </script>
 </head>
 <body>
+    <!-- Header -->
+    <header class="header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="professional-badge w-12 h-12 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-stethoscope text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold title-gradient">HealthCare</span>
+                </div>
+                <nav class="flex items-center space-x-6">
+                    <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="nav-link hover:underline">Trang Chủ</a>
+                    <a href="/BookAppointmentGuestServlet" class="btn-primary px-6 py-2">Tư Vấn Thăm Khám</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
     <div class="floating-shapes"></div>
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="professional-card w-full max-w-lg p-10 relative">
@@ -492,7 +559,7 @@
             <div class="mt-8 text-center">
                 <p class="text-slate-600 text-sm font-medium">
                     Đã có tài khoản? 
-                    <a href="login.jsp" class="text-sky-600 hover:text-sky-700 font-semibold transition-colors duration-200 underline decoration-2 underline-offset-2">
+                    <a href="${pageContext.request.contextPath}/views/common/login.jsp" class="text-sky-600 hover:text-sky-700 font-semibold transition-colors duration-200 underline decoration-2 underline-offset-2">
                         Đăng nhập tại đây
                     </a>
                 </p>
@@ -515,5 +582,49 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Liên Hệ</h3>
+                    <p class="text-slate-300 mb-2">
+                        <i class="fas fa-map-marker-alt footer-icon mr-2"></i>
+                        DH FPT , HOA LAC , HA NOI
+                    </p>
+                    <p class="text-slate-300 mb-2">
+                        <i class="fas fa-phone footer-icon mr-2"></i>
+                        (098) 123-4567
+                    </p>
+                    <p class="text-slate-300">
+                        <i class="fas fa-envelope footer-icon mr-2"></i>
+                        PhongKhamPDC@gmail.com
+                    </p>
+                </div>
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Liên Kết Nhanh</h3>
+                    <ul class="space-y-2">
+                        <li><a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="footer-link">Trang Chủ</a></li>
+                    </ul>
+                </div>
+                <!-- Social Media -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Về Chúng Tôi </h3>
+                    <div class="flex space-x-4">
+                                           <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm.</p>
+
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-slate-700 text-center">
+                <p class="text-slate-300 text-sm">
+                    &copy; 2025 HealthCare. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
