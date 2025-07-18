@@ -373,4 +373,197 @@ public class AppointmentDAO {
             throw e;
         }
     }
+    // Kiểm tra xem lịch hẹn có tồn tại không
+    public boolean appointmentExists(int appointmentId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Appointments WHERE AppointmentID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in appointmentExists: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return false;
+    }
+
+    // Lấy thông tin chi tiết lịch hẹn theo ID
+    public Map<String, Object> getAppointmentById(int appointmentId) throws SQLException {
+        String sql = "SELECT a.AppointmentID, a.PatientID, a.DoctorID, a.ServiceID, a.ScheduleID, a.RoomID, " +
+                     "a.AppointmentTime, a.Status, a.CreatedAt, a.UpdatedAt, " +
+                     "u1.FullName as PatientName, u2.FullName as DoctorName, " +
+                     "s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u1 ON a.PatientID = u1.UserID " +
+                     "JOIN Users u2 ON a.DoctorID = u2.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.AppointmentID = ?";
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> appointment = new HashMap<>();
+                    appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                    appointment.put("patientId", rs.getInt("PatientID"));
+                    appointment.put("doctorId", rs.getInt("DoctorID"));
+                    appointment.put("serviceId", rs.getInt("ServiceID"));
+                    appointment.put("scheduleId", rs.getInt("ScheduleID"));
+                    appointment.put("roomId", rs.getInt("RoomID"));
+                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("status", rs.getString("Status"));
+                    appointment.put("createdAt", rs.getDate("CreatedAt"));
+                    appointment.put("updatedAt", rs.getDate("UpdatedAt"));
+                    appointment.put("patientName", rs.getString("PatientName"));
+                    appointment.put("doctorName", rs.getString("DoctorName"));
+                    appointment.put("serviceName", rs.getString("ServiceName"));
+                    appointment.put("roomName", rs.getString("RoomName"));
+                    return appointment;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAppointmentById: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return null;
+    }
+
+    // Xóa lịch hẹn theo ID (soft delete - cập nhật status thành 'Cancelled')
+    public boolean cancelAppointment(int appointmentId) throws SQLException {
+        String sql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ? AND Status != 'Cancelled'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDate(1, new Date(System.currentTimeMillis()));
+            pstmt.setInt(2, appointmentId);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("SQLException in cancelAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+
+    // Xóa lịch hẹn vĩnh viễn (hard delete)
+    public boolean deleteAppointmentPermanently(int appointmentId) throws SQLException {
+        String sql = "DELETE FROM Appointments WHERE AppointmentID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("SQLException in deleteAppointmentPermanently: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+
+    // Xóa nhiều lịch hẹn cùng lúc (soft delete)
+    public int cancelMultipleAppointments(List<Integer> appointmentIds) throws SQLException {
+        if (appointmentIds == null || appointmentIds.isEmpty()) {
+            return 0;
+        }
+        
+        String sql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ? AND Status != 'Cancelled'";
+        int totalCancelled = 0;
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            Date now = new Date(System.currentTimeMillis());
+            
+            for (Integer appointmentId : appointmentIds) {
+                pstmt.setDate(1, now);
+                pstmt.setInt(2, appointmentId);
+                pstmt.addBatch();
+            }
+            
+            int[] results = pstmt.executeBatch();
+            for (int result : results) {
+                if (result > 0) {
+                    totalCancelled++;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in cancelMultipleAppointments: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        
+        return totalCancelled;
+    }
+
+    // Lấy danh sách lịch hẹn theo PatientID
+    public List<Map<String, Object>> getAppointmentsByPatientId(int patientId) throws SQLException {
+        List<Map<String, Object>> appointments = new ArrayList<>();
+        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, " +
+                     "u.FullName as DoctorName, s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u ON a.DoctorID = u.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.PatientID = ? " +
+                     "ORDER BY a.AppointmentTime DESC";
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, patientId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> appointment = new HashMap<>();
+                    appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("status", rs.getString("Status"));
+                    appointment.put("doctorName", rs.getString("DoctorName"));
+                    appointment.put("serviceName", rs.getString("ServiceName"));
+                    appointment.put("roomName", rs.getString("RoomName"));
+                    appointments.add(appointment);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAppointmentsByPatientId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return appointments;
+    }
+
+    // Lấy danh sách lịch hẹn theo DoctorID
+    public List<Map<String, Object>> getAppointmentsByDoctorId(int doctorId) throws SQLException {
+        List<Map<String, Object>> appointments = new ArrayList<>();
+        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, " +
+                     "u.FullName as PatientName, s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u ON a.PatientID = u.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.DoctorID = ? " +
+                     "ORDER BY a.AppointmentTime DESC";
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, doctorId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> appointment = new HashMap<>();
+                    appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("status", rs.getString("Status"));
+                    appointment.put("patientName", rs.getString("PatientName"));
+                    appointment.put("serviceName", rs.getString("ServiceName"));
+                    appointment.put("roomName", rs.getString("RoomName"));
+                    appointments.add(appointment);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAppointmentsByDoctorId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return appointments;
+    }
 }
