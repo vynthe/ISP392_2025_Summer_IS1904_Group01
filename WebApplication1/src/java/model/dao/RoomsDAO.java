@@ -1,3 +1,7 @@
+/*
+ * Click nfs://netbeans/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nfs://netbeans/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package model.dao;
 
 import java.sql.Connection;
@@ -6,8 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import model.entity.Rooms;
 import model.entity.Services;
+import java.util.Collections;
 
 /**
  *
@@ -79,48 +87,50 @@ public class RoomsDAO {
         }
     }
 
-    public List<Rooms> searchRooms(String keyword) throws SQLException {
-        List<Rooms> roomList = new ArrayList<>();
-        String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
-                     "FROM Rooms " +
-                     "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ? OR [Status] LIKE ?";
+   public List<Rooms> searchRooms(String keyword) throws SQLException {
+    List<Rooms> roomList = new ArrayList<>();
+    String sql = "SELECT RoomID, RoomName, [Description], DoctorID, NurseID, [Status] " +
+                 "FROM Rooms " +
+                 "WHERE RoomName LIKE ? OR CAST(RoomID AS NVARCHAR) LIKE ? OR [Status] LIKE ?";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
-            stmt.setString(1, searchPattern);
-            stmt.setString(2, searchPattern);
-            stmt.setString(3, searchPattern);
+        String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
+        stmt.setString(1, searchPattern); // RoomName
+        stmt.setString(2, searchPattern); // RoomID (as text)
+        stmt.setString(3, searchPattern); // Status
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Rooms room = new Rooms();
-                    room.setRoomID(rs.getInt("RoomID"));
-                    room.setRoomName(rs.getString("RoomName"));
-                    room.setDescription(rs.getString("Description"));
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
 
-                    Object doctorIDObj = rs.getObject("DoctorID");
-                    Object nurseIDObj = rs.getObject("NurseID");
+                Object doctorIDObj = rs.getObject("DoctorID");
+                Object nurseIDObj = rs.getObject("NurseID");
 
-                    room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
-                    room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
-                    room.setStatus(rs.getString("Status"));
-                    roomList.add(room);
-                }
+                room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
+                room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
+                room.setStatus(rs.getString("Status"));
+                roomList.add(room);
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
         }
-        return roomList;
+    } catch (SQLException e) {
+        System.err.println("SQLException in searchRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+        throw e;
     }
+    return roomList;
+}
+
 
     public List<Rooms> getAllRooms() throws SQLException {
         List<Rooms> roomList = new ArrayList<>();
 
         String sql = "SELECT r.RoomID, r.RoomName, r.[Description], r.DoctorID, r.NurseID, r.[Status], " +
-                     "d.fullName AS doctorName, n.fullName AS nurseName " +
+                     "d.fullName AS doctorName, " +
+                     "n.fullName AS nurseName " +
                      "FROM Rooms r " +
                      "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
                      "LEFT JOIN Users n ON r.NurseID = n.UserID";
@@ -135,19 +145,23 @@ public class RoomsDAO {
                 room.setRoomName(rs.getString("RoomName"));
                 room.setDescription(rs.getString("Description"));
 
+                // Safe null handling
                 Object doctorIDObj = rs.getObject("DoctorID");
                 Object nurseIDObj = rs.getObject("NurseID");
 
+                // Debug: Log raw values from ResultSet
                 System.out.println("RoomID: " + rs.getInt("RoomID") + 
                                  ", DoctorID (raw): " + doctorIDObj + 
                                  ", NurseID (raw): " + nurseIDObj);
 
+                // Safe assignment
                 Integer doctorID = (doctorIDObj != null) ? (Integer) doctorIDObj : null;
                 Integer nurseID = (nurseIDObj != null) ? (Integer) nurseIDObj : null;
                 
                 room.setDoctorID(doctorID);
                 room.setNurseID(nurseID);
 
+                // Debug: Log values after setting
                 System.out.println("RoomID: " + room.getRoomID() + 
                                  ", DoctorID (set): " + room.getDoctorID() + 
                                  ", NurseID (set): " + room.getNurseID());
@@ -158,6 +172,7 @@ public class RoomsDAO {
 
                 roomList.add(room);
             }
+
         } catch (SQLException e) {
             System.err.println("SQLException in getAllRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
             throw e;
@@ -207,6 +222,7 @@ public class RoomsDAO {
                     room.setRoomName(rs.getString("RoomName"));
                     room.setDescription(rs.getString("Description"));
                     
+                    // Safe null handling
                     Object doctorIDObj = rs.getObject("DoctorID");
                     Object nurseIDObj = rs.getObject("NurseID");
                     
@@ -235,7 +251,7 @@ public class RoomsDAO {
         } else if ("nurse".equalsIgnoreCase(role)) {
             sql = "SELECT * FROM Rooms WHERE NurseID = ?";
         } else {
-            return roomList;
+            return roomList; // không hỗ trợ vai trò khác
         }
 
         try (Connection conn = dbContext.getConnection();
@@ -248,6 +264,7 @@ public class RoomsDAO {
                     room.setRoomName(rs.getString("RoomName"));
                     room.setDescription(rs.getString("Description"));
                     
+                    // Safe null handling
                     Object doctorIDObj = rs.getObject("DoctorID");
                     Object nurseIDObj = rs.getObject("NurseID");
                     
@@ -272,7 +289,7 @@ public class RoomsDAO {
         String deleteRoom = "DELETE FROM Rooms WHERE RoomID = ?";
 
         try (Connection conn = dbContext.getConnection()) {
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
             try (PreparedStatement ps1 = conn.prepareStatement(deleteSchedules);
                  PreparedStatement ps2 = conn.prepareStatement(deleteRoomServices);
@@ -299,7 +316,7 @@ public class RoomsDAO {
                 conn.commit();
                 System.out.println("✅ Đã xóa phòng và dữ liệu liên quan.");
             } catch (SQLException ex) {
-                conn.rollback();
+                conn.rollback(); // Lỗi thì rollback lại toàn bộ
                 throw ex;
             }
         }
@@ -312,7 +329,7 @@ public class RoomsDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, doctorID);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                return rs.next(); // Returns true if a row is found
             }
         }
     }
@@ -324,7 +341,7 @@ public class RoomsDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, nurseID);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                return rs.next(); // Returns true if a row is found
             }
         }
     }
@@ -353,7 +370,7 @@ public class RoomsDAO {
             if (rs.next()) {
                 return rs.getInt("RoomID");
             }
-            return -1;
+            return -1; // Không có phòng nào có trạng thái Available
         } catch (SQLException e) {
             System.err.println("SQLException in getFirstAvailableRoomId: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
             throw e;
@@ -409,8 +426,9 @@ public class RoomsDAO {
                 s.setUpdatedAt(rs.getDate("UpdatedAt"));
                 services.add(s);
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // log lỗi
         }
 
         return services;
@@ -463,6 +481,7 @@ public class RoomsDAO {
         return false;
     }
 
+    // Lấy danh sách bệnh nhân đã đặt lịch trong phòng
     public List<String> getPatientsByRoomId(int roomId) throws SQLException {
         List<String> patients = new ArrayList<>();
         String sql = "SELECT DISTINCT u.FullName " +
@@ -484,6 +503,7 @@ public class RoomsDAO {
         return patients;
     }
 
+    // Lấy danh sách dịch vụ liên quan đến phòng
     public List<String> getServicesByRoomId(int roomId) throws SQLException {
         List<String> services = new ArrayList<>();
         String sql = "SELECT DISTINCT s.ServiceName " +
@@ -502,7 +522,7 @@ public class RoomsDAO {
             System.err.println("SQLException in getServicesByRoomId: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
             throw e;
         }
-        return services.isEmpty() ? List.of("Không có dịch vụ") : services;
+        return services.isEmpty() ? Collections.singletonList("Không có dịch vụ") : services;
     }
 
     public boolean addServiceToRoom(int roomId, int serviceId) {
@@ -548,41 +568,170 @@ public class RoomsDAO {
         return services;
     }
 
-    public List<Rooms> getAvailableRooms() throws SQLException, ClassNotFoundException {
-        List<Rooms> availableRooms = new ArrayList<>();
-        String sql = "SELECT r.RoomID, r.RoomName, r.[Description], r.DoctorID, r.NurseID, r.[Status], " +
-                     "d.fullName AS doctorName, n.fullName AS nurseName " +
-                     "FROM Rooms r " +
-                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
-                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
-                     "WHERE r.[Status] = 'Available'";
+    // Lấy phân công ca/ngày/phòng trong tuần, trả về Map<String, Object> gồm scheduleData, days, dayNameMap, startDate, endDate
+    public Map<String, Object> getWeeklyScheduleFull() throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Map<String, Map<String, Map<String, String>>>> scheduleData = new LinkedHashMap<>();
+        List<String> days = new ArrayList<>();
+        Map<String, String> dayNameMap = new LinkedHashMap<>();
+        String startDate = null, endDate = null;
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
+        // Lấy ngày đầu tuần (thứ 2) và cuối tuần (CN) tính từ hôm nay
+        String sqlDays = "SELECT CONVERT(varchar, DATEADD(DAY, v.number, weekStart), 23) as Day, DATENAME(weekday, DATEADD(DAY, v.number, weekStart)) as WeekDay " +
+                "FROM (SELECT DATEADD(DAY, 1 - DATEPART(WEEKDAY, GETDATE()), CAST(GETDATE() AS DATE)) as weekStart) d " +
+                "CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6)) v(number)";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlDays);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Rooms room = new Rooms();
-                room.setRoomID(rs.getInt("RoomID"));
-                room.setRoomName(rs.getString("RoomName"));
-                room.setDescription(rs.getString("Description"));
-
-                Object doctorIDObj = rs.getObject("DoctorID");
-                Object nurseIDObj = rs.getObject("NurseID");
-
-                room.setDoctorID(doctorIDObj != null ? (Integer) doctorIDObj : null);
-                room.setNurseID(nurseIDObj != null ? (Integer) nurseIDObj : null);
-                room.setDoctorName(rs.getString("doctorName"));
-                room.setNurseName(rs.getString("nurseName"));
-                room.setStatus(rs.getString("Status"));
-
-                availableRooms.add(room);
+                String day = rs.getString("Day");
+                String weekDay = rs.getString("WeekDay");
+                days.add(day);
+                dayNameMap.put(day, weekDay);
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getAvailableRooms: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
-            throw e;
+            if (!days.isEmpty()) {
+                startDate = days.get(0);
+                endDate = days.get(days.size() - 1);
+            }
         }
 
-        return availableRooms;
+        // Lấy tất cả các phòng
+        List<String> allRooms = new ArrayList<>();
+        String sqlRooms = "SELECT RoomName FROM Rooms";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlRooms);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                allRooms.add(rs.getString("RoomName"));
+            }
+        }
+
+        // Lấy dữ liệu phân công
+        String sql = "SELECT r.RoomName, " +
+                "CASE WHEN FORMAT(se.StartTime, 'HH:mm') < '12:00' THEN 'Ca sáng' ELSE 'Ca chiều' END AS Shift, " +
+                "CONVERT(varchar, se.SlotDate, 23) as Day, se.Role, u.FullName " +
+                "FROM Rooms r " +
+                "LEFT JOIN ScheduleEmployee se ON r.RoomID = se.RoomID AND se.SlotDate BETWEEN ? AND ? " +
+                "LEFT JOIN Users u ON se.UserID = u.UserID";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String room = rs.getString("RoomName");
+                    String shift = rs.getString("Shift") != null ? rs.getString("Shift") : "Ca sáng"; // default nếu null
+                    String day = rs.getString("Day");
+                    String role = rs.getString("Role");
+                    String name = rs.getString("FullName");
+                    if (day == null) continue; // chỉ lấy các ngày trong tuần
+                    scheduleData.putIfAbsent(room, new LinkedHashMap<>());
+                    scheduleData.get(room).putIfAbsent(shift, new LinkedHashMap<>());
+                    scheduleData.get(room).get(shift).putIfAbsent(day, new HashMap<>());
+                    if (role != null && name != null) {
+                        scheduleData.get(room).get(shift).get(day).put(role, name);
+                    }
+                }
+            }
+        }
+        // Đảm bảo tất cả phòng đều có đủ shift/ngày
+        for (String room : allRooms) {
+            scheduleData.putIfAbsent(room, new LinkedHashMap<>());
+            for (String shift : new String[]{"Ca sáng", "Ca chiều"}) {
+                scheduleData.get(room).putIfAbsent(shift, new LinkedHashMap<>());
+                for (String day : days) {
+                    scheduleData.get(room).get(shift).putIfAbsent(day, new HashMap<>());
+                }
+            }
+        }
+        result.put("scheduleData", scheduleData);
+        result.put("days", days);
+        result.put("dayNameMap", dayNameMap);
+        result.put("startDate", startDate);
+        result.put("endDate", endDate);
+        return result;
+    }
+
+    // Lấy phân công ca/ngày/phòng theo khoảng ngày tuỳ ý
+    public Map<String, Object> getWeeklyScheduleByRange(String startDate, String endDate) throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Map<String, Map<String, Map<String, String>>>> scheduleData = new LinkedHashMap<>();
+        List<String> days = new ArrayList<>();
+        Map<String, String> dayNameMap = new LinkedHashMap<>();
+
+        // Lấy danh sách ngày trong khoảng [startDate, endDate]
+        String sqlDays = "SELECT CONVERT(varchar, d, 23) as Day, DATENAME(weekday, d) as WeekDay " +
+                "FROM (SELECT TOP (DATEDIFF(DAY, ?, ?) + 1) DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, ?) as d " +
+                "FROM sys.all_objects) AS x";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlDays)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            ps.setString(3, startDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String day = rs.getString("Day");
+                    String weekDay = rs.getString("WeekDay");
+                    days.add(day);
+                    dayNameMap.put(day, weekDay);
+                }
+            }
+        }
+
+        // Lấy tất cả các phòng
+        List<String> allRooms = new ArrayList<>();
+        String sqlRooms = "SELECT RoomName FROM Rooms";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlRooms);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                allRooms.add(rs.getString("RoomName"));
+            }
+        }
+
+        // Lấy dữ liệu phân công
+        String sql = "SELECT r.RoomName, " +
+                "CASE WHEN FORMAT(se.StartTime, 'HH:mm') < '12:00' THEN 'Ca sáng' ELSE 'Ca chiều' END AS Shift, " +
+                "CONVERT(varchar, se.SlotDate, 23) as Day, se.Role, u.FullName " +
+                "FROM Rooms r " +
+                "LEFT JOIN ScheduleEmployee se ON r.RoomID = se.RoomID AND se.SlotDate BETWEEN ? AND ? " +
+                "LEFT JOIN Users u ON se.UserID = u.UserID";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String room = rs.getString("RoomName");
+                    String shift = rs.getString("Shift") != null ? rs.getString("Shift") : "Ca sáng";
+                    String day = rs.getString("Day");
+                    String role = rs.getString("Role");
+                    String name = rs.getString("FullName");
+                    if (day == null) continue;
+                    scheduleData.putIfAbsent(room, new LinkedHashMap<>());
+                    scheduleData.get(room).putIfAbsent(shift, new LinkedHashMap<>());
+                    scheduleData.get(room).get(shift).putIfAbsent(day, new HashMap<>());
+                    if (role != null && name != null) {
+                        scheduleData.get(room).get(shift).get(day).put(role, name);
+                    }
+                }
+            }
+        }
+        // Đảm bảo tất cả phòng đều có đủ shift/ngày
+        for (String room : allRooms) {
+            scheduleData.putIfAbsent(room, new LinkedHashMap<>());
+            for (String shift : new String[]{"Ca sáng", "Ca chiều"}) {
+                scheduleData.get(room).putIfAbsent(shift, new LinkedHashMap<>());
+                for (String day : days) {
+                    scheduleData.get(room).get(shift).putIfAbsent(day, new HashMap<>());
+                }
+            }
+        }
+        result.put("scheduleData", scheduleData);
+        result.put("days", days);
+        result.put("dayNameMap", dayNameMap);
+        result.put("startDate", days.isEmpty() ? startDate : days.get(0));
+        result.put("endDate", days.isEmpty() ? endDate : days.get(days.size() - 1));
+        return result;
     }
 }
