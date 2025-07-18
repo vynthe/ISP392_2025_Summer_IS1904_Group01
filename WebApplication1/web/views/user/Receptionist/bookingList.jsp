@@ -201,8 +201,16 @@
 <body>
     <div class="container">
         <div class="header">
+                        <a href="/ISP392_Group1/views/user/Receptionist/ReceptionistDashBoard.jsp"
+               class="inline-block mt-4 bg-white text-blue-700 font-semibold px-5 py-2 rounded-lg shadow hover:bg-blue-100 transition duration-300 z-10 relative">
+               <i class="fas fa-arrow-left mr-2"></i> Quay lại Dashboard
+            </a>
             <div class="floating-elements"></div>
             <h2><i class="fas fa-calendar-alt"></i> Danh sách Lịch hẹn</h2>
+
+            <!-- Nút quay lại Dashboard -->
+
+
             <p class="subtitle">Quản lý lịch hẹn phòng khám hiệu quả</p>
         </div>
 
