@@ -681,9 +681,9 @@
                 <div class="footer-section">
                     <h4>Liên Hệ</h4>
                     <ul>
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Đường Sức Khỏe, DH.FPT</li>
+                        <li><i class="fas fa-map-marker-alt"></i> DH FPT , HOA LAC</li>
                         <li><i class="fas fa-phone"></i> (028) 1234-5678</li>
-                        <li><i class="fas fa-envelope"></i> info@benhvien.com</li>
+                        <li><i class="fas fa-envelope"></i> PhongKhamPDC@benhvien.com</li>
                     </ul>
                 </div>
             </div>
