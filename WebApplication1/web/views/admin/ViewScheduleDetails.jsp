@@ -1,269 +1,394 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch làm việc - ID ${userId}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Thời khóa biểu</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .main-container {
-            width: 100%;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            min-height: 100vh;
+            background-color: #f5f5f5;
         }
-
-        .header-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .content-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-            min-height: calc(100vh - 200px);
-        }
-
-        .content-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
-            background-size: 200% 100%;
-            animation: gradientShift 3s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .page-title {
-            color: #2d3748;
-            font-size: 2.5rem;
-            font-weight: 700;
+        
+        .header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px;
             text-align: center;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .page-subtitle {
-            text-align: center;
-            color: #718096;
-            font-size: 1.1rem;
             margin-bottom: 20px;
+            border-radius: 5px;
         }
-
-        .modern-table {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: none;
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-
-        .modern-table thead {
-            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+        
+        .controls label {
+            font-weight: bold;
+            color: #333;
         }
-
-        .modern-table th {
-            border: none;
-            padding: 20px 15px;
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        
+        .controls select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
         }
-
-        .modern-table td {
-            border: none;
-            padding: 20px 15px;
-            color: #4a5568;
-            font-size: 14px;
-            border-bottom: 1px solid #f1f5f9;
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .modern-table tbody tr {
-            transition: all 0.3s ease;
-        }
-
-        .modern-table tbody tr:hover {
-            background: linear-gradient(135deg, #f8faff, #f1f5f9);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .modern-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        p {
+        
+        .schedule-table th {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px;
             text-align: center;
-            margin: 10px 0;
+            font-weight: bold;
+            border: 1px solid #ddd;
         }
-
-        p.error {
-            color: #e74c3c;
+        
+        .schedule-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            min-height: 60px;
         }
-
-        p.message {
-            color: #2ecc71;
+        
+        .slot-header {
+            background-color: #e8f4f8;
+            font-weight: bold;
+            text-align: center;
+            width: 80px;
         }
-
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 10px;
-            }
-            
-            .header-card {
-                padding: 20px;
-                margin-bottom: 20px;
-            }
-            
-            .content-card {
-                padding: 20px;
-                min-height: calc(100vh - 140px);
-            }
-            
-            .page-title {
-                font-size: 2rem;
-            }
-            
-            .modern-table {
-                font-size: 12px;
-            }
-            
-            .modern-table th,
-            .modern-table td {
-                padding: 12px 8px;
-            }
+        
+        .course-info {
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .course-code {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .course-location {
+            color: #666;
+            font-size: 11px;
+        }
+        
+        .course-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 2px;
+            cursor: pointer;
+        }
+        
+        .attended {
+            background-color: #90EE90;
+            color: #006400;
+        }
+        
+        .not-yet {
+            background-color: #FFE4B5;
+            color: #FF8C00;
+        }
+        
+        .change-room {
+            background-color: #FFB6C1;
+            color: #8B0000;
+        }
+        
+        .view-materials {
+            background-color: #FFA500;
+            color: white;
+        }
+        
+        .eduNext {
+            background-color: #4169E1;
+            color: white;
+        }
+        
+        .time-slot {
+            background-color: #87CEEB;
+            color: #000080;
+        }
+        
+        .meet-url {
+            background-color: #32CD32;
+            color: white;
+        }
+        
+        .empty-cell {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .day-header {
+            position: relative;
+        }
+        
+        .date-number {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .course-cell:hover {
+            background-color: #f0f8ff;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Header -->
-        <div class="header-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="btn btn-modern btn-success-modern">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
-            </div>
-            <h1 class="page-title">
-                <i class="fas fa-calendar-alt"></i> Lịch làm việc - ID ${userId}
-            </h1>
-            <p class="page-subtitle">Lịch làm việc cho ngày ${viewDate}</p>
-        </div>
-
-        <!-- Content -->
-        <div class="content-card">
-            <!-- Success Message -->
-            <c:if test="${not empty sessionScope.successMessage}">
-                <div class="success-alert">
-                    <i class="fas fa-check-circle"></i>
-                    ${sessionScope.successMessage}
-                </div>
-                <% session.removeAttribute("successMessage"); %>
-            </c:if>
-
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="table modern-table">
-                    <thead>
-                        <tr>
-                            <th><i class="fas fa-clock me-2"></i>Slot</th>
-                            <th><i class="fas fa-clock me-2"></i>Thời gian</th>
-                            <th><i class="fas fa-hospital me-2"></i>Phòng</th>
-                            <th><i class="fas fa-tools me-2"></i>Dịch vụ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${not empty schedules}">
-                                <c:forEach var="schedule" items="${schedules}">
-                                    <c:set var="roomKey" value="room_${schedule.slotId}" />
-                                    <c:set var="serviceKey" value="services_${schedule.slotId}" />
-                                    <c:set var="room" value="${requestScope[roomKey]}" />
-                                    <c:set var="service" value="${requestScope[serviceKey]}" />
-                                    <tr>
-                                        <td>Slot ${schedule.slotId}</td>
-                                        <td>
-                                            ${not empty schedule.startTime ? schedule.startTime : 'Chưa có'} - 
-                                            ${not empty schedule.endTime ? schedule.endTime : 'Chưa có'}
-                                        </td>
-                                        <td>
-                                            ${not empty room ? room.roomName : 'Chưa gán phòng'} 
-                                            (${not empty room ? room.status : ''})
-                                        </td>
-                                        <td>${not empty service ? service : 'Chưa gán dịch vụ'}</td>
-                                    </tr>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <tr>
-                                    <td colspan="4" class="no-data">
-                                        <i class="fas fa-calendar-times"></i>
-                                        <div>Không có lịch nào</div>
-                                        <small>Hãy thêm lịch để bắt đầu quản lý</small>
-                                    </td>
-                                </tr>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <%-- Khởi tạo dữ liệu mẫu --%>
+    <c:set var="currentYear" value="2025" />
+    <c:set var="currentWeek" value="22/09 to 28/09" />
+    
+    <div class="header">
+        <h2>Nhà vở số 3 (Ký hiệu VUV3 - cạnh hồ Delta) gồm 4 sàn tập: R01-VUV3 đến R04-VUV3</h2>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <form action="schedule.jsp" method="get">
+        <div class="controls">
+            <label for="year">YEAR:</label>
+            <select id="year" name="year" onchange="this.form.submit()">
+                <option value="2025" ${param.year == '2025' || empty param.year ? 'selected' : ''}>2025</option>
+                <option value="2024" ${param.year == '2024' ? 'selected' : ''}>2024</option>
+                <option value="2023" ${param.year == '2023' ? 'selected' : ''}>2023</option>
+            </select>
+            
+            <label for="week">WEEK:</label>
+            <select id="week" name="week" onchange="this.form.submit()">
+                <option value="22/09 to 28/09" ${param.week == '22/09 to 28/09' || empty param.week ? 'selected' : ''}>22/09 to 28/09</option>
+                <option value="15/09 to 21/09" ${param.week == '15/09 to 21/09' ? 'selected' : ''}>15/09 to 21/09</option>
+                <option value="29/09 to 05/10" ${param.week == '29/09 to 05/10' ? 'selected' : ''}>29/09 to 05/10</option>
+                <option value="06/10 to 12/10" ${param.week == '06/10 to 12/10' ? 'selected' : ''}>06/10 to 12/10</option>
+            </select>
+        </div>
+    </form>
+    
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="day-header">
+                    <div>MON</div>
+                    <div class="date-number">14/07</div>
+                </th>
+                <th class="day-header">
+                    <div>TUE</div>
+                    <div class="date-number">15/07</div>
+                </th>
+                <th class="day-header">
+                    <div>WED</div>
+                    <div class="date-number">16/07</div>
+                </th>
+                <th class="day-header">
+                    <div>THU</div>
+                    <div class="date-number">17/07</div>
+                </th>
+                <th class="day-header">
+                    <div>FRI</div>
+                    <div class="date-number">18/07</div>
+                </th>
+                <th class="day-header">
+                    <div>SAT</div>
+                    <div class="date-number">19/07</div>
+                </th>
+                <th class="day-header">
+                    <div>SUN</div>
+                    <div class="date-number">20/07</div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="slot-header">Slot 0</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+            </tr>
+            <tr>
+                <td class="slot-header">Slot 1</td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">FIN202</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('FIN202')">View Materials</span>
+                        <br>
+                        <span class="course-location">at BE-410</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ISP392</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ISP392')">View Materials</span>
+                        <br>
+                        <span class="course-location">at DE-412</span>
+                        <br>
+                        <span class="course-status change-room">(_ChangeRoom_)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                        <span class="course-status eduNext" onclick="openEduNext('ISP392')">-EduNext</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ISM302</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ISM302')">View Materials</span>
+                        <br>
+                        <span class="course-location">at BE-410</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ITA301</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ITA301')">View Materials</span>
+                        <br>
+                        <span class="course-location">at EP-303</span>
+                        <br>
+                        <span class="course-status change-room">(_ChangeRoom_)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                        <span class="course-status eduNext" onclick="openEduNext('ITA301')">-EduNext</span>
+                        <br>
+                        <span class="course-status not-yet">(Not yet)</span>
+                        <span class="course-status time-slot">(7:30-9:50)</span>
+                    </div>
+                </td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+            </tr>
+            <tr>
+                <td class="slot-header">Slot 2</td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ISM302</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ISM302')">View Materials</span>
+                        <br>
+                        <span class="course-location">at BE-410</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ITA301</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ITA301')">View Materials</span>
+                        <br>
+                        <span class="course-location">at EP-303</span>
+                        <br>
+                        <span class="course-status change-room">(_ChangeRoom_)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                        <span class="course-status eduNext" onclick="openEduNext('ITA301')">-EduNext</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">FIN202</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('FIN202')">View Materials</span>
+                        <br>
+                        <span class="course-location">at BE-410</span>
+                        <br>
+                        <span class="course-status attended">(attended)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                    </div>
+                </td>
+                <td class="course-cell">
+                    <div class="course-info">
+                        <span class="course-code">ISP392</span>
+                        <span class="course-status view-materials" onclick="viewMaterials('ISP392')">View Materials</span>
+                        <br>
+                        <span class="course-location">at DE-423</span>
+                        <br>
+                        <span class="course-status change-room">(_ChangeRoom_)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                        <span class="course-status meet-url" onclick="openMeetUrl('ISP392')">Meet URL</span>
+                        <span class="course-status eduNext" onclick="openEduNext('ISP392')">-EduNext</span>
+                        <br>
+                        <span class="course-status not-yet">(Not yet)</span>
+                        <span class="course-status time-slot">(10:00-12:20)</span>
+                    </div>
+                </td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+            </tr>
+            <tr>
+                <td class="slot-header">Slot 3</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+            </tr>
+            <tr>
+                <td class="slot-header">Slot 4</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+                <td class="empty-cell">-</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <script>
+        // Các hàm JavaScript cho tương tác
+        function viewMaterials(courseCode) {
+            alert('Xem tài liệu cho môn: ' + courseCode);
+            // Có thể redirect đến trang xem tài liệu
+            // window.location.href = 'materials.jsp?courseCode=' + courseCode;
+        }
+        
+        function openEduNext(courseCode) {
+            alert('Mở EduNext cho môn: ' + courseCode);
+            // Có thể mở tab mới với EduNext
+            // window.open('https://edunext.fpt.edu.vn/course/' + courseCode, '_blank');
+        }
+        
+        function openMeetUrl(courseCode) {
+            alert('Mở Meet URL cho môn: ' + courseCode);
+            // Có thể mở tab mới với link Meet
+            // window.open('https://meet.google.com/xxx-xxx-xxx', '_blank');
+        }
+        
+        // Hiển thị thông tin đã chọn
+        <c:if test="${not empty param.year or not empty param.week}">
+            console.log('Selected Year: ${param.year}');
+            console.log('Selected Week: ${param.week}');
+        </c:if>
+    </script>
 </body>
 </html>
