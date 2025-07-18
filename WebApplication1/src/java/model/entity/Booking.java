@@ -19,8 +19,26 @@ public class Booking {
     private String serviceInfo;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-
+    private String patientPhone;
+    private String patientEmail;
     // Getters & Setters
+
+    public String getPatientPhone() {
+        return patientPhone;
+    }
+
+    public void setPatientPhone(String patientPhone) {
+        this.patientPhone = patientPhone;
+    }
+
+    public String getPatientEmail() {
+        return patientEmail;
+    }
+
+    public void setPatientEmail(String patientEmail) {
+        this.patientEmail = patientEmail;
+    }
+    
     public int getAppointmentID() {
         return appointmentID;
     }
