@@ -370,7 +370,7 @@
                                     <c:when test="${not empty doctorDetails.services and fn:length(doctorDetails.services) > 0 and doctorDetails.services[0].serviceName != 'N/A'}">
                                         <c:forEach var="service" items="${doctorDetails.services}">
                                             <li>
-                                                ${fn:escapeXml(service.serviceName)} - ${fn:escapeXml(service.description)}
+                                                ${fn:escapeXml(service.serviceName)} 
                                                 <span class="detail-value">Giá: ${service.price} VND</span>
                                             </li>
                                         </c:forEach>
