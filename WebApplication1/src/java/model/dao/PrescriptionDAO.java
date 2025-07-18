@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrescriptionDAO {
+
     private final DBContext dbContext;
     private final MedicationService medicationService;
 
@@ -21,8 +22,7 @@ public class PrescriptionDAO {
         String checkPatient = "SELECT 1 FROM Users WHERE UserID = ? AND Role = 'Patient'";
         String checkDoctor = "SELECT 1 FROM Users WHERE UserID = ? AND Role = 'Doctor'";
 
-        try (PreparedStatement pstmt1 = conn.prepareStatement(checkPatient);
-             PreparedStatement pstmt2 = conn.prepareStatement(checkDoctor)) {
+        try (PreparedStatement pstmt1 = conn.prepareStatement(checkPatient); PreparedStatement pstmt2 = conn.prepareStatement(checkDoctor)) {
             pstmt1.setInt(1, prescription.getPatientId());
             pstmt2.setInt(1, prescription.getDoctorId());
 
@@ -110,9 +110,7 @@ public class PrescriptionDAO {
         List<Prescriptions> prescriptions = new ArrayList<>();
         String sql = "SELECT * FROM Prescriptions WHERE Status != 'CANCELLED'";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 prescriptions.add(mapResultSetToPrescription(rs));
@@ -128,8 +126,7 @@ public class PrescriptionDAO {
     public Prescriptions getPrescriptionById(int prescriptionId) throws SQLException {
         String sql = "SELECT * FROM Prescriptions WHERE PrescriptionID = ? AND Status != 'CANCELLED'";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, prescriptionId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -146,11 +143,10 @@ public class PrescriptionDAO {
 
     public List<Prescriptions> getPrescriptionsByPage(int page, int pageSize) throws SQLException {
         List<Prescriptions> prescriptions = new ArrayList<>();
-        String sql = "SELECT p.* FROM Prescriptions p WHERE p.Status != 'CANCELLED' " +
-                     "ORDER BY p.PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT p.* FROM Prescriptions p WHERE p.Status != 'CANCELLED' "
+                + "ORDER BY p.PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, (page - 1) * pageSize);
             pstmt.setInt(2, pageSize);
 
@@ -170,11 +166,11 @@ public class PrescriptionDAO {
     public int getTotalPrescriptionCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM Prescriptions WHERE Status != 'CANCELLED'";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
-            if (rs.next()) return rs.getInt(1);
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("SQLException in getTotalPrescriptionCount: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
@@ -186,9 +182,9 @@ public class PrescriptionDAO {
     public List<Prescriptions> searchPrescriptionsByPatientAndMedication(String patientNameKeyword, String medicationNameKeyword, int page, int pageSize) throws SQLException {
         List<Prescriptions> prescriptions = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT p.* FROM Prescriptions p " +
-            "JOIN Users u ON p.PatientID = u.UserID " +
-            "WHERE p.Status != 'CANCELLED'"
+                "SELECT p.* FROM Prescriptions p "
+                + "JOIN Users u ON p.PatientID = u.UserID "
+                + "WHERE p.Status != 'CANCELLED'"
         );
         List<String> conditions = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -207,8 +203,7 @@ public class PrescriptionDAO {
         }
         sql.append(" ORDER BY p.PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             for (Object param : parameters) {
                 pstmt.setObject(paramIndex++, param);
@@ -231,9 +226,9 @@ public class PrescriptionDAO {
 
     public int getTotalCountByPatientAndMedication(String patientNameKeyword, String medicationNameKeyword) throws SQLException {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM Prescriptions p " +
-            "JOIN Users u ON p.PatientID = u.UserID " +
-            "WHERE p.Status != 'CANCELLED'"
+                "SELECT COUNT(*) FROM Prescriptions p "
+                + "JOIN Users u ON p.PatientID = u.UserID "
+                + "WHERE p.Status != 'CANCELLED'"
         );
         List<String> conditions = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -251,15 +246,16 @@ public class PrescriptionDAO {
             sql.append(" AND ").append(String.join(" AND ", conditions));
         }
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             for (Object param : parameters) {
                 pstmt.setObject(paramIndex++, param);
             }
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -276,6 +272,18 @@ public class PrescriptionDAO {
         prescription.setDoctorId(rs.getInt("DoctorID"));
         prescription.setPrescriptionDetails(rs.getString("PrescriptionDetails"));
         prescription.setStatus(rs.getString("Status"));
+
+        Timestamp created = rs.getTimestamp("CreatedAt");
+        if (created != null) {
+            prescription.setCreatedAt(created.toLocalDateTime());
+        }
+
+        Timestamp updated = rs.getTimestamp("UpdatedAt");
+        if (updated != null) {
+            prescription.setUpdatedAt(updated.toLocalDateTime());
+        }
+
         return prescription;
     }
+
 }
