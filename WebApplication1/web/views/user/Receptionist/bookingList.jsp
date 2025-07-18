@@ -1,278 +1,286 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách lịch hẹn</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>Danh sách Lịch hẹn</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(to bottom, #f0f9f1, #e6f5e9);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        .table-container {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin-top: 1rem;
-            border: 1px solid #e0e0e0;
-        }
-        h2 {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: #1a3c34;
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 2rem;
+            position: relative;
         }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h2 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .table-content {
+            padding: 40px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: 1px solid #ff5252;
+        }
+
+        .table-container {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            border-radius: 8px;
+            background: #f8f9fa;
+            border-radius: 12px;
             overflow: hidden;
         }
+
         th, td {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
         }
+
         th {
-            background: linear-gradient(to bottom, #34c759, #2ca44e);
-            color: white;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #333;
             font-weight: 600;
+            font-size: 1.05em;
             text-transform: uppercase;
-            font-size: 0.875rem;
-            cursor: pointer;
-            position: relative;
         }
-        th:hover {
-            background: linear-gradient(to bottom, #2ca44e, #248f3f);
+
+        th i {
+            margin-right: 8px;
+            color: #667eea;
         }
-        th::after {
-            content: '\f0dc'; /* Font Awesome sort icon */
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            margin-left: 0.5rem;
-            opacity: 0.5;
+
+        tr {
+            transition: all 0.3s ease;
         }
-        th.asc::after {
-            content: '\f0de'; /* Font Awesome sort-up icon */
-            opacity: 1;
-        }
-        th.desc::after {
-            content: '\f0dd'; /* Font Awesome sort-down icon */
-            opacity: 1;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
+
         tr:hover {
-            background-color: #f0f9f1;
-        }
-        .status {
-            font-weight: 600;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            display: inline-block;
-        }
-        .status-đã-xác-nhận {
-            background-color: #34c759;
-            color: white;
-        }
-        .status-đang-chờ {
-            background-color: #facc15;
-            color: #1a3c34;
-        }
-        .status-đã-hủy {
-            background-color: #ef4444;
-            color: white;
-        }
-        .no-data {
-            text-align: center;
-            color: #4b5563;
-            font-size: 1.125rem;
-            padding: 2rem;
-        }
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(to right, #34c759, #2ca44e);
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease;
-            margin-bottom: 1.5rem;
-        }
-        .back-btn:hover {
-            background: linear-gradient(to right, #2ca44e, #248f3f);
+            background: #f1f5f9;
             transform: translateY(-2px);
         }
-        .back-btn i {
-            margin-right: 0.5rem;
+
+        .null {
+            color: #6b7280;
+            font-style: italic;
         }
-        .filter-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
         }
-        .filter-container select {
-            padding: 0.5rem;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            background-color: #fff;
-            font-size: 0.875rem;
-            cursor: pointer;
+
+        .floating-elements::before,
+        .floating-elements::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
         }
-        .filter-container select:focus {
-            outline: none;
-            border-color: #34c759;
-            box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.1);
+
+        .floating-elements::before {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
         }
+
+        .floating-elements::after {
+            width: 40px;
+            height: 40px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
         @media (max-width: 768px) {
-            table {
-                display: block;
-                overflow-x: auto;
+            .container {
+                margin: 10px;
+                border-radius: 15px;
             }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h2 {
+                font-size: 1.8em;
+            }
+
+            .table-content {
+                padding: 20px;
+            }
+
             th, td {
-                font-size: 0.875rem;
-                padding: 0.75rem;
-            }
-            h2 {
-                font-size: 1.5rem;
-            }
-            .filter-container {
-                justify-content: center;
+                padding: 10px;
+                font-size: 0.9em;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="${pageContext.request.contextPath}/views/user/Receptionist/ReceptionistDashBoard.jsp" class="back-btn">
-            <i class="fas fa-arrow-left"></i>Quay lại Dashboard
-        </a>
-        <h2>Danh sách lịch hẹn khám bệnh</h2>
-        <div class="table-container">
-            <div class="filter-container">
-                <select id="statusFilter" onchange="filterTable()">
-                <option value="all">Tất cả trạng thái</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-            </select>
+        <div class="header">
+            <div class="floating-elements"></div>
+            <h2><i class="fas fa-calendar-alt"></i> Danh sách Lịch hẹn</h2>
+            <p class="subtitle">Quản lý lịch hẹn phòng khám hiệu quả</p>
+        </div>
 
-            </div>
-            <c:if test="${empty bookings}">
-                <p class="no-data">Không có lịch hẹn nào.</p>
+        <div class="table-content">
+            <c:if test="${not empty error}">
+                <div class="alert error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    ${error}
+                </div>
             </c:if>
-            <c:if test="${not empty bookings}">
-                <table id="appointmentTable">
+
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
-                            <th data-sort="appointmentID">ID</th>
-                            <th data-sort="patientName">Bệnh nhân</th>
-                            <th data-sort="doctorName">Bác sĩ</th>
-                            <th data-sort="nurseName">Y tá</th>
-                            <th data-sort="roomName">Phòng</th>
-                            <th data-sort="appointmentTime">Thời gian</th>
-                            <th data-sort="status">Trạng thái</th>
-                            <th data-sort="serviceInfo">Dịch vụ</th>
+                            <th><i class="fas fa-id-badge"></i> ID</th>
+                            <th><i class="fas fa-user"></i> Họ tên bệnh nhân</th>
+                            <th><i class="fas fa-phone"></i> Điện thoại</th>
+                            <th><i class="fas fa-envelope"></i> Email</th>
+                            <th><i class="fas fa-user-md"></i> Bác sĩ</th>
+                            <th><i class="fas fa-user-nurse"></i> Y tá</th>
+                            <th><i class="fas fa-concierge-bell"></i> Lễ tân</th>
+                            <th><i class="fas fa-door-open"></i> Phòng</th>
+                            <th><i class="fas fa-clock"></i> Thời gian</th>
+                            <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                            <th><i class="fas fa-stethoscope"></i> Dịch vụ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="b" items="${bookings}">
-                            <tr data-status="${b.status.toLowerCase()}">
+                            <tr>
                                 <td>${b.appointmentID}</td>
                                 <td>${b.patientName}</td>
-                                <td>${b.doctorName}</td>
-                                <td>${b.nurseName}</td>
-                                <td>${b.roomName}</td>
-                                <td>${b.appointmentTime}</td>
+                                <td>${b.patientPhone}</td>
+                                <td>${b.patientEmail}</td>
                                 <td>
-                                    <span class="status status-${b.status.toLowerCase()}">${b.status}</span>
+                                    <c:choose>
+                                        <c:when test="${empty b.doctorName}">
+                                            <span class="null">Không có</span>
+                                        </c:when>
+                                        <c:otherwise>${b.doctorName}</c:otherwise>
+                                    </c:choose>
                                 </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty b.nurseName}">
+                                            <span class="null">Không có</span>
+                                        </c:when>
+                                        <c:otherwise>${b.nurseName}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty b.receptionistName}">
+                                            <span class="null">Không có</span>
+                                        </c:when>
+                                        <c:otherwise>${b.receptionistName}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty b.roomName}">
+                                            <span class="null">Không có</span>
+                                        </c:when>
+                                        <c:otherwise>${b.roomName}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <fmt:formatDate value="${b.appointmentTime}" pattern="dd/MM/yyyy HH:mm" />
+                                </td>
+                                <td>${b.status}</td>
                                 <td>${b.serviceInfo}</td>
                             </tr>
                         </c:forEach>
                     </tbody>
                 </table>
-            </c:if>
+            </div>
         </div>
     </div>
-
-    <script>
-        // Ensure JavaScript is client-side only
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById('appointmentTable');
-            const headers = table?.querySelectorAll('th[data-sort]');
-            let sortDirection = {};
-
-            headers?.forEach(header => {
-                header.addEventListener('click', () => {
-                    const sortKey = header.getAttribute('data-sort');
-                    sortDirection[sortKey] = !sortDirection[sortKey]; // Toggle direction
-                    sortTable(sortKey, sortDirection[sortKey]);
-
-                    // Update sort indicators
-                    headers.forEach(h => h.classList.remove('asc', 'desc'));
-                    header.classList.add(sortDirection[sortKey] ? 'asc' : 'desc');
-                });
-            });
-
-            function sortTable(key, ascending) {
-                if (!table) return;
-                const tbody = table.querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-
-                rows.sort((a, b) => {
-                    const colIndex = getColumnIndex(key);
-                    const aValue = a.querySelector(`td:nth-child(${colIndex})`).textContent.trim();
-                    const bValue = b.querySelector(`td:nth-child(${colIndex})`).textContent.trim();
-
-                    let comparison;
-                    if (key === 'appointmentID') {
-                        comparison = parseInt(aValue) - parseInt(bValue);
-                    } else if (key === 'appointmentTime') {
-                        comparison = new Date(aValue) - new Date(bValue);
-                    } else {
-                        comparison = aValue.localeCompare(bValue);
-                    }
-
-                    return ascending ? comparison : -comparison;
-                });
-
-                tbody.innerHTML = '';
-                rows.forEach(row => tbody.appendChild(row));
-            }
-
-            function getColumnIndex(key) {
-                const headers = Array.from(table.querySelectorAll('th'));
-                return headers.findIndex(h => h.getAttribute('data-sort') === key) + 1;
-            }
-
-            // Table filtering
-            window.filterTable = function() {
-                const filterValue = document.getElementById('statusFilter').value;
-                const rows = document.querySelectorAll('#appointmentTable tbody tr');
-
-                rows.forEach(row => {
-                    const status = row.getAttribute('data-status');
-                    row.style.display = (filterValue === 'all' || status === filterValue) ? '' : 'none';
-                });
-            };
-        });
-    </script>
 </body>
 </html>
