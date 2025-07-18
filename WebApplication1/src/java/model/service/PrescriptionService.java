@@ -152,4 +152,20 @@ public class PrescriptionService {
             throw new SQLException("Trạng thái không hợp lệ. Chỉ chấp nhận: Pending, In Progress, Completed, Dispensed, Cancelled.");
         }
     }
+    
+    public Prescriptions getPrescriptionById(int prescriptionId) throws SQLException {
+    try {
+        Prescriptions prescription = prescriptionDAO.getPrescriptionById(prescriptionId);
+        if (prescription == null) {
+            log.warn("No prescription found with ID: " + prescriptionId);
+        } else {
+            log.info("Fetched prescription with ID: " + prescriptionId);
+        }
+        return prescription;
+    } catch (SQLException e) {
+        log.error("SQLException fetching prescription by ID: " + e.getMessage(), e);
+        throw e;
+    }
+}
+
 }

@@ -611,7 +611,7 @@
                         <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" 
                            style="background: linear-gradient(to right, #1e90ff, #63b3ed); color: white;
                            padding: 8px 20px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-right: 20px;">
-                            Home
+                            Trang chủ
                         </a>
                         <div style="margin-left: 1rem;">
                             <h1 class="page-title">Danh Sách Thuốc</h1>
@@ -741,7 +741,19 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span class="dosage-form">${medication.dosageForm}</span>
+                                                    <span class="dosage-form">
+                                                        <c:choose>
+                                                            <c:when test="${medication.dosageForm == 'Tablet'}">Viên nén</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Capsule'}">Viên nang</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Injection'}">Tiêm</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Cream'}">Kem</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Liquid'}">Dung dịch</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Ointment'}">Thuốc mỡ</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Powder'}">Bột</c:when>
+                                                            <c:when test="${medication.dosageForm == 'Gel'}">Gel</c:when>
+                                                            <c:otherwise>${medication.dosageForm}</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
                                                 </td>
                                                 <td>
                                                     <div class="manufacturer">${medication.manufacturer}</div>
@@ -753,7 +765,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             Chi tiết
                                                         </a>
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -788,7 +800,19 @@
 
                                             <div class="card-field">
                                                 <span class="field-label">Dạng bào chế:</span>
-                                                <span class="dosage-form">${medication.dosageForm}</span>
+                                                <span class="dosage-form">
+                                                    <c:choose>
+                                                        <c:when test="${medication.dosageForm == 'Tablet'}">Viên nén</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Capsule'}">Viên nang</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Injection'}">Tiêm</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Cream'}">Kem</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Liquid'}">Dung dịch</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Ointment'}">Thuốc mỡ</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Powder'}">Bột</c:when>
+                                                        <c:when test="${medication.dosageForm == 'Gel'}">Gel</c:when>
+                                                        <c:otherwise>${medication.dosageForm}</c:otherwise>
+                                                    </c:choose>
+                                                </span>
                                             </div>
 
                                             <div class="card-field">
@@ -797,7 +821,7 @@
                                             </div>
                                         </div>
 
-                                        
+
                                     </div>
                                 </c:forEach>
                             </div>

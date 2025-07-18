@@ -493,7 +493,19 @@
                                     </div>
                                     <div class="detail-item">
                                         <div class="detail-label">Dạng Bào Chế</div>
-                                        <div class="detail-value">${medication.dosageForm != null ? medication.dosageForm : 'Chưa cập nhật'}</div>
+                                        <div class="detail-value">
+                                            <c:choose>
+                                                <c:when test="${medication.dosageForm == 'Tablet'}">Viên nén</c:when>
+                                                <c:when test="${medication.dosageForm == 'Capsule'}">Viên nang</c:when>
+                                                <c:when test="${medication.dosageForm == 'Injection'}">Tiêm</c:when>
+                                                <c:when test="${medication.dosageForm == 'Cream'}">Kem</c:when>
+                                                <c:when test="${medication.dosageForm == 'Liquid'}">Dung dịch</c:when>
+                                                <c:when test="${medication.dosageForm == 'Ointment'}">Thuốc mỡ</c:when>
+                                                <c:when test="${medication.dosageForm == 'Powder'}">Bột</c:when>
+                                                <c:when test="${medication.dosageForm == 'Gel'}">Gel</c:when>
+                                                <c:otherwise>${medication.dosageForm != null ? medication.dosageForm : 'Chưa cập nhật'}</c:otherwise>
+                                            </c:choose>
+                                        </div>
                                     </div>
                                     <div class="detail-item">
                                         <div class="detail-label">Trạng Thái</div>
@@ -506,7 +518,7 @@
                                 </div>
                             </div>
 
-                        
+
 
                             <!-- Description -->
                             <div class="description-section">
@@ -520,8 +532,8 @@
                             </div>
                         </div>
 
-                       
-                   
+
+
 
 
                         <!-- Action Buttons -->

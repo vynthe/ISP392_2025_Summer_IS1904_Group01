@@ -603,7 +603,7 @@
                                                 <td><div class="prescription-details">${doctorNames[prescription.doctorId]}</div></td>
                                                 <td>
                                                     <div class="action-buttons">
-                                                        <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailsServlet?id=${prescription.prescriptionId}" 
+                                                        <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?id=${prescription.prescriptionId}" 
                                                            class="action-btn btn-view">
                                                             <i class="fas fa-eye"></i> Chi tiết
                                                         </a>
