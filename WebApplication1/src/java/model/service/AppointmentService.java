@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import model.entity.ScheduleEmployee;
 
 public class AppointmentService {
 
@@ -76,7 +77,7 @@ public class AppointmentService {
     }
 
     // Lấy lịch trình theo vai trò và UserID
-    public List<Schedules> getSchedulesByRoleAndUserId(String role, int userId) throws SQLException {
+    public List<ScheduleEmployee> getSchedulesByRoleAndUserId(String role, int userId) throws SQLException {
         if (userId <= 0) {
             throw new IllegalArgumentException("Invalid user ID");
         }
