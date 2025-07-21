@@ -4,6 +4,8 @@ import model.entity.Users;
 import model.entity.Schedules;
 import model.entity.Rooms;
 import model.entity.Services;
+import model.entity.ScheduleEmployee;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,32 +18,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import model.entity.ScheduleEmployee;
 
 public class AppointmentDAO {
 
     private final DBContext dbContext = DBContext.getInstance();
 
-    // Phương thức tìm kiếm bác sĩ theo tên và chuyên môn
+    // Tìm kiếm bác sĩ theo tên và chuyên môn
     public List<Users> searchDoctorsByNameAndSpecialty(String nameKeyword, String specialtyKeyword, int page, int pageSize) throws SQLException {
         List<Users> doctors = new ArrayList<>();
-        String sql = "SELECT UserID, FullName, Specialization "
-                + "FROM Users "
-                + "WHERE Role = 'Doctor' AND Status = 'Active' "
-                + (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "AND FullName LIKE ? " : "")
-                + (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "AND Specialization LIKE ? " : "")
-                + "ORDER BY UserID "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        StringBuilder sql = new StringBuilder(
+                "SELECT UserID, FullName, Specialization FROM Users WHERE Role = 'Doctor' AND Status = 'Active' ");
+        List<String> params = new ArrayList<>();
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        if (nameKeyword != null && !nameKeyword.trim().isEmpty()) {
+            sql.append("AND FullName LIKE ? ");
+            params.add("%" + nameKeyword.trim() + "%");
+        }
+        if (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty()) {
+            sql.append("AND Specialization LIKE ? ");
+            params.add("%" + specialtyKeyword.trim() + "%");
+        }
+        sql.append("ORDER BY UserID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
-            if (nameKeyword != null && !nameKeyword.trim().isEmpty()) {
-                pstmt.setString(paramIndex++, "%" + nameKeyword.trim() + "%");
-            }
-            if (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty()) {
-                pstmt.setString(paramIndex++, "%" + specialtyKeyword.trim() + "%");
+            for (String param : params) {
+                pstmt.setString(paramIndex++, param);
             }
             pstmt.setInt(paramIndex++, (page - 1) * pageSize);
             pstmt.setInt(paramIndex, pageSize);
@@ -62,20 +65,26 @@ public class AppointmentDAO {
         return doctors;
     }
 
-    // Phương thức đếm tổng số bác sĩ
+    // Đếm tổng số bác sĩ
     public int getTotalDoctorRecords(String nameKeyword, String specialtyKeyword) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Users "
-                + "WHERE Role = 'Doctor' AND Status = 'Active' "
-                + (nameKeyword != null && !nameKeyword.trim().isEmpty() ? "AND FullName LIKE ? " : "")
-                + (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty() ? "AND Specialization LIKE ? " : "");
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM Users WHERE Role = 'Doctor' AND Status = 'Active' ");
+        List<String> params = new ArrayList<>();
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        if (nameKeyword != null && !nameKeyword.trim().isEmpty()) {
+            sql.append("AND FullName LIKE ? ");
+            params.add("%" + nameKeyword.trim() + "%");
+        }
+        if (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty()) {
+            sql.append("AND Specialization LIKE ? ");
+            params.add("%" + specialtyKeyword.trim() + "%");
+        }
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
-            if (nameKeyword != null && !nameKeyword.trim().isEmpty()) {
-                pstmt.setString(paramIndex++, "%" + nameKeyword.trim() + "%");
-            }
-            if (specialtyKeyword != null && !specialtyKeyword.trim().isEmpty()) {
-                pstmt.setString(paramIndex++, "%" + specialtyKeyword.trim() + "%");
+            for (String param : params) {
+                pstmt.setString(paramIndex++, param);
             }
 
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -92,8 +101,9 @@ public class AppointmentDAO {
 
     // Lấy thông tin phòng theo DoctorID
     public String getRoomByDoctorId(int doctorId) throws SQLException {
-        String sql = "SELECT RoomName FROM Rooms WHERE DoctorID = ? AND Status = 'Available' LIMIT 1";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT RoomName FROM Rooms WHERE DoctorID = ? AND Status = 'Available'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -107,11 +117,12 @@ public class AppointmentDAO {
     // Lấy danh sách dịch vụ theo DoctorID
     public List<String> getServicesByDoctorId(int doctorId) throws SQLException {
         List<String> services = new ArrayList<>();
-        String sql = "SELECT DISTINCT s.ServiceName FROM Services s "
-                + "JOIN RoomServices rs ON s.ServiceID = rs.ServiceID "
-                + "JOIN Rooms r ON rs.RoomID = r.RoomID "
-                + "WHERE r.DoctorID = ? AND s.Status = 'Active'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT DISTINCT s.ServiceName FROM Services s " +
+                     "JOIN RoomServices rs ON s.ServiceID = rs.ServiceID " +
+                     "JOIN Rooms r ON rs.RoomID = r.RoomID " +
+                     "WHERE r.DoctorID = ? AND s.Status = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -122,17 +133,20 @@ public class AppointmentDAO {
         return services.isEmpty() ? List.of("N/A") : services;
     }
 
-    // Lấy danh sách lịch trình theo DoctorID
+    // Lấy danh sách lịch trình theo DoctorID (đã sửa sang dùng ScheduleEmployee)
     public List<String> getSchedulesByDoctorId(int doctorId) throws SQLException {
         List<String> schedules = new ArrayList<>();
-        String sql = "SELECT StartTime, EndTime, ShiftStartTime, ShiftEndTime, DayOfWeek FROM Schedules WHERE EmployeeID = ? AND Role = 'Doctor'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT SlotDate, StartTime, EndTime, Status FROM ScheduleEmployee " +
+                    "WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Available'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    String schedule = rs.getDate("StartTime") + " to " + rs.getDate("EndTime")
-                            + " (" + rs.getTime("ShiftStartTime") + " - " + rs.getTime("ShiftEndTime")
-                            + ", " + rs.getString("DayOfWeek") + ")";
+                    String schedule = rs.getDate("SlotDate").toLocalDate() + " (" +
+                                     rs.getTime("StartTime").toLocalTime() + " - " +
+                                     rs.getTime("EndTime").toLocalTime() + ", Status: " +
+                                     rs.getString("Status") + ")";
                     schedules.add(schedule);
                 }
             }
@@ -146,7 +160,8 @@ public class AppointmentDAO {
     // Lấy thông tin chi tiết phòng theo RoomID
     public Rooms getRoomByID(int roomID) throws SQLException {
         String sql = "SELECT * FROM Rooms WHERE RoomID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, roomID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -173,10 +188,11 @@ public class AppointmentDAO {
     // Lấy danh sách dịch vụ theo RoomID
     public List<Services> getServicesByRoom(int roomId) throws SQLException {
         List<Services> services = new ArrayList<>();
-        String sql = "SELECT s.* FROM RoomServices rs "
-                + "JOIN Services s ON rs.ServiceID = s.ServiceID "
-                + "WHERE rs.RoomID = ? AND s.Status = 'Active'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT s.* FROM RoomServices rs " +
+                     "JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                     "WHERE rs.RoomID = ? AND s.Status = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, roomId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -202,11 +218,10 @@ public class AppointmentDAO {
     // Lấy danh sách bệnh nhân theo RoomID
     public List<String> getPatientsByRoomId(int roomId) throws SQLException {
         List<String> patients = new ArrayList<>();
-        String sql = "SELECT DISTINCT u.FullName "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.PatientID = u.UserID "
-                + "WHERE a.RoomID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT DISTINCT u.FullName FROM Appointments a " +
+                     "JOIN Users u ON a.PatientID = u.UserID WHERE a.RoomID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, roomId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -220,79 +235,40 @@ public class AppointmentDAO {
         return patients.isEmpty() ? List.of("Không có bệnh nhân") : patients;
     }
 
-    // Lấy lịch trình theo Role và UserID
+    // Lấy lịch trình theo Role và UserID (sửa để dùng ScheduleEmployee)
     public List<ScheduleEmployee> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
-//        List<Schedules> schedules = new ArrayList<>();
-//        String sql = "SELECT ScheduleID, EmployeeID, Role, StartTime, EndTime, DayOfWeek, RoomID, ShiftStartTime,"
-//                + " ShiftEndTime, [Status], CreatedBy, CreatedAt, UpdatedAt FROM Schedules";
-//        if (!"admin".equalsIgnoreCase(role)) {
-//            sql += " WHERE Role = ? AND EmployeeID = ?";
-//        }
-//
-//        try (Connection conn = dbContext.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(sql)) {
-//            if (!"admin".equalsIgnoreCase(role)) {
-//                stmt.setString(1, role);
-//                stmt.setInt(2, userId);
-//            }
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                while (rs.next()) {
-//                    Schedules schedule = new Schedules();
-//                    schedule.setScheduleID(rs.getInt("ScheduleID"));
-//                    schedule.setEmployeeID(rs.getInt("EmployeeID"));
-//                    schedule.setRole(rs.getString("Role"));
-//                    schedule.setStartTime(rs.getDate("StartTime"));
-//                    schedule.setEndTime(rs.getDate("EndTime"));
-//                    schedule.setDayOfWeek(rs.getString("DayOfWeek"));
-//                    schedule.setRoomID(rs.getInt("RoomID"));
-//                    schedule.setShiftStart(rs.getTime("ShiftStartTime"));
-//                    schedule.setShiftEnd(rs.getTime("ShiftEndTime"));
-//                    schedule.setStatus(rs.getString("Status"));
-//                    schedule.setCreatedBy(rs.getInt("CreatedBy"));
-//                    schedule.setCreatedAt(rs.getDate("CreatedAt"));
-//                    schedule.setUpdatedAt(rs.getDate("UpdatedAt"));
-//                    schedules.add(schedule);
-//                }
-//            }
-//        } catch (SQLException e) {
-//            System.err.println("SQLException in getSchedulesByRoleAndUserId: " + e.getMessage());
-//            throw e;
-//        }
-//        return schedules;
         List<ScheduleEmployee> schedules = new ArrayList<>();
-        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy,"
-                + " CreatedAt, UpdatedAt FROM ScheduleEmployee";
+        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt " +
+                    "FROM ScheduleEmployee";
         if (!"admin".equalsIgnoreCase(role)) {
-            sql += " WHERE Role = ? AND UserID = ?";
+            sql += " WHERE Role = ? AND UserID = ? AND Status = 'Available'";
         }
-        
-        try  {
-            Connection conn = dbContext.getConnection(); 
-            PreparedStatement stmt = conn.prepareStatement(sql); 
-            
-             if (!"admin".equalsIgnoreCase(role)) {
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (!"admin".equalsIgnoreCase(role)) {
                 stmt.setString(1, role);
                 stmt.setInt(2, userId);
             }
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                ScheduleEmployee schedule = new ScheduleEmployee();
-                schedule.setSlotId(rs.getInt("SlotID"));
-                schedule.setUserId(rs.getInt("UserID"));
-                schedule.setRole(rs.getString("Role"));
-                Object roomIdObj = rs.getObject("RoomID");
-                schedule.setRoomId(roomIdObj != null ? (Integer) roomIdObj : null);
-                schedule.setSlotDate(rs.getDate("SlotDate").toLocalDate());
-                schedule.setStartTime(rs.getTime("StartTime").toLocalTime());
-                schedule.setEndTime(rs.getTime("EndTime").toLocalTime());
-                schedule.setStatus(rs.getString("Status"));
-                schedule.setCreatedBy(rs.getInt("CreatedBy"));
-                schedule.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
-                schedule.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
-                schedules.add(schedule);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ScheduleEmployee schedule = new ScheduleEmployee();
+                    schedule.setSlotId(rs.getInt("SlotID"));
+                    schedule.setUserId(rs.getInt("UserID"));
+                    schedule.setRole(rs.getString("Role"));
+                    schedule.setRoomId(rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null);
+                    schedule.setSlotDate(rs.getDate("SlotDate").toLocalDate());
+                    schedule.setStartTime(rs.getTime("StartTime").toLocalTime());
+                    schedule.setEndTime(rs.getTime("EndTime").toLocalTime());
+                    schedule.setStatus(rs.getString("Status"));
+                    schedule.setCreatedBy(rs.getInt("CreatedBy"));
+                    schedule.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+                    schedule.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
+                    schedules.add(schedule);
+                }
             }
         } catch (SQLException e) {
-            System.err.println("SQLException in getAllSchedules: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getSchedulesByRoleAndUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
         return schedules;
@@ -301,7 +277,8 @@ public class AppointmentDAO {
     // Lấy tên người dùng theo UserID
     public String getUserFullNameById(int userId) throws SQLException {
         String sql = "SELECT FullName FROM Users WHERE UserID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -315,13 +292,14 @@ public class AppointmentDAO {
         return null;
     }
 
-    // Hàm viewDetailBook hiển thị lịch trình, phòng, tên bác sĩ, và dịch vụ
+    // Hiển thị chi tiết lịch hẹn (sửa để dùng ScheduleEmployee)
     public Map<String, Object> viewDetailBook(int doctorId) throws SQLException {
         Map<String, Object> details = new HashMap<>();
 
         // Lấy thông tin bác sĩ
         String doctorSql = "SELECT FullName, Specialization FROM Users WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Active'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -338,7 +316,8 @@ public class AppointmentDAO {
         String roomSql = "SELECT RoomID, RoomName FROM Rooms WHERE DoctorID = ? AND Status = 'Available'";
         int roomId = -1;
         String roomName = "N/A";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(roomSql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(roomSql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -369,11 +348,9 @@ public class AppointmentDAO {
         for (ScheduleEmployee schedule : getSchedulesByRoleAndUserId("Doctor", doctorId)) {
             Map<String, Object> scheduleMap = new HashMap<>();
             scheduleMap.put("scheduleID", schedule.getSlotId());
+            scheduleMap.put("slotDate", schedule.getSlotDate());
             scheduleMap.put("startTime", schedule.getStartTime());
             scheduleMap.put("endTime", schedule.getEndTime());
-            scheduleMap.put("shiftStart", schedule.getStartTime());
-            scheduleMap.put("shiftEnd", schedule.getEndTime());
-//            scheduleMap.put("dayOfWeek", schedule.get()); //da ko con thuoc tinh nay
             scheduleMap.put("status", schedule.getStatus());
             schedules.add(scheduleMap);
         }
@@ -382,11 +359,26 @@ public class AppointmentDAO {
         return details;
     }
 
-    // Tạo mới một lịch hẹn
+    // Tạo mới một lịch hẹn (thêm kiểm tra slot hợp lệ)
     public boolean createAppointment(int patientId, int doctorId, int serviceId, int scheduleId, int roomId, Timestamp appointmentTime) throws SQLException {
-        String sql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, ScheduleID, RoomID, AppointmentTime, Status, CreatedAt, UpdatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?)";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        // Kiểm tra xem slot có trạng thái Available không
+        String checkSlotSql = "SELECT Status FROM ScheduleEmployee WHERE SlotID = ? AND UserID = ? AND Status = 'Available'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkSlotSql)) {
+            checkStmt.setInt(1, scheduleId);
+            checkStmt.setInt(2, doctorId);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (!rs.next()) {
+                    System.err.println("Invalid or unavailable schedule slot for scheduleId: " + scheduleId + " at " + LocalDateTime.now() + " +07");
+                    return false;
+                }
+            }
+        }
+
+        String sql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, ScheduleID, RoomID, AppointmentTime, Status, CreatedAt, UpdatedAt) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?)";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, patientId);
             pstmt.setInt(2, doctorId);
             pstmt.setInt(3, serviceId);
@@ -408,7 +400,8 @@ public class AppointmentDAO {
     // Kiểm tra xem lịch hẹn có tồn tại không
     public boolean appointmentExists(int appointmentId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Appointments WHERE AppointmentID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, appointmentId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -424,18 +417,19 @@ public class AppointmentDAO {
 
     // Lấy thông tin chi tiết lịch hẹn theo ID
     public Map<String, Object> getAppointmentById(int appointmentId) throws SQLException {
-        String sql = "SELECT a.AppointmentID, a.PatientID, a.DoctorID, a.ServiceID, a.ScheduleID, a.RoomID, "
-                + "a.AppointmentTime, a.Status, a.CreatedAt, a.UpdatedAt, "
-                + "u1.FullName as PatientName, u2.FullName as DoctorName, "
-                + "s.ServiceName, r.RoomName "
-                + "FROM Appointments a "
-                + "JOIN Users u1 ON a.PatientID = u1.UserID "
-                + "JOIN Users u2 ON a.DoctorID = u2.UserID "
-                + "JOIN Services s ON a.ServiceID = s.ServiceID "
-                + "JOIN Rooms r ON a.RoomID = r.RoomID "
-                + "WHERE a.AppointmentID = ?";
+        String sql = "SELECT a.AppointmentID, a.PatientID, a.DoctorID, a.ServiceID, a.ScheduleID, a.RoomID, " +
+                     "a.AppointmentTime, a.Status, a.CreatedAt, a.UpdatedAt, " +
+                     "u1.FullName as PatientName, u2.FullName as DoctorName, " +
+                     "s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u1 ON a.PatientID = u1.UserID " +
+                     "JOIN Users u2 ON a.DoctorID = u2.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.AppointmentID = ?";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, appointmentId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -446,10 +440,10 @@ public class AppointmentDAO {
                     appointment.put("serviceId", rs.getInt("ServiceID"));
                     appointment.put("scheduleId", rs.getInt("ScheduleID"));
                     appointment.put("roomId", rs.getInt("RoomID"));
-                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
                     appointment.put("status", rs.getString("Status"));
-                    appointment.put("createdAt", rs.getDate("CreatedAt"));
-                    appointment.put("updatedAt", rs.getDate("UpdatedAt"));
+                    appointment.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    appointment.put("updatedAt", rs.getTimestamp("UpdatedAt"));
                     appointment.put("patientName", rs.getString("PatientName"));
                     appointment.put("doctorName", rs.getString("DoctorName"));
                     appointment.put("serviceName", rs.getString("ServiceName"));
@@ -464,11 +458,12 @@ public class AppointmentDAO {
         return null;
     }
 
-    // Xóa lịch hẹn theo ID (soft delete - cập nhật status thành 'Cancelled')
+    // Hủy lịch hẹn (soft delete)
     public boolean cancelAppointment(int appointmentId) throws SQLException {
         String sql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ? AND Status != 'Cancelled'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDate(1, new Date(System.currentTimeMillis()));
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
             pstmt.setInt(2, appointmentId);
 
             int rowsAffected = pstmt.executeUpdate();
@@ -482,7 +477,8 @@ public class AppointmentDAO {
     // Xóa lịch hẹn vĩnh viễn (hard delete)
     public boolean deleteAppointmentPermanently(int appointmentId) throws SQLException {
         String sql = "DELETE FROM Appointments WHERE AppointmentID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, appointmentId);
 
             int rowsAffected = pstmt.executeUpdate();
@@ -493,7 +489,7 @@ public class AppointmentDAO {
         }
     }
 
-    // Xóa nhiều lịch hẹn cùng lúc (soft delete)
+    // Hủy nhiều lịch hẹn cùng lúc (soft delete)
     public int cancelMultipleAppointments(List<Integer> appointmentIds) throws SQLException {
         if (appointmentIds == null || appointmentIds.isEmpty()) {
             return 0;
@@ -502,12 +498,13 @@ public class AppointmentDAO {
         String sql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ? AND Status != 'Cancelled'";
         int totalCancelled = 0;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            Date now = new Date(System.currentTimeMillis());
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
             for (Integer appointmentId : appointmentIds) {
-                pstmt.setDate(1, now);
+                pstmt.setTimestamp(1, now);
                 pstmt.setInt(2, appointmentId);
                 pstmt.addBatch();
             }
@@ -518,33 +515,34 @@ public class AppointmentDAO {
                     totalCancelled++;
                 }
             }
+            conn.commit();
         } catch (SQLException e) {
             System.err.println("SQLException in cancelMultipleAppointments: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
-
         return totalCancelled;
     }
 
     // Lấy danh sách lịch hẹn theo PatientID
     public List<Map<String, Object>> getAppointmentsByPatientId(int patientId) throws SQLException {
         List<Map<String, Object>> appointments = new ArrayList<>();
-        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, "
-                + "u.FullName as DoctorName, s.ServiceName, r.RoomName "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.DoctorID = u.UserID "
-                + "JOIN Services s ON a.ServiceID = s.ServiceID "
-                + "JOIN Rooms r ON a.RoomID = r.RoomID "
-                + "WHERE a.PatientID = ? "
-                + "ORDER BY a.AppointmentTime DESC";
+        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, " +
+                     "u.FullName as DoctorName, s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u ON a.DoctorID = u.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.PatientID = ? " +
+                     "ORDER BY a.AppointmentTime DESC";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, patientId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> appointment = new HashMap<>();
                     appointment.put("appointmentId", rs.getInt("AppointmentID"));
-                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
                     appointment.put("status", rs.getString("Status"));
                     appointment.put("doctorName", rs.getString("DoctorName"));
                     appointment.put("serviceName", rs.getString("ServiceName"));
@@ -562,22 +560,23 @@ public class AppointmentDAO {
     // Lấy danh sách lịch hẹn theo DoctorID
     public List<Map<String, Object>> getAppointmentsByDoctorId(int doctorId) throws SQLException {
         List<Map<String, Object>> appointments = new ArrayList<>();
-        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, "
-                + "u.FullName as PatientName, s.ServiceName, r.RoomName "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.PatientID = u.UserID "
-                + "JOIN Services s ON a.ServiceID = s.ServiceID "
-                + "JOIN Rooms r ON a.RoomID = r.RoomID "
-                + "WHERE a.DoctorID = ? "
-                + "ORDER BY a.AppointmentTime DESC";
+        String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, " +
+                     "u.FullName as PatientName, s.ServiceName, r.RoomName " +
+                     "FROM Appointments a " +
+                     "JOIN Users u ON a.PatientID = u.UserID " +
+                     "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                     "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                     "WHERE a.DoctorID = ? " +
+                     "ORDER BY a.AppointmentTime DESC";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, doctorId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> appointment = new HashMap<>();
                     appointment.put("appointmentId", rs.getInt("AppointmentID"));
-                    appointment.put("appointmentTime", rs.getDate("AppointmentTime"));
+                    appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
                     appointment.put("status", rs.getString("Status"));
                     appointment.put("patientName", rs.getString("PatientName"));
                     appointment.put("serviceName", rs.getString("ServiceName"));
