@@ -590,4 +590,112 @@ public class AppointmentDAO {
         }
         return appointments;
     }
+        // Đặt lịch hẹn với các tham số đơn giản
+    public boolean bookAppointment(int patientId, int doctorId, int scheduleId, String appointmentDateStr, String shiftStart) throws SQLException {
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false); // Start transaction
+
+            // Step 1: Validate schedule slot
+            String checkSlotSql = "SELECT RoomID, Status FROM ScheduleEmployee WHERE SlotID = ? AND UserID = ? AND Status = 'Available'";
+            Integer roomId = null;
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSlotSql)) {
+                checkStmt.setInt(1, scheduleId);
+                checkStmt.setInt(2, doctorId);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (!rs.next()) {
+                        System.err.println("Invalid or unavailable schedule slot for scheduleId: " + scheduleId + " at " + LocalDateTime.now() + " +07");
+                        conn.rollback();
+                        return false;
+                    }
+                    roomId = rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null;
+                }
+            }
+
+            // Step 2: Validate room assignment
+            if (roomId == null) {
+                String roomSql = "SELECT RoomID FROM Rooms WHERE DoctorID = ? AND Status = 'Available'";
+                try (PreparedStatement roomStmt = conn.prepareStatement(roomSql)) {
+                    roomStmt.setInt(1, doctorId);
+                    try (ResultSet rs = roomStmt.executeQuery()) {
+                        if (rs.next()) {
+                            roomId = rs.getInt("RoomID");
+                        } else {
+                            System.err.println("No available room for doctorId: " + doctorId + " at " + LocalDateTime.now() + " +07");
+                            conn.rollback();
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // Step 3: Get first available service for the room
+            String serviceSql = "SELECT s.ServiceID FROM Services s " +
+                              "JOIN RoomServices rs ON s.ServiceID = rs.ServiceID " +
+                              "WHERE rs.RoomID = ? AND s.Status = 'Active'";
+            int serviceId = -1;
+            try (PreparedStatement serviceStmt = conn.prepareStatement(serviceSql)) {
+                serviceStmt.setInt(1, roomId);
+                try (ResultSet rs = serviceStmt.executeQuery()) {
+                    if (rs.next()) {
+                        serviceId = rs.getInt("ServiceID");
+                    } else {
+                        System.err.println("No active services for roomId: " + roomId + " at " + LocalDateTime.now() + " +07");
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            }
+
+            // Step 4: Create appointment time
+            LocalDateTime appointmentDateTime;
+            try {
+                appointmentDateTime = LocalDateTime.parse(appointmentDateStr + "T" + shiftStart);
+            } catch (Exception e) {
+                System.err.println("Invalid date or time format: " + appointmentDateStr + "T" + shiftStart + " at " + LocalDateTime.now() + " +07");
+                conn.rollback();
+                return false;
+            }
+            Timestamp appointmentTime = Timestamp.valueOf(appointmentDateTime);
+
+            // Step 5: Insert appointment
+            String sql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, ScheduleID, RoomID, AppointmentTime, Status, CreatedAt, UpdatedAt) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, patientId);
+                pstmt.setInt(2, doctorId);
+                pstmt.setInt(3, serviceId);
+                pstmt.setInt(4, scheduleId);
+                pstmt.setInt(5, roomId);
+                pstmt.setTimestamp(6, appointmentTime);
+                Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+                pstmt.setTimestamp(7, now);
+                pstmt.setTimestamp(8, now);
+
+                int rowsAffected = pstmt.executeUpdate();
+                if (rowsAffected == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            // Step 6: Update schedule status to 'Booked'
+            String updateSlotSql = "UPDATE ScheduleEmployee SET Status = 'Booked', UpdatedAt = ? WHERE SlotID = ? AND Status = 'Available'";
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSlotSql)) {
+                updateStmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                updateStmt.setInt(2, scheduleId);
+                int rowsUpdated = updateStmt.executeUpdate();
+                if (rowsUpdated == 0) {
+                    System.err.println("Failed to update schedule status for scheduleId: " + scheduleId + " at " + LocalDateTime.now() + " +07");
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("SQLException in bookAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
 }

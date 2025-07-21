@@ -8,6 +8,7 @@ import model.dao.AppointmentDAO;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -315,5 +316,27 @@ public class AppointmentService {
             throw new IllegalArgumentException("Invalid doctor ID: " + doctorId);
         }
         return appointmentDAO.getAppointmentsByDoctorId(doctorId);
+    }
+    public boolean bookAppointment(int patientId, int doctorId, int scheduleId, 
+                                  String appointmentDateStr, String shiftStart, String shiftEnd) throws SQLException {
+        try {
+            // Validate input parameters
+            if (patientId <= 0 || doctorId <= 0 || scheduleId <= 0) {
+                throw new IllegalArgumentException("Invalid patient, doctor, or schedule ID");
+            }
+            if (appointmentDateStr == null || shiftStart == null || shiftEnd == null) {
+                throw new IllegalArgumentException("Missing date or time information");
+            }
+
+            // Call DAO method
+            return appointmentDAO.bookAppointment(patientId, doctorId, scheduleId, appointmentDateStr, shiftStart);
+            
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error in bookAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw new SQLException("Failed to book appointment: " + e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Error in bookAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw new SQLException("Failed to book appointment", e);
+        }
     }
 }

@@ -85,8 +85,8 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
         String doctorIdStr = request.getParameter("doctorId");
         String appointmentDate = request.getParameter("appointmentDate");
         String dayOfWeek = request.getParameter("dayOfWeek");
-        String shiftStart = request.getParameter("shiftStart");
-        String shiftEnd = request.getParameter("shiftEnd");
+        String startTime = request.getParameter("startTime");
+        String endTime = request.getParameter("endTime");
         String nameKeyword = request.getParameter("nameKeyword");
         String specialtyKeyword = request.getParameter("specialtyKeyword");
         int page = parseIntOrDefault(request.getParameter("page"), 1);
@@ -97,7 +97,7 @@ public class BookMedicalAppointmentServlet extends HttpServlet {
                 Users currentUser = (Users) session.getAttribute("user");
 
                 // Thực hiện đặt lịch (cần triển khai logic thực tế trong service)
-                // appointmentService.bookAppointment(currentUser.getUserID(), doctorId, appointmentDate, dayOfWeek, shiftStart, shiftEnd);
+                 appointmentService.bookAppointment(page, doctorId, doctorId, appointmentDate, startTime, endTime);
 
                 // Đặt thông báo thành công
                 session.setAttribute("statusMessage", "Đặt lịch hẹn thành công");
