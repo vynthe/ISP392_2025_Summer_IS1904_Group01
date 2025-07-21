@@ -222,12 +222,16 @@
             border-color: #d1d5db;
         }
 
-        .service-item::before {
-            content: "\f0ad";
+        .list-item::before {
+            content: "\f007";
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
             color: #667eea;
             font-size: 14px;
+        }
+
+        .service-item::before {
+            content: "\f0ad";
         }
 
         .empty-state {
@@ -237,18 +241,11 @@
             padding: 20px;
         }
 
-        .service-buttons {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
-
         .btn {
-            padding: 12px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
@@ -259,6 +256,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .btn::before {
@@ -268,23 +266,51 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
         }
 
         .btn:hover::before {
             left: 100%;
         }
 
-        .service-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-room-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: #fff;
-            border: 2px solid transparent;
+        }
+
+        .edit-room-btn:hover {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .delete-room-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+
+        .delete-room-btn:hover {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+
+        .service-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            margin-top: 20px;
+            width: fit-content;
         }
 
         .service-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #34d399, #10b981);
         }
 
         .back-btn {
@@ -298,8 +324,16 @@
         }
 
         .back-btn:hover {
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
+            transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+        }
+
+        .room-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 30px;
         }
 
         .loading {
@@ -347,14 +381,9 @@
                 gap: 20px;
             }
 
-            .service-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .card-header {
+            .room-actions {
                 flex-direction: column;
-                text-align: center;
-                gap: 8px;
+                gap: 12px;
             }
         }
 
@@ -374,65 +403,14 @@
             .info-card {
                 padding: 20px;
             }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
         }
     </style>
     <script>
-        function addService(serviceName) {
-            const roomID = document.querySelector('input[name="roomID"]').value;
-            const button = event.target;
-            const originalText = button.innerHTML;
-            
-            // Show loading state
-            button.innerHTML = '<span class="loading"></span> Đang thêm...';
-            button.disabled = true;
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "${pageContext.request.contextPath}/AddServiceServlet", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            const serviceList = document.getElementById("service-list");
-                            const emptyState = serviceList.querySelector('.empty-state');
-                            
-                            if (emptyState) {
-                                emptyState.remove();
-                            }
-                            
-                            const newService = document.createElement("li");
-                            newService.className = "list-item service-item fade-in";
-                            newService.textContent = serviceName;
-                            serviceList.appendChild(newService);
-                            
-                            // Success feedback
-                            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                            button.innerHTML = '<i class="fas fa-check"></i> Đã thêm';
-                            
-                            setTimeout(() => {
-                                button.innerHTML = originalText;
-                                button.style.background = '';
-                                button.disabled = false;
-                            }, 2000);
-                        } else {
-                            alert("Lỗi khi thêm dịch vụ: " + response.error);
-                            button.innerHTML = originalText;
-                            button.disabled = false;
-                        }
-                    } else {
-                        alert("Có lỗi xảy ra khi kết nối với server");
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
-                }
-            };
-
-            const data = "roomID=" + encodeURIComponent(roomID) + "&service=" + encodeURIComponent(serviceName);
-            xhr.send(data);
-        }
-
         // Add fade-in animation to elements on page load
         document.addEventListener('DOMContentLoaded', function() {
             const elements = document.querySelectorAll('.info-card');
@@ -450,11 +428,26 @@
         <p class="subtitle">Thông tin chi tiết và quản lý phòng khám</p>
     </div>
 
+    <div class="room-actions">
+        <a href="${pageContext.request.contextPath}/UpdateRoomServlet?id=${room.roomID}" 
+           class="btn edit-room-btn" 
+           title="Chỉnh sửa thông tin phòng">
+            <i class="fas fa-edit"></i> Sửa phòng
+        </a>
+        <a href="${pageContext.request.contextPath}/DeleteRoomServlet?id=${room.roomID}" 
+           class="btn delete-room-btn" 
+           title="Xóa phòng" 
+           onclick="return confirm('Bạn có chắc muốn xóa phòng ${room.roomName}?')">
+            <i class="fas fa-trash"></i> Xóa phòng
+        </a>
+    </div>
+
     <c:if test="${not empty error}">
         <div class="error">${error}</div>
     </c:if>
 
     <c:if test="${not empty room}">
+        <input type="hidden" name="roomID" value="${room.roomID}">
         <div class="info-grid">
             <div class="info-card">
                 <div class="card-header">
@@ -506,6 +499,52 @@
             <div class="info-card">
                 <div class="card-header">
                     <div class="card-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="card-title">Nhân sự</h3>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Bác sĩ:</span>
+                    <span class="info-value">${empty doctorName ? 'Chưa phân công' : doctorName}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Y tá:</span>
+                    <span class="info-value">${empty nurseName ? 'Chưa phân công' : nurseName}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="card-title">Bệnh nhân</h3>
+                </div>
+                
+                <ul class="list" id="patient-list">
+                    <c:choose>
+                        <c:when test="${not empty patients}">
+                            <c:forEach var="patient" items="${patients}">
+                                <li class="list-item">${patient}</li>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <li class="empty-state">
+                                <i class="fas fa-user-slash" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                                Không có bệnh nhân
+                            </li>
+                        </c:otherwise>
+                    </c:choose>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-header">
+                    <div class="card-icon">
                         <i class="fas fa-cogs"></i>
                     </div>
                     <h3 class="card-title">Dịch vụ</h3>
@@ -526,6 +565,12 @@
                         </c:otherwise>
                     </c:choose>
                 </ul>
+                
+                <a href="${pageContext.request.contextPath}/AssignServiceToRoomServlet?roomId=${room.roomID}" 
+                   class="btn service-btn" 
+                   title="Quản lý dịch vụ phòng">
+                    <i class="fas fa-plus-circle"></i> Thêm dịch vụ
+                </a>
             </div>
         </div>
     </c:if>
