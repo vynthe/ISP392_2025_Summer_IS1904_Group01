@@ -10,7 +10,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import model.entity.ScheduleEmployee;
 import model.entity.AppointmentQueue;
@@ -28,138 +31,128 @@ public class ScheduleDAO {
     }
 
     // Tạo lịch tự động
-    public void addSchedule(List<Integer> userIds, List<String> roles, int defaultRoomId, int createdBy, LocalDate startDate, boolean isYearly)
-            throws SQLException, ClassNotFoundException {
-        if (userIds.size() != roles.size()) {
-            throw new IllegalArgumentException("The number of userIds must match the number of roles.");
-        }
+   public void addSchedule(List<Integer> userIds, List<String> roles, int defaultRoomId, int createdBy, LocalDate startDate, int weeks)
+        throws SQLException, ClassNotFoundException {
+    if (userIds.size() != roles.size()) {
+        throw new IllegalArgumentException("The number of userIds must match the number of roles.");
+    }
 
-        LocalDate endDate = isYearly ? startDate.plusYears(1) : startDate.plusWeeks(1);
-        LocalTime morningStart = LocalTime.of(7, 30);
-        LocalTime morningEnd = LocalTime.of(12, 30);
-        LocalTime afternoonStart = LocalTime.of(13, 30);
-        LocalTime afternoonEnd = LocalTime.of(17, 30);
+    LocalDate endDate = startDate.plusWeeks(weeks); // Use the weeks parameter
+    LocalTime morningStart = LocalTime.of(7, 30);
+    LocalTime morningEnd = LocalTime.of(12, 30);
+    LocalTime afternoonStart = LocalTime.of(13, 30);
+    LocalTime afternoonEnd = LocalTime.of(17, 30);
 
-        String insertScheduleSql = "INSERT INTO ScheduleEmployee (UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-        String checkConflictSql = "SELECT COUNT(*) FROM ScheduleEmployee WHERE UserID = ? AND SlotDate = ? AND "
-                + "((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?)) AND Status != 'Cancelled'";
-        // DoctorAbsences table and IsAbsent column are not in schema, so related checks are removed.
-        String insertNotificationSql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+    String insertScheduleSql = "INSERT INTO ScheduleEmployee (UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+    String checkConflictSql = "SELECT COUNT(*) FROM ScheduleEmployee WHERE UserID = ? AND SlotDate = ? AND "
+            + "((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?)) AND Status != 'Cancelled'";
+    String insertNotificationSql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement insertStmt = conn.prepareStatement(insertScheduleSql);
-             PreparedStatement conflictStmt = conn.prepareStatement(checkConflictSql);
-             PreparedStatement notifyStmt = conn.prepareStatement(insertNotificationSql)) {
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement insertStmt = conn.prepareStatement(insertScheduleSql);
+         PreparedStatement conflictStmt = conn.prepareStatement(checkConflictSql);
+         PreparedStatement notifyStmt = conn.prepareStatement(insertNotificationSql)) {
 
-            conn.setAutoCommit(false);
+        conn.setAutoCommit(false);
 
-            for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-                if (date.getDayOfWeek().getValue() <= 6) { // Không tạo lịch cho Chủ Nhật
-                    for (int i = 0; i < userIds.size(); i++) {
-                        int userId = userIds.get(i);
-                        String role = roles.get(i);
-                        // RoomID can be NULL. For Receptionist, it can be defaultRoomId if > 0, otherwise NULL.
-                        // For others, it should be NULL in DB if not explicitly assigned.
-                        // int roomIdToUse = ("Receptionist".equalsIgnoreCase(role) && defaultRoomId > 0) ? defaultRoomId : 0;
-                        // Use Integer for RoomID if it can be null in the DB, and set it to null if 0 or not applicable.
-                        Integer roomIdToUse = null;
-                        if ("Receptionist".equalsIgnoreCase(role) && defaultRoomId > 0) {
-                            roomIdToUse = defaultRoomId;
-                        }
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            if (date.getDayOfWeek().getValue() <= 6) { // Không tạo lịch cho Chủ Nhật
+                for (int i = 0; i < userIds.size(); i++) {
+                    int userId = userIds.get(i);
+                    String role = roles.get(i);
+                    Integer roomIdToUse = null;
+                    if ("Receptionist".equalsIgnoreCase(role) && defaultRoomId > 0) {
+                        roomIdToUse = defaultRoomId;
+                    }
 
-                        // Không kiểm tra ngày nghỉ vì IsAbsent và DoctorAbsences không có trong schema
-                        // if (!isAbsent) {
-
-                        // Kiểm tra xung đột slot buổi sáng
-                        conflictStmt.setInt(1, userId);
-                        conflictStmt.setDate(2, Date.valueOf(date));
-                        conflictStmt.setTime(3, Time.valueOf(morningStart));
-                        conflictStmt.setTime(4, Time.valueOf(morningStart));
-                        conflictStmt.setTime(5, Time.valueOf(morningEnd));
-                        conflictStmt.setTime(6, Time.valueOf(morningEnd));
-                        try (ResultSet rs = conflictStmt.executeQuery()) {
-                            if (rs.next() && rs.getInt(1) == 0) {
-                                insertStmt.setInt(1, userId);
-                                insertStmt.setString(2, role);
-                                if (roomIdToUse != null) {
-                                    insertStmt.setInt(3, roomIdToUse);
-                                } else {
-                                    insertStmt.setNull(3, java.sql.Types.INTEGER); // Set as NULL if not assigned
-                                }
-                                insertStmt.setDate(4, Date.valueOf(date));
-                                insertStmt.setTime(5, Time.valueOf(morningStart));
-                                insertStmt.setTime(6, Time.valueOf(morningEnd));
-                                insertStmt.setString(7, "Available");
-                                insertStmt.setInt(8, createdBy);
-                                insertStmt.addBatch();
-
-                                notifyStmt.setInt(1, createdBy);
-                                notifyStmt.setString(2, "Admin");
-                                notifyStmt.setInt(3, userId);
-                                notifyStmt.setString(4, role);
-                                notifyStmt.setString(5, "Lịch làm việc mới");
-                                notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + morningStart + " đến " + morningEnd);
-                                notifyStmt.setBoolean(7, false);
-                                notifyStmt.addBatch();
+                    // Morning slot conflict check
+                    conflictStmt.setInt(1, userId);
+                    conflictStmt.setDate(2, Date.valueOf(date));
+                    conflictStmt.setTime(3, Time.valueOf(morningStart));
+                    conflictStmt.setTime(4, Time.valueOf(morningStart));
+                    conflictStmt.setTime(5, Time.valueOf(morningEnd));
+                    conflictStmt.setTime(6, Time.valueOf(morningEnd));
+                    try (ResultSet rs = conflictStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            insertStmt.setInt(1, userId);
+                            insertStmt.setString(2, role);
+                            if (roomIdToUse != null) {
+                                insertStmt.setInt(3, roomIdToUse);
+                            } else {
+                                insertStmt.setNull(3, java.sql.Types.INTEGER);
                             }
+                            insertStmt.setDate(4, Date.valueOf(date));
+                            insertStmt.setTime(5, Time.valueOf(morningStart));
+                            insertStmt.setTime(6, Time.valueOf(morningEnd));
+                            insertStmt.setString(7, "Available");
+                            insertStmt.setInt(8, createdBy);
+                            insertStmt.addBatch();
+
+                            notifyStmt.setInt(1, createdBy);
+                            notifyStmt.setString(2, "Admin");
+                            notifyStmt.setInt(3, userId);
+                            notifyStmt.setString(4, role);
+                            notifyStmt.setString(5, "Lịch làm việc mới");
+                            notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + morningStart + " đến " + morningEnd);
+                            notifyStmt.setBoolean(7, false);
+                            notifyStmt.addBatch();
                         }
+                    }
 
-                        // Kiểm tra xung đột slot buổi chiều
-                        conflictStmt.setInt(1, userId);
-                        conflictStmt.setDate(2, Date.valueOf(date));
-                        conflictStmt.setTime(3, Time.valueOf(afternoonStart));
-                        conflictStmt.setTime(4, Time.valueOf(afternoonStart));
-                        conflictStmt.setTime(5, Time.valueOf(afternoonEnd));
-                        conflictStmt.setTime(6, Time.valueOf(afternoonEnd));
-                        try (ResultSet rs = conflictStmt.executeQuery()) {
-                            if (rs.next() && rs.getInt(1) == 0) {
-                                insertStmt.setInt(1, userId);
-                                insertStmt.setString(2, role);
-                                if (roomIdToUse != null) {
-                                    insertStmt.setInt(3, roomIdToUse);
-                                } else {
-                                    insertStmt.setNull(3, java.sql.Types.INTEGER); // Set as NULL if not assigned
-                                }
-                                insertStmt.setDate(4, Date.valueOf(date));
-                                insertStmt.setTime(5, Time.valueOf(afternoonStart));
-                                insertStmt.setTime(6, Time.valueOf(afternoonEnd));
-                                insertStmt.setString(7, "Available");
-                                insertStmt.setInt(8, createdBy);
-                                insertStmt.addBatch();
-
-                                notifyStmt.setInt(1, createdBy);
-                                notifyStmt.setString(2, "Admin");
-                                notifyStmt.setInt(3, userId);
-                                notifyStmt.setString(4, role);
-                                notifyStmt.setString(5, "Lịch làm việc mới");
-                                notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + afternoonStart + " đến " + afternoonEnd);
-                                notifyStmt.setBoolean(7, false);
-                                notifyStmt.addBatch();
+                    // Afternoon slot conflict check
+                    conflictStmt.setInt(1, userId);
+                    conflictStmt.setDate(2, Date.valueOf(date));
+                    conflictStmt.setTime(3, Time.valueOf(afternoonStart));
+                    conflictStmt.setTime(4, Time.valueOf(afternoonStart));
+                    conflictStmt.setTime(5, Time.valueOf(afternoonEnd));
+                    conflictStmt.setTime(6, Time.valueOf(afternoonEnd));
+                    try (ResultSet rs = conflictStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            insertStmt.setInt(1, userId);
+                            insertStmt.setString(2, role);
+                            if (roomIdToUse != null) {
+                                insertStmt.setInt(3, roomIdToUse);
+                            } else {
+                                insertStmt.setNull(3, java.sql.Types.INTEGER);
                             }
+                            insertStmt.setDate(4, Date.valueOf(date));
+                            insertStmt.setTime(5, Time.valueOf(afternoonStart));
+                            insertStmt.setTime(6, Time.valueOf(afternoonEnd));
+                            insertStmt.setString(7, "Available");
+                            insertStmt.setInt(8, createdBy);
+                            insertStmt.addBatch();
+
+                            notifyStmt.setInt(1, createdBy);
+                            notifyStmt.setString(2, "Admin");
+                            notifyStmt.setInt(3, userId);
+                            notifyStmt.setString(4, role);
+                            notifyStmt.setString(5, "Lịch làm việc mới");
+                            notifyStmt.setString(6, "Bạn được phân lịch ngày " + date + " từ " + afternoonStart + " đến " + afternoonEnd);
+                            notifyStmt.setBoolean(7, false);
+                            notifyStmt.addBatch();
                         }
-                        // } // End of !isAbsent block, now removed
                     }
                 }
             }
-
-            // Thực thi batch
-            insertStmt.executeBatch();
-            notifyStmt.executeBatch();
-            conn.commit();
-        } catch (SQLException e) {
-            System.err.println("Lỗi khi tạo lịch làm việc: " + e.getMessage());
-            if (dbContext.getConnection() != null) {
-                try {
-                    dbContext.getConnection().rollback();
-                } catch (SQLException ex) {
-                    System.err.println("Error rolling back transaction: " + ex.getMessage());
-                }
-            }
-            throw e;
         }
+
+        insertStmt.executeBatch();
+        notifyStmt.executeBatch();
+        conn.commit();
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi tạo lịch làm việc: " + e.getMessage());
+        if (dbContext.getConnection() != null) {
+            try {
+                dbContext.getConnection().rollback();
+            } catch (SQLException ex) {
+                System.err.println("Error rolling back transaction: " + ex.getMessage());
+            }
+        }
+        throw e;
     }
+}
 
     // Thêm slot
     public boolean addScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
@@ -717,46 +710,141 @@ public class ScheduleDAO {
     }
    
   public List<ScheduleEmployee> getScheduleByDate(int userId, LocalDate date) throws SQLException {
-        List<ScheduleEmployee> schedules = new ArrayList<>();
-        String sql = "SELECT se.slotId, se.userId, se.role, se.roomId, se.slotDate, se.startTime, se.endTime, se.status, " +
-                     "se.createdBy, se.createdAt, se.updatedAt, " +
-                     "r.roomID AS room_roomID, r.roomName, r.status AS roomStatus, " +
-                     "s.serviceID AS service_serviceID, s.serviceName " +
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.slotId, se.userId, se.role, se.roomId, se.slotDate, se.startTime, se.endTime, se.status, " +
+                "se.createdBy, se.createdAt, se.updatedAt, " +
+                "r.roomID AS room_roomID, r.roomName, r.status AS roomStatus, " +
+                "s.serviceID AS service_serviceID, s.serviceName " +
+                "FROM ScheduleEmployee se " +
+                "LEFT JOIN Rooms r ON se.roomId = r.roomID " +
+                "LEFT JOIN RoomServices rs ON r.roomID = rs.roomID " +
+                "LEFT JOIN Services s ON rs.serviceID = s.serviceID " +
+                "WHERE se.userId = ? AND se.slotDate = ?"; // Removed DATE function
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, userId);
+        pstmt.setDate(2, java.sql.Date.valueOf(date));
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                ScheduleEmployee schedule = new ScheduleEmployee();
+                schedule.setSlotId(rs.getInt("slotId"));
+                schedule.setUserId(rs.getInt("userId"));
+                schedule.setRole(rs.getString("role"));
+                schedule.setRoomId(rs.getObject("roomId") != null ? rs.getInt("roomId") : null);
+                schedule.setSlotDate(rs.getDate("slotDate").toLocalDate());
+                schedule.setStartTime(rs.getTime("startTime") != null ? rs.getTime("startTime").toLocalTime() : null);
+                schedule.setEndTime(rs.getTime("endTime") != null ? rs.getTime("endTime").toLocalTime() : null);
+                schedule.setStatus(rs.getString("status"));
+                schedule.setCreatedBy(rs.getInt("createdBy"));
+                schedule.setCreatedAt(rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt").toLocalDateTime() : null);
+                schedule.setUpdatedAt(rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
+
+                schedules.add(schedule);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in getScheduleByDate: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+        throw e;
+    }
+    return schedules;
+}
+ public ScheduleEmployee getScheduleDetailsBySlotId(int slotId) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "u.FullName, r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
                      "FROM ScheduleEmployee se " +
-                     "LEFT JOIN Rooms r ON se.roomId = r.roomID " +
-                     "LEFT JOIN RoomServices rs ON r.roomID = rs.roomID " +
-                     "LEFT JOIN Services s ON rs.serviceID = s.serviceID " +
-                     "WHERE se.userId = ? AND DATE(se.slotDate) = ?";
+                     "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                     "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                     "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                     "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                     "WHERE se.SlotID = ? " +
+                     "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "u.FullName, r.RoomName";
 
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, userId);
-            pstmt.setDate(2, java.sql.Date.valueOf(date));
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    ScheduleEmployee schedule = new ScheduleEmployee();
-                    schedule.setSlotId(rs.getInt("slotId"));
-                    schedule.setUserId(rs.getInt("userId"));
-                    schedule.setRole(rs.getString("role"));
-                    schedule.setRoomId(rs.getObject("roomId") != null ? rs.getInt("roomId") : null);
-                    schedule.setSlotDate(rs.getDate("slotDate").toLocalDate());
-                    schedule.setStartTime(rs.getTime("startTime") != null ? rs.getTime("startTime").toLocalTime() : null);
-                    schedule.setEndTime(rs.getTime("endTime") != null ? rs.getTime("endTime").toLocalTime() : null);
-                    schedule.setStatus(rs.getString("status"));
-                    schedule.setCreatedBy(rs.getInt("createdBy"));
-                    schedule.setCreatedAt(rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt").toLocalDateTime() : null);
-                    schedule.setUpdatedAt(rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, slotId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    List<String> serviceNames = new ArrayList<>();
+                    String serviceNamesStr = rs.getString("ServiceNames");
+                    if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
+                        serviceNames.addAll(Arrays.asList(serviceNamesStr.split(",")));
+                    }
 
-                    schedules.add(schedule);
+                    ScheduleEmployee schedule = new ScheduleEmployee(
+                        rs.getInt("SlotID"),
+                        rs.getInt("UserID"),
+                        rs.getString("Role"),
+                        rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
+                        rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
+                        rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
+                        rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
+                        rs.getString("Status"),
+                        rs.getInt("CreatedBy"),
+                        rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
+                        rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
+                        rs.getString("FullName"),
+                        rs.getString("RoomName"),
+                        serviceNames
+                    );
+                    return schedule;
                 }
             }
         } catch (SQLException e) {
-            System.err.println("SQLException in getScheduleByDate: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+            System.err.println("SQLException in getScheduleDetailsBySlotId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             throw e;
         }
-        return schedules;
+        return null;
     }
+ public List<ScheduleEmployee> getAllSchedulesByUserId(int userId) throws SQLException {
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, " +
+                 "u.FullName, r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
+                 "FROM ScheduleEmployee se " +
+                 "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                 "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                 "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                 "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                 "WHERE se.UserID = ? " +
+                 "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, u.FullName, r.RoomName";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, userId);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                List<String> serviceNames = new ArrayList<>();
+                String serviceNamesStr = rs.getString("ServiceNames");
+                if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
+                    serviceNames.addAll(Arrays.asList(serviceNamesStr.split(",")));
+                }
+
+                ScheduleEmployee schedule = new ScheduleEmployee(
+                    rs.getInt("SlotID"),
+                    rs.getInt("UserID"),
+                    rs.getString("Role"),
+                    rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
+                    rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
+                    rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
+                    rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
+                    rs.getString("Status"),
+                    rs.getInt("CreatedBy"),
+                    rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
+                    rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
+                    rs.getString("FullName"),
+                    rs.getString("RoomName"),
+                    serviceNames
+                );
+                schedules.add(schedule);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in getAllSchedulesByUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+    return schedules;
 }
-
-
-
+}

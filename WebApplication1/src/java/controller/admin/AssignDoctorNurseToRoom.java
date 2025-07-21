@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -44,6 +45,10 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
+        // Xóa message và error cũ khi load trang mới
+        session.removeAttribute("message");
+        session.removeAttribute("error");
 
         try {
             String userIDStr = request.getParameter("userID");
@@ -119,11 +124,15 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             return;
         }
 
+        // Xóa message và error cũ trước khi xử lý
+        session.removeAttribute("message");
+        session.removeAttribute("error");
+
         Admins admin = (Admins) session.getAttribute("admin");
         Integer createdBy = admin != null ? admin.getAdminID() : null;
 
         if (createdBy == null) {
-            request.getSession().setAttribute("error", "Lỗi: Không tìm thấy ID admin. Vui lòng đăng nhập lại.");
+            session.setAttribute("error", "Lỗi: Không tìm thấy ID admin. Vui lòng đăng nhập lại.");
             response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom");
             return;
         }
@@ -137,7 +146,7 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
         if (userIDStr == null || userIDStr.trim().isEmpty() ||
             startDateStr == null || startDateStr.trim().isEmpty() ||
             endDateStr == null || endDateStr.trim().isEmpty()) {
-            request.getSession().setAttribute("error", "Vui lòng cung cấp đầy đủ người dùng, ngày bắt đầu và ngày kết thúc.");
+            session.setAttribute("error", "Vui lòng cung cấp đầy đủ người dùng, ngày bắt đầu và ngày kết thúc.");
             response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
             return;
         }
@@ -148,7 +157,7 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             LocalDate endDate = LocalDate.parse(endDateStr);
 
             if (endDate.isBefore(startDate)) {
-                request.getSession().setAttribute("error", "Ngày kết thúc phải sau ngày bắt đầu.");
+                session.setAttribute("error", "Ngày kết thúc phải sau ngày bắt đầu.");
                 response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
                 return;
             }
@@ -157,7 +166,7 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             int afternoonRoomId = (afternoonRoomIdStr != null && !afternoonRoomIdStr.trim().isEmpty()) ? Integer.parseInt(afternoonRoomIdStr.trim()) : 0;
 
             if (morningRoomId <= 0 && afternoonRoomId <= 0) {
-                request.getSession().setAttribute("error", "Vui lòng cung cấp ít nhất một ID phòng hợp lệ cho slot sáng hoặc chiều.");
+                session.setAttribute("error", "Vui lòng cung cấp ít nhất một ID phòng hợp lệ cho slot sáng hoặc chiều.");
                 response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
                 return;
             }
@@ -167,46 +176,84 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
                     .collect(Collectors.toList());
 
             if (schedules.isEmpty()) {
-                request.getSession().setAttribute("error", "Không tìm thấy lịch trình nào trong khoảng thời gian từ " + startDate + " đến " + endDate);
+                session.setAttribute("error", "Không tìm thấy lịch trình nào trong khoảng thời gian từ " + startDate + " đến " + endDate);
                 response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
                 return;
             }
 
-            ScheduleEmployee sampleSchedule = schedules.get(0);
+            Users user = userDAO.getUserByID(userId);
+            if (user == null) {
+                session.setAttribute("error", "Không tìm thấy thông tin người dùng với ID: " + userId);
+                response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
+                return;
+            }
+
+            String userRole = user.getRole();
+            if (!"Doctor".equalsIgnoreCase(userRole) && !"Nurse".equalsIgnoreCase(userRole)) {
+                session.setAttribute("error", "Chỉ có thể gán phòng cho bác sĩ hoặc y tá.");
+                response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
+                return;
+            }
+
             int assignedCount = 0;
             String message;
 
+            // Lấy slotId từ lịch đầu tiên hoặc lịch có thời gian phù hợp
+            ScheduleEmployee sampleSchedule = schedules.stream()
+                    .filter(s -> s.getStartTime() != null && s.getEndTime() != null)
+                    .findFirst()
+                    .orElse(null);
+
+            if (sampleSchedule == null) {
+                session.setAttribute("error", "Không tìm thấy lịch trình hợp lệ với thời gian bắt đầu và kết thúc.");
+                response.sendRedirect(request.getContextPath() + "/AssignDoctorNurseToRoom?userID=" + userIDStr);
+                return;
+            }
+
             if (morningRoomId > 0 && afternoonRoomId > 0) {
-                // Gán phòng riêng biệt cho sáng và chiều cho bất kỳ vai trò nào (Doctor hoặc Nurse)
-                assignedCount = schedulesService.assignRoomToDoctorSchedulesInDateRange(sampleSchedule.getSlotId(), morningRoomId, afternoonRoomId, userId, startDate, endDate);
-                message = "Đã gán phòng thành công cho " + assignedCount + " lịch trình (sáng: phòng " + morningRoomId + ", chiều: phòng " + afternoonRoomId + ") từ ngày " + startDate + " đến ngày " + endDate;
+                // Gán phòng riêng biệt cho sáng và chiều cho bác sĩ hoặc y tá
+                assignedCount = schedulesService.assignRoomToSchedulesInDateRange(
+                    sampleSchedule.getSlotId(), morningRoomId, userId, startDate, endDate,
+                    "Doctor".equalsIgnoreCase(userRole) || "Nurse".equalsIgnoreCase(userRole) ? userRole : null,
+                    LocalTime.of(7, 30), LocalTime.of(12, 30)
+                );
+                assignedCount += schedulesService.assignRoomToSchedulesInDateRange(
+                    sampleSchedule.getSlotId(), afternoonRoomId, userId, startDate, endDate,
+                    "Doctor".equalsIgnoreCase(userRole) || "Nurse".equalsIgnoreCase(userRole) ? userRole : null,
+                    LocalTime.of(13, 30), LocalTime.of(17, 30)
+                );
+                message = "Đã gán phòng thành công cho " + assignedCount + " lịch trình (sáng: phòng " + morningRoomId + ", chiều: phòng " + afternoonRoomId + ") từ ngày " + startDate + " đến ngày " + endDate + " cho vai trò " + userRole;
             } else {
                 // Gán chung một phòng cho cả sáng và chiều
                 int roomIdToAssign = morningRoomId > 0 ? morningRoomId : afternoonRoomId;
-                assignedCount = schedulesService.assignRoomToSchedulesInDateRange(sampleSchedule.getSlotId(), roomIdToAssign, userId, startDate, endDate);
-                message = "Đã gán phòng " + roomIdToAssign + " thành công cho " + assignedCount + " lịch trình từ ngày " + startDate + " đến ngày " + endDate;
+                assignedCount = schedulesService.assignRoomToSchedulesInDateRange(
+                    sampleSchedule.getSlotId(), roomIdToAssign, userId, startDate, endDate,
+                    "Doctor".equalsIgnoreCase(userRole) || "Nurse".equalsIgnoreCase(userRole) ? userRole : null,
+                    null, null
+                );
+                message = "Đã gán phòng " + roomIdToAssign + " thành công cho " + assignedCount + " lịch trình từ ngày " + startDate + " đến ngày " + endDate + " cho vai trò " + userRole;
             }
 
             if (assignedCount > 0) {
-                request.getSession().setAttribute("message", message);
+                session.setAttribute("message", message);
                 System.out.println(message + " tại " + LocalDateTime.now() + " +07");
             } else {
-                request.getSession().setAttribute("error", "Không thể gán phòng. Có thể tất cả lịch trình trong khoảng thời gian đã được gán hoặc không tồn tại.");
+                session.setAttribute("error", "Không thể gán phòng. Có thể tất cả lịch trình trong khoảng thời gian đã được gán hoặc không tồn tại.");
                 System.err.println("Không gán được phòng cho người dùng " + userId + " tại " + LocalDateTime.now() + " +07");
             }
 
         } catch (NumberFormatException e) {
-            request.getSession().setAttribute("error", "ID phòng hoặc người dùng không hợp lệ.");
+            session.setAttribute("error", "ID phòng hoặc người dùng không hợp lệ.");
             System.err.println("NumberFormatException trong AssignDoctorNurseToRoom: " + e.getMessage() + " tại " + LocalDateTime.now() + " +07");
         } catch (SQLException e) {
-            request.getSession().setAttribute("error", "Lỗi cơ sở dữ liệu khi gán phòng: " + e.getMessage());
+            session.setAttribute("error", "Lỗi cơ sở dữ liệu khi gán phòng: " + e.getMessage());
             System.err.println("SQLException trong AssignDoctorNurseToRoom: " + e.getMessage() + " tại " + LocalDateTime.now() + " +07");
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
-            request.getSession().setAttribute("error", e.getMessage());
+            session.setAttribute("error", e.getMessage());
             System.err.println("IllegalArgumentException trong AssignDoctorNurseToRoom: " + e.getMessage() + " tại " + LocalDateTime.now() + " +07");
         } catch (Exception e) {
-            request.getSession().setAttribute("error", "Lỗi không xác định khi gán phòng: " + e.getMessage());
+            session.setAttribute("error", "Lỗi không xác định khi gán phòng: " + e.getMessage());
             System.err.println("Lỗi không xác định trong AssignDoctorNurseToRoom: " + e.getMessage() + " tại " + LocalDateTime.now() + " +07");
             e.printStackTrace();
         }

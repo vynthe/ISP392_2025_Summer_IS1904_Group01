@@ -4,6 +4,7 @@ import model.entity.ScheduleEmployee;
 import model.entity.AppointmentQueue;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import model.entity.Rooms;
 import model.entity.Users;
 import model.dao.RoomsDAO;
 import model.dao.UserDAO;
+import model.entity.Services;
 
 public class SchedulesService {
 
@@ -28,21 +30,23 @@ public class SchedulesService {
     }
 
     // Tạo lịch làm việc tự động cho danh sách người dùng
-    public void generateSchedule(List<Integer> userIds, List<String> roles, int createdBy, LocalDate startDate, boolean isYearly, int defaultRoomId)
-            throws SQLException, ClassNotFoundException {
-        if (userIds == null || roles == null || userIds.size() != roles.size()) {
-            throw new IllegalArgumentException("Dữ liệu đầu vào không hợp lệ: userIds và roles không được null và phải có cùng kích thước.");
-        }
-
-        for (int i = 0; i < userIds.size(); i++) {
-            String role = roles.get(i);
-            if (!isValidRole(role)) {
-                throw new IllegalArgumentException("Vai trò không hợp lệ: " + role);
-            }
-        }
-        scheduleDAO.addSchedule(userIds, roles, defaultRoomId, createdBy, startDate, isYearly);
+public void generateSchedule(List<Integer> userIds, List<String> roles, int createdBy, LocalDate startDate, int weeks, int defaultRoomId)
+        throws SQLException, ClassNotFoundException {
+    if (userIds == null || roles == null || userIds.size() != roles.size()) {
+        throw new IllegalArgumentException("Dữ liệu đầu vào không hợp lệ: userIds và roles không được null và phải có cùng kích thước.");
+    }
+    if (weeks <= 0) {
+        throw new IllegalArgumentException("Số tuần phải lớn hơn 0.");
     }
 
+    for (int i = 0; i < userIds.size(); i++) {
+        String role = roles.get(i);
+        if (!isValidRole(role)) {
+            throw new IllegalArgumentException("Vai trò không hợp lệ: " + role);
+        }
+    }
+    scheduleDAO.addSchedule(userIds, roles, defaultRoomId, createdBy, startDate, weeks);
+}
     // Lấy tất cả các slot lịch làm việc
     public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException, ClassNotFoundException {
         return scheduleDAO.getAllScheduleEmployees();
@@ -170,7 +174,7 @@ public class SchedulesService {
     }
 
     // Gán phòng cho các lịch trong khoảng thời gian với kiểm tra ràng buộc
-    public int assignRoomToSchedulesInDateRange(int slotId, int roomId, int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
+  public int assignRoomToSchedulesInDateRange(int slotId, int roomId, int userId, LocalDate startDate, LocalDate endDate, String role, LocalTime startTime, LocalTime endTime) throws SQLException {
         if (slotId <= 0 || roomId <= 0 || userId <= 0) {
             throw new IllegalArgumentException("ID lịch trình, phòng và người dùng phải là số dương.");
         }
@@ -184,21 +188,26 @@ public class SchedulesService {
             throw new IllegalArgumentException("Lịch trình không hợp lệ hoặc không thuộc về người dùng ID: " + userId);
         }
 
+        // Validate role
+        if (role != null && !"Doctor".equalsIgnoreCase(role) && !"Nurse".equalsIgnoreCase(role)) {
+            throw new IllegalArgumentException("Vai trò không hợp lệ: chỉ hỗ trợ bác sĩ hoặc y tá.");
+        }
+
         // Kiểm tra ràng buộc phòng cho tất cả các ngày trong khoảng thời gian
-        LocalTime startTime = selectedSchedule.getStartTime();
-        LocalTime endTime = selectedSchedule.getEndTime();
-        String role = selectedSchedule.getRole();
+        LocalTime slotStartTime = startTime != null ? startTime : selectedSchedule.getStartTime();
+        LocalTime slotEndTime = endTime != null ? endTime : selectedSchedule.getEndTime();
+        String slotRole = role != null ? role : selectedSchedule.getRole();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            boolean canAssign = scheduleDAO.checkRoomAssignmentConstraints(roomId, date, startTime, endTime, role);
+            boolean canAssign = scheduleDAO.checkRoomAssignmentConstraints(roomId, date, slotStartTime, slotEndTime, slotRole);
             if (!canAssign) {
-                throw new IllegalArgumentException("Không thể gán phòng " + roomId + " cho " + role + " vào ngày " + date + 
-                                                  " từ " + startTime + " đến " + endTime + ": Phòng đã có đủ bác sĩ hoặc y tá.");
+                throw new IllegalArgumentException("Không thể gán phòng " + roomId + " cho " + slotRole + " vào ngày " + date +
+                                                  " từ " + slotStartTime + " đến " + slotEndTime + ": Phòng đã có đủ bác sĩ hoặc y tá.");
             }
         }
 
         // Lấy các lịch phù hợp trong khoảng thời gian
         List<ScheduleEmployee> schedulesToAssign = scheduleDAO.getSchedulesByUserIdAndDateRange(
-            userId, startDate, endDate, startTime, endTime, role
+            userId, startDate, endDate, startTime, endTime, slotRole
         );
 
         if (schedulesToAssign == null || schedulesToAssign.isEmpty()) {
@@ -218,7 +227,6 @@ public class SchedulesService {
 
         return assignedCount;
     }
-
     // Gán phòng cho lịch bác sĩ trong khoảng thời gian cho slot sáng hoặc chiều
     public int assignRoomToDoctorSchedulesInDateRange(int slotId, int morningRoomId, int afternoonRoomId, int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
         // Kiểm tra các tham số đầu vào
@@ -289,15 +297,46 @@ public class SchedulesService {
 
         return assignedCount;
     }
-    public List<ScheduleEmployee> getScheduleByDate(int userId, LocalDate date) throws SQLException {
-        List<ScheduleEmployee> schedules = scheduleDAO.getScheduleByDate(userId, date);
-        for (ScheduleEmployee schedule : schedules) {
-            if (schedule.getRoomId() != null) {
-                Rooms room = roomDAO.getRoomByID(schedule.getRoomId());
-                // Có thể lấy dịch vụ từ roomsDAO.getServicesByRoom nếu cần
-                // List<Services> services = roomsDAO.getServicesByRoom(schedule.getRoomId());
+   public List<ScheduleEmployee> getScheduleByDate(int userId, LocalDate date) throws SQLException {
+    List<ScheduleEmployee> schedules = scheduleDAO.getScheduleByDate(userId, date);
+    for (ScheduleEmployee schedule : schedules) {
+        if (schedule.getRoomId() != null) {
+            Rooms room = roomDAO.getRoomByID(schedule.getRoomId());
+            if (room != null) {
+                schedule.setRoomName(room.getRoomName());
+                // Lấy danh sách dịch vụ từ RoomServices
+                List<Services> services = roomDAO.getServicesByRoom(schedule.getRoomId());
+                List<String> serviceNames = services.stream()
+                        .map(Services::getServiceName)
+                        .toList();
+                schedule.setServiceNames(serviceNames);
             }
         }
-        return schedules;
     }
+    return schedules;
+}
+    public ScheduleEmployee getScheduleDetailsBySlotId(int slotId) throws SQLException, ClassNotFoundException {
+        try {
+            ScheduleEmployee schedule = scheduleDAO.getScheduleDetailsBySlotId(slotId);
+            if (schedule == null) {
+                System.out.println("No schedule found for SlotID: " + slotId + " at " + LocalDateTime.now() + " +07");
+            } else {
+                System.out.println("Successfully retrieved schedule for SlotID: " + slotId + " at " + LocalDateTime.now() + " +07");
+                System.out.println("Details: " + schedule);
+            }
+            return schedule;
+        } catch (SQLException e) {
+            System.err.println("SQLException in getScheduleDetailsBySlotId service: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        } catch (ClassNotFoundException e) {
+            System.err.println("ClassNotFoundException in getScheduleDetailsBySlotId service: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+   public List<ScheduleEmployee> getAllSchedulesByUserId(int userId) throws SQLException {
+    if (userId <= 0) {
+        throw new IllegalArgumentException("User ID must be positive.");
+    }
+    return scheduleDAO.getAllSchedulesByUserId(userId);
+}
 }

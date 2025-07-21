@@ -3,43 +3,51 @@ package model.entity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ScheduleEmployee {
+
     private int slotId;
-    private int userId; // ID của nhân viên (Doctor, Nurse, Receptionist)
-    private String role; // Vai trò: Doctor, Nurse, Receptionist
-    private Integer roomId; // ID phòng, dùng Integer để hỗ trợ NULL
-    private LocalDate slotDate; // Ngày làm việc
-    private LocalTime startTime; // Giờ bắt đầu
-    private LocalTime endTime; // Giờ kết thúc
-    private String status; // Trạng thái: Available, Booked, Completed, Cancelled
-    private int createdBy; // ID của admin tạo lịch
-    private LocalDateTime createdAt; // Thời gian tạo
-    private LocalDateTime updatedAt; // Thời gian cập nhật
+    private int userId;
+    private String role;
+    private Integer roomId;
+    private LocalDate slotDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private String status;
+    private int createdBy;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String fullName; // Tên bác sĩ/y tá từ Users
+    private String roomName; // Tên phòng từ Rooms
+    private List<String> serviceNames; // Danh sách tên dịch vụ từ RoomServices
 
     // Constructor mặc định
     public ScheduleEmployee() {
     }
 
-    // Constructor đầy đủ (cập nhật roomId thành Integer)
+    // Constructor đầy đủ
     public ScheduleEmployee(int slotId, int userId, String role, Integer roomId, LocalDate slotDate,
-            LocalTime startTime, LocalTime endTime, boolean isAbsent, String absenceReason,
-            String status, int createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
+            LocalTime startTime, LocalTime endTime, String status, int createdBy,
+            LocalDateTime createdAt, LocalDateTime updatedAt, String fullName,
+            String roomName, List<String> serviceNames) {
         this.slotId = slotId;
         this.userId = userId;
         this.role = role;
-        this.roomId = roomId; // Có thể là null
+        this.roomId = roomId;
         this.slotDate = slotDate;
         this.startTime = startTime;
         this.endTime = endTime;
-  
         this.status = status;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.fullName = fullName;
+        this.roomName = roomName;
+        this.serviceNames = serviceNames;
     }
 
-    // Getters và Setters (cập nhật roomId)
+    // Getters và Setters
     public int getSlotId() {
         return slotId;
     }
@@ -128,7 +136,30 @@ public class ScheduleEmployee {
         this.updatedAt = updatedAt;
     }
 
-    // toString để debug
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public List<String> getServiceNames() {
+        return serviceNames;
+    }
+
+    public void setServiceNames(List<String> serviceNames) {
+        this.serviceNames = serviceNames;
+    }
+
     @Override
     public String toString() {
         return "ScheduleEmployee{"
@@ -139,11 +170,13 @@ public class ScheduleEmployee {
                 + ", slotDate=" + slotDate
                 + ", startTime=" + startTime
                 + ", endTime=" + endTime
-         
                 + ", status='" + status + '\''
                 + ", createdBy=" + createdBy
                 + ", createdAt=" + createdAt
                 + ", updatedAt=" + updatedAt
+                + ", fullName='" + fullName + '\''
+                + ", roomName='" + roomName + '\''
+                + ", serviceNames=" + serviceNames
                 + '}';
     }
 }

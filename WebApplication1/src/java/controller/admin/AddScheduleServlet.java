@@ -69,7 +69,6 @@ public class AddScheduleServlet extends HttpServlet {
             throws ServletException, IOException, SQLException, ClassNotFoundException {
         StringBuilder messages = new StringBuilder();
         StringBuilder errors = new StringBuilder();
-        // boolean overallSuccess = true; // This variable is no longer strictly necessary for the main flow
 
         try {
             String startDateStr = request.getParameter("startDate");
@@ -85,7 +84,6 @@ public class AddScheduleServlet extends HttpServlet {
 
             if (startDate.isBefore(today)) {
                 errors.append("Lỗi: Không thể tạo lịch trong quá khứ. Ngày bắt đầu phải từ hiện tại trở đi.<br>");
-                // overallSuccess = false; // Removed
             }
 
             if (errors.length() > 0) {
@@ -97,7 +95,6 @@ public class AddScheduleServlet extends HttpServlet {
             List<Users> users = userService.getUsersByRole(roleForAutoSchedule);
             if (users == null || users.isEmpty()) {
                 errors.append("Lỗi: Không tìm thấy nhân viên nào cho vai trò " + roleForAutoSchedule + ".<br>");
-                // overallSuccess = false; // Removed
             } else {
                 List<Integer> userIds = users.stream().map(Users::getUserID).collect(Collectors.toList());
                 List<String> roles = users.stream().map(Users::getRole).collect(Collectors.toList());
@@ -109,27 +106,22 @@ public class AddScheduleServlet extends HttpServlet {
 
                 try {
                     // Call the service to generate schedule for all selected users
-                    scheduleService.generateSchedule(userIds, roles, createdBy, startDate, weeksToCreate > 52, defaultRoomId);
+                    scheduleService.generateSchedule(userIds, roles, createdBy, startDate, weeksToCreate, defaultRoomId);
                     if ("Receptionist".equalsIgnoreCase(roleForAutoSchedule)) {
-                        messages.append("Lịch làm việc của tất cả lễ tân đã được tạo và gán vào Phòng 19.<br>");
+                        messages.append("Lịch làm việc của tất cả lễ tân đã được tạo và gán vào Phòng 19 cho " + weeksToCreate + " tuần.<br>");
                     } else {
-                        messages.append("Lịch làm việc của tất cả " + roleForAutoSchedule.toLowerCase() + " đã được tạo thành công.<br>");
+                        messages.append("Lịch làm việc của tất cả " + roleForAutoSchedule.toLowerCase() + " đã được tạo thành công cho " + weeksToCreate + " tuần.<br>");
                     }
                 } catch (SQLException e) {
-                    // If a SQLException occurs, it means there was an issue creating schedules
-                    // for the batch or due to conflicts handled by DAO.
-                    // We report the error without trying to re-create individual schedules.
                     System.err.println("Lỗi tạo lịch hàng loạt: " + e.getMessage());
                     errors.append("Lỗi khi tạo lịch: " + e.getMessage() + ". Vui lòng kiểm tra dữ liệu hoặc các lịch đã có.<br>");
                 }
             }
         } catch (NumberFormatException e) {
             errors.append("Lỗi: Dữ liệu nhập vào không hợp lệ (số tuần).<br>");
-            // overallSuccess = false; // Removed
         } catch (IllegalArgumentException e) {
             System.err.println("Validation Error: " + e.getMessage());
             errors.append("Lỗi validation: " + e.getMessage() + ".<br>");
-            // overallSuccess = false; // Removed
         }
 
         if (messages.length() > 0) {
@@ -137,7 +129,7 @@ public class AddScheduleServlet extends HttpServlet {
         }
         if (errors.length() > 0) {
             request.setAttribute("error", errors.toString());
-        } else if (messages.length() == 0) { // If no errors, but no messages either, means nothing was created.
+        } else if (messages.length() == 0) {
             request.setAttribute("message", "Không có lịch nào được tạo. Vui lòng kiểm tra lại thông tin.");
         }
 
