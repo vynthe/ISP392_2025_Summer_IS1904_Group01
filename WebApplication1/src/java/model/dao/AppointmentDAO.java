@@ -591,12 +591,4 @@ public class AppointmentDAO {
         }
         return appointments;
     }
-    
-    public static void main(String[] args) {
-        try {
-            System.out.println(new AppointmentDAO().getSchedulesByRoleAndUserId("Doctor", 1));
-        } catch (SQLException ex) {
-            Logger.getLogger(AppointmentDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 }
