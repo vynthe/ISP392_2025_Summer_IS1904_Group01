@@ -602,7 +602,7 @@
                         </div>
                     </a>
 
-                    <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="action-card">
+                    <a href="${pageContext.request.contextPath}/ViewScheduleUserServlet" class="action-card">
                         <div class="action-icon schedule">
                             <i class="fas fa-calendar-alt"></i>
                         </div>

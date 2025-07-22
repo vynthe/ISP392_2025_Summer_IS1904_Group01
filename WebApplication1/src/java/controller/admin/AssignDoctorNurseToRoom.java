@@ -46,9 +46,21 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             return;
         }
 
-        // Xóa message và error cũ khi load trang mới
+        // Lấy message và error từ session trước khi xóa
+        String sessionMessage = (String) session.getAttribute("message");
+        String sessionError = (String) session.getAttribute("error");
+        
+        // Xóa message và error từ session
         session.removeAttribute("message");
         session.removeAttribute("error");
+        
+        // Set vào request để JSP có thể hiển thị
+        if (sessionMessage != null) {
+            request.setAttribute("message", sessionMessage);
+        }
+        if (sessionError != null) {
+            request.setAttribute("error", sessionError);
+        }
 
         try {
             String userIDStr = request.getParameter("userID");
@@ -123,10 +135,6 @@ public class AssignDoctorNurseToRoom extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
-        // Xóa message và error cũ trước khi xử lý
-        session.removeAttribute("message");
-        session.removeAttribute("error");
 
         Admins admin = (Admins) session.getAttribute("admin");
         Integer createdBy = admin != null ? admin.getAdminID() : null;

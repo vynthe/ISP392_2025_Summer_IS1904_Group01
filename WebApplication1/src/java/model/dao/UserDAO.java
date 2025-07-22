@@ -522,5 +522,18 @@ public List<ScheduleEmployee> getUserSchedulesForReceptionist(int userId) throws
         schedule.setUpdatedAt(rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
         return schedule;
     }
+    public List<Users> getAllDoctors() throws SQLException {
+        List<Users> doctors = new ArrayList<>();
+        String sql = "SELECT UserID, Username, [Password], Email, FullName, Dob, Gender, Phone, [Address], MedicalHistory, Specialization, [Role], [Status], CreatedBy, CreatedAt, UpdatedAt " +
+                     "FROM Users WHERE Role = 'doctor' AND [Status] = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                doctors.add(mapResultSetToUser(rs));
+            }
+        }
+        return doctors;
+    }
     
 }

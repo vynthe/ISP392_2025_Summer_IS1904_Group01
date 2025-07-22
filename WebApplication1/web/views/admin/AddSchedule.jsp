@@ -94,12 +94,36 @@
                 transform: translate(-50%, -50%);
                 z-index: 1000;
             }
+            .breadcrumb {
+                background-color: transparent;
+                padding: 0.5rem 0;
+                margin-bottom: 1rem;
+            }
+            .breadcrumb-item a {
+                color: #667eea;
+                text-decoration: none;
+            }
+            .breadcrumb-item a:hover {
+                text-decoration: underline;
+            }
+            .breadcrumb-item.active {
+                color: #495057;
+            }
         </style>
     </head>
     <body class="bg-light">
         <div class="container mt-4">
             <div class="row justify-content-center">
                 <div class="col-md-10">
+                    <!-- Thêm breadcrumb header -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/dashboard">Trang chủ</a></li>
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/ViewSchedulesServlet">Quản lý lịch</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Tạo lịch tự động</li>
+                        </ol>
+                    </nav>
+
                     <div class="text-center mb-4">
                         <h1 class="display-4 fw-bold text-primary">
                             <i class="fas fa-calendar-plus me-3"></i>Tạo Lịch Làm Việc Tự Động
@@ -131,9 +155,9 @@
                                 <h6><i class="fas fa-info-circle me-2"></i>Thông Tin Tạo Lịch Tự Động</h6>
                                 <ul class="mb-0">
                                     <li>Tạo lịch cho nhân viên theo vai trò được chọn</li>
-                                    <li>Lịch làm việc mặc định: Thứ 2 đến Thứ 7 (Ca sáng: 7:30-12:30, Ca chiều: 13:30-17:30)</li>
-                                    <li>Chủ nhật: Không tạo lịch mặc định (có thể thêm lịch đặc biệt)</li>
-                                    <li><strong>Phòng sẽ được gán tự động</strong> dựa trên vai trò (ví dụ: Lễ tân dùng Phòng 1)</li>
+                                    <li>Lịch làm việc mặc định: 7 ngày mỗi tuần từ ngày bắt đầu (Ca sáng: 7:30-12:30, Ca chiều: 13:30-17:30)</li>
+                                    <li>Phòng sẽ được gán tự động dựa trên vai trò (ví dụ: Lễ tân dùng Phòng 1)</li>
+                                    <li>Sử dụng lịch trình đặc biệt để tùy chỉnh ngày làm việc hoặc ca làm việc cho nhân viên cụ thể</li>
                                 </ul>
                             </div>
 
@@ -147,8 +171,8 @@
                                                 <i class="fas fa-calendar me-2"></i>Ngày Bắt Đầu <span class="text-danger">*</span>
                                             </label>
                                             <input type="date" class="form-control" id="autoStartDate" name="startDate" required
-                                                   min="${java.time.LocalDate.now()}" value="${java.time.LocalDate.now()}">
-                                            <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
+                                                   value="${java.time.LocalDate.now()}">
+                                            <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu không phải trong quá khứ.</div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -220,8 +244,8 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Set default date to today
-                const today = new Date().toISOString().split('T')[0];
+                // Set default date to today in +07:00 timezone
+                const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
                 document.getElementById('autoStartDate').value = today;
 
                 // Initialize FullCalendar (ẩn tạm thời nếu không dùng)
@@ -311,7 +335,7 @@
                                 <label class="form-check-label" for="specialDay_${index}_sat">T7</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="specialDay_${index}_sun" name="specialSchedules[${index}].days" value="SUNDAY">
+                                <input class="form-check-input" type="checkbox" id="specialDay_${index}_sun" name="specialSchedules[${index}].days" value="SUNDAY" checked>
                                 <label class="form-check-label" for="specialDay_${index}_sun">CN</label>
                             </div>
                             <div class="invalid-feedback">Vui lòng chọn ít nhất một ngày làm việc.</div>

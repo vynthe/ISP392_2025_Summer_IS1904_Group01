@@ -11,22 +11,22 @@ public class ScheduleEmployee {
     private int userId;
     private String role;
     private Integer roomId;
+    private String roomName;
     private LocalDate slotDate;
     private LocalTime startTime;
     private LocalTime endTime;
     private String status;
+    private String fullName;
+    private List<String> serviceNames;
     private int createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String fullName; // Tên bác sĩ/y tá từ Users
-    private String roomName; // Tên phòng từ Rooms
-    private List<String> serviceNames; // Danh sách tên dịch vụ từ RoomServices
+    private Integer patientId;
+    private String patientName;
 
-    // Constructor mặc định
     public ScheduleEmployee() {
     }
 
-    // Constructor đầy đủ
     public ScheduleEmployee(int slotId, int userId, String role, Integer roomId, LocalDate slotDate,
             LocalTime startTime, LocalTime endTime, String status, int createdBy,
             LocalDateTime createdAt, LocalDateTime updatedAt, String fullName,
@@ -47,7 +47,7 @@ public class ScheduleEmployee {
         this.serviceNames = serviceNames;
     }
 
-    // Getters và Setters
+    // Getters and Setters
     public int getSlotId() {
         return slotId;
     }
@@ -78,6 +78,14 @@ public class ScheduleEmployee {
 
     public void setRoomId(Integer roomId) {
         this.roomId = roomId;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public LocalDate getSlotDate() {
@@ -112,6 +120,22 @@ public class ScheduleEmployee {
         this.status = status;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public List<String> getServiceNames() {
+        return serviceNames;
+    }
+
+    public void setServiceNames(List<String> serviceNames) {
+        this.serviceNames = serviceNames;
+    }
+
     public int getCreatedBy() {
         return createdBy;
     }
@@ -136,47 +160,19 @@ public class ScheduleEmployee {
         this.updatedAt = updatedAt;
     }
 
-    public String getFullName() {
-        return fullName;
+    public Integer getPatientId() {
+        return patientId;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setPatientId(Integer patientId) {
+        this.patientId = patientId;
     }
 
-    public String getRoomName() {
-        return roomName;
+    public String getPatientName() {
+        return patientName;
     }
 
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
-    }
-
-    public List<String> getServiceNames() {
-        return serviceNames;
-    }
-
-    public void setServiceNames(List<String> serviceNames) {
-        this.serviceNames = serviceNames;
-    }
-
-    @Override
-    public String toString() {
-        return "ScheduleEmployee{"
-                + "slotId=" + slotId
-                + ", userId=" + userId
-                + ", role='" + role + '\''
-                + ", roomId=" + roomId
-                + ", slotDate=" + slotDate
-                + ", startTime=" + startTime
-                + ", endTime=" + endTime
-                + ", status='" + status + '\''
-                + ", createdBy=" + createdBy
-                + ", createdAt=" + createdAt
-                + ", updatedAt=" + updatedAt
-                + ", fullName='" + fullName + '\''
-                + ", roomName='" + roomName + '\''
-                + ", serviceNames=" + serviceNames
-                + '}';
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
     }
 }

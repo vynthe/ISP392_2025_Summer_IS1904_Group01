@@ -6,6 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Chi Tiết Lịch Khám</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,14 +56,19 @@
         .back-link:hover {
             text-decoration: underline;
         }
+        #calendar {
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Chi Tiết Lịch Khám</h1>
+        
         <c:if test="${not empty errorMessage}">
             <p style="color: red; text-align: center;">${errorMessage}</p>
         </c:if>
+
         <c:if test="${not empty schedules}">
             <table class="schedule-table">
                 <thead>
@@ -110,8 +119,51 @@
                     </c:forEach>
                 </tbody>
             </table>
+
+            <!-- Calendar View -->
+            <div id='calendar'></div>
         </c:if>
+
         <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="back-link">Quay lại danh sách lịch khám</a>
     </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+   <script>
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+    
+    // Tạo array events một cách an toàn
+    var events = [];
+    
+    <c:forEach var="schedule" items="${schedules}">
+        <c:if test="${schedule.slotDate != null && schedule.startTime != null && schedule.endTime != null}">
+            var event = {
+                title: '<c:out value="${schedule.fullName}" escapeXml="true"/> - <c:out value="${schedule.role}" escapeXml="true"/>',
+                start: '${schedule.slotDate}T${schedule.startTime}',
+                end: '${schedule.slotDate}T${schedule.endTime}',
+                description: '<c:out value="${schedule.roomName != null ? schedule.roomName : 'Chưa phân phòng'}" escapeXml="true"/>'
+            };
+            events.push(event);
+        </c:if>
+    </c:forEach>
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: events,
+        eventDidMount: function(info) {
+            // Thêm tooltip nếu muốn
+            info.el.setAttribute('title', info.event.extendedProps.description);
+        }
+    });
+    
+    calendar.render();
+});
+</script>
 </body>
 </html>

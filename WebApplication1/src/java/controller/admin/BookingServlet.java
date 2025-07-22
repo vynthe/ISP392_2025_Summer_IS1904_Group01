@@ -9,7 +9,7 @@ import java.util.List;
 import model.dao.BookingDAO;
 import model.entity.Booking;
 
-@WebServlet(name = "BookingServlet", urlPatterns = {"/BookingServlet","/admin/bookings"})
+@WebServlet(name = "BookingServlet", urlPatterns = {"/BookingServlet"})
 public class BookingServlet extends HttpServlet {
 
     private BookingDAO bookingDAO;

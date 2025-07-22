@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import model.entity.ScheduleEmployee;
-import model.entity.AppointmentQueue;
 import model.entity.Rooms;
 import model.entity.Services;
 
@@ -37,7 +36,7 @@ public class ScheduleDAO {
         throw new IllegalArgumentException("The number of userIds must match the number of roles.");
     }
 
-    LocalDate endDate = startDate.plusWeeks(weeks); // Use the weeks parameter
+    LocalDate endDate = startDate.plusWeeks(weeks).plusDays(1); // Use the weeks parameter
     LocalTime morningStart = LocalTime.of(7, 30);
     LocalTime morningEnd = LocalTime.of(12, 30);
     LocalTime afternoonStart = LocalTime.of(13, 30);
@@ -306,36 +305,6 @@ public class ScheduleDAO {
             System.err.println("Error deleting schedule employee slot: " + e.getMessage());
             throw e;
         }
-    }
-
-    public boolean addAppointmentQueue(AppointmentQueue queue) throws SQLException, ClassNotFoundException {
-        int queueNumber = getNextQueueNumber(queue.getSlotId());
-        queue.setQueueNumber(queueNumber);
-
-        String sql = "INSERT INTO AppointmentQueue (SlotID, AppointmentID, QueueNumber, CreatedAt) VALUES (?, ?, ?, GETDATE())";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, queue.getSlotId());
-            pstmt.setInt(2, queue.getAppointmentId());
-            pstmt.setInt(3, queue.getQueueNumber());
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Error adding appointment queue: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    private int getNextQueueNumber(int slotId) throws SQLException, ClassNotFoundException {
-        String sql = "SELECT COALESCE(MAX(QueueNumber), 0) + 1 AS NextQueue FROM AppointmentQueue WHERE SlotID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, slotId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("NextQueue");
-                }
-            }
-        }
-        return 1;
     }
 
 
@@ -797,54 +766,57 @@ public class ScheduleDAO {
         }
         return null;
     }
- public List<ScheduleEmployee> getAllSchedulesByUserId(int userId) throws SQLException {
-    List<ScheduleEmployee> schedules = new ArrayList<>();
-    String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
-                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, " +
-                 "u.FullName, r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
-                 "FROM ScheduleEmployee se " +
-                 "LEFT JOIN Users u ON se.UserID = u.UserID " +
-                 "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
-                 "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
-                 "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
-                 "WHERE se.UserID = ? " +
-                 "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
-                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, u.FullName, r.RoomName";
+  public List<ScheduleEmployee> getAllSchedulesByUserId(int userId) throws SQLException {
+        List<ScheduleEmployee> schedules = new ArrayList<>();
+        String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, " +
+                     "u.FullName, r.RoomName, up.FullName AS PatientName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
+                     "FROM ScheduleEmployee se " +
+                     "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                     "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                     "LEFT JOIN Users up ON se.PatientID = up.UserID " +
+                     "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                     "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                     "WHERE se.UserID = ? " +
+                     "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, u.FullName, r.RoomName, up.FullName";
 
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setInt(1, userId);
-        try (ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                List<String> serviceNames = new ArrayList<>();
-                String serviceNamesStr = rs.getString("ServiceNames");
-                if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
-                    serviceNames.addAll(Arrays.asList(serviceNamesStr.split(",")));
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    List<String> serviceNames = new ArrayList<>();
+                    String serviceNamesStr = rs.getString("ServiceNames");
+                    if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
+                        serviceNames.addAll(Arrays.asList(serviceNamesStr.split(",")));
+                    }
+
+                    ScheduleEmployee schedule = new ScheduleEmployee(
+                        rs.getInt("SlotID"),
+                        rs.getInt("UserID"),
+                        rs.getString("Role"),
+                        rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
+                        rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
+                        rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
+                        rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
+                        rs.getString("Status"),
+                        rs.getInt("CreatedBy"),
+                        rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
+                        rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
+                        rs.getString("FullName"),
+                        rs.getString("RoomName"),
+                        serviceNames
+                    );
+                    schedule.setPatientId(rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                    schedule.setPatientName(rs.getString("PatientName"));
+                    schedules.add(schedule);
                 }
-
-                ScheduleEmployee schedule = new ScheduleEmployee(
-                    rs.getInt("SlotID"),
-                    rs.getInt("UserID"),
-                    rs.getString("Role"),
-                    rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
-                    rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
-                    rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
-                    rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
-                    rs.getString("Status"),
-                    rs.getInt("CreatedBy"),
-                    rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
-                    rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
-                    rs.getString("FullName"),
-                    rs.getString("RoomName"),
-                    serviceNames
-                );
-                schedules.add(schedule);
             }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAllSchedulesByUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
         }
-    } catch (SQLException e) {
-        System.err.println("SQLException in getAllSchedulesByUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-        throw e;
+        return schedules;
     }
-    return schedules;
-}
 }

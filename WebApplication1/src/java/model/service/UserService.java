@@ -522,4 +522,12 @@ public class UserService {
     public List<ScheduleEmployee> getUserSchedulesForReceptionist(int userId) throws SQLException {
         return userDAO.getUserSchedulesForReceptionist(userId);
     }
+    public List<Users> getAllDoctors() throws SQLException {
+        try {
+            return userDAO.getAllDoctors();
+        } catch (SQLException e) {
+            System.err.println("Error in UserService.getAllDoctors: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07");
+            throw e;
+        }
+}
 }

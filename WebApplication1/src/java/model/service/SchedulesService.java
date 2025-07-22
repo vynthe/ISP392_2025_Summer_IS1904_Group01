@@ -1,7 +1,6 @@
 package model.service;
 import model.dao.ScheduleDAO;
 import model.entity.ScheduleEmployee;
-import model.entity.AppointmentQueue;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,15 +67,6 @@ public void generateSchedule(List<Integer> userIds, List<String> roles, int crea
         return scheduleDAO.deleteScheduleEmployee(slotId);
     }
 
-    // Thêm một hàng đợi cuộc hẹn
-    public boolean addAppointmentQueue(AppointmentQueue queue) throws SQLException, ClassNotFoundException {
-        if (queue == null || queue.getSlotId() <= 0 || queue.getAppointmentId() <= 0) {
-            throw new IllegalArgumentException("Dữ liệu hàng đợi cuộc hẹn không hợp lệ.");
-        }
-        return scheduleDAO.addAppointmentQueue(queue);
-    }
-
- 
     // Kiểm tra vai trò hợp lệ
     private boolean isValidRole(String role) {
         return role != null && ("Doctor".equalsIgnoreCase(role) || "Nurse".equalsIgnoreCase(role) || "Receptionist".equalsIgnoreCase(role));
