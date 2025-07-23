@@ -599,7 +599,7 @@
                                                        class="btn btn-modern btn-info-modern">
                                                         <i class="fas fa-eye"></i> Xem chi tiết
                                                     </a>
-                                                    </a>
+                                                  
                                                     <c:if test="${employee.role != 'receptionist'}">
                                                         <a href="${pageContext.request.contextPath}/AssignDoctorNurseToRoom?userID=${employee.userID}" 
                                                            class="btn-assign-room">

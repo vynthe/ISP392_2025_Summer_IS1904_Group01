@@ -29,7 +29,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 1000px;
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -37,6 +37,7 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
+            grid-column: 1 / -1;
         }
 
         h2 {
@@ -91,6 +92,7 @@
             margin-bottom: 20px;
             font-weight: 500;
             animation: slideIn 0.3s ease;
+            grid-column: 1 / -1;
         }
 
         .alert.error {
@@ -112,6 +114,7 @@
             border-radius: 15px;
             margin-bottom: 25px;
             text-align: center;
+            grid-column: 1 / -1;
         }
 
         .user-info h3 {
@@ -126,8 +129,18 @@
             opacity: 0.9;
         }
 
-        .form-grid {
+        /* Main layout grid - 2 columns */
+        .main-grid {
             display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .left-column,
+        .right-column {
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
 
@@ -193,11 +206,12 @@
             display: flex;
             gap: 15px;
             margin-top: 30px;
+            grid-column: 1 / -1;
+            justify-content: center;
         }
 
         .btn {
-            flex: 1;
-            padding: 15px 25px;
+            padding: 15px 30px;
             border: none;
             border-radius: 10px;
             font-size: 16px;
@@ -206,6 +220,7 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            min-width: 150px;
         }
 
         .btn-primary {
@@ -232,7 +247,6 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 15px;
-            margin-bottom: 20px;
             border-left: 4px solid #667eea;
         }
 
@@ -251,6 +265,29 @@
             font-size: 18px;
         }
 
+        .section-title.user:before {
+            content: "👤";
+        }
+
+        .section-title.room:before {
+            content: "🏢";
+        }
+
+        .section-title.time:before {
+            content: "⏰";
+        }
+
+        /* Responsive grid cho select trong room section */
+        .room-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .time-grid {
+            display: grid;
+            gap: 15px;
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -266,6 +303,12 @@
             .container {
                 padding: 30px 20px;
                 margin: 10px;
+                max-width: 95%;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
             .back-button {
@@ -282,6 +325,21 @@
 
             .button-group {
                 flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h2 {
+                font-size: 20px;
             }
         }
     </style>
@@ -314,61 +372,82 @@
         </c:if>
 
         <form action="${pageContext.request.contextPath}/AssignDoctorNurseToRoom" method="post">
-            <!-- Thông tin người dùng -->
-            <div class="form-section">
-                <div class="section-title">Thông tin cơ bản</div>
-                <div class="form-group">
-                    <label for="userID" class="required">ID người dùng</label>
-                    <input type="number" id="userID" name="userID" value="${selectedUserId}" required>
-                </div>
-            </div>
-
-            <!-- Chọn phòng -->
-            <div class="form-section">
-                <div class="section-title">Chọn phòng làm việc</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="morningRoomId">Phòng cho ca sáng</label>
-                        <select id="morningRoomId" name="morningRoomId">
-                            <option value="">-- Không chọn --</option>
-                            <c:forEach var="room" items="${availableRooms}">
-                                <option value="${room.roomID}">${room.roomName} (${room.status})</option>
-                            </c:forEach>
-                        </select>
+            <div class="main-grid">
+                <!-- Cột trái -->
+                <div class="left-column">
+                    <!-- Thông tin người dùng -->
+                    <div class="form-section">
+                        <div class="section-title user">Thông tin cơ bản</div>
+                        <div class="form-group">
+                            <label for="userID" class="required">ID người dùng</label>
+                            <input type="number" id="userID" name="userID" value="${selectedUserId}" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="afternoonRoomId">Phòng cho ca chiều</label>
-                        <select id="afternoonRoomId" name="afternoonRoomId">
-                            <option value="">-- Không chọn --</option>
-                            <c:forEach var="room" items="${availableRooms}">
-                                <option value="${room.roomID}">${room.roomName} (${room.status})</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                    <!-- Chọn phòng -->
+                    <div class="form-section">
+                        <div class="section-title room">Chọn phòng làm việc</div>
+                        <div class="room-grid">
+                            <div class="form-group">
+                                <label for="morningRoomId">Phòng cho ca sáng</label>
+                                <select id="morningRoomId" name="morningRoomId">
+                                    <option value="">-- Không chọn --</option>
+                                    <c:forEach var="room" items="${availableRooms}">
+                                        <option value="${room.roomID}">${room.roomName} (${room.status})</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
 
-            <!-- Thời gian -->
-            <div class="form-section">
-                <div class="section-title">Thời gian làm việc</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="startDate">Ngày bắt đầu</label>
-                        <input type="date" id="startDate" name="startDate" value="${startDate}" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="endDate">Ngày kết thúc</label>
-                        <input type="date" id="endDate" name="endDate" value="${endDate}" readonly>
+                            <div class="form-group">
+                                <label for="afternoonRoomId">Phòng cho ca chiều</label>
+                                <select id="afternoonRoomId" name="afternoonRoomId">
+                                    <option value="">-- Không chọn --</option>
+                                    <c:forEach var="room" items="${availableRooms}">
+                                        <option value="${room.roomID}">${room.roomName} (${room.status})</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Nút hành động -->
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="history.back()">Hủy bỏ</button>
-                <button type="submit" class="btn btn-primary">Gán phòng</button>
+                <!-- Cột phải -->
+                <div class="right-column">
+                    <!-- Thời gian -->
+                    <div class="form-section">
+                        <div class="section-title time">Thời gian làm việc</div>
+                        <div class="time-grid">
+                            <div class="form-group">
+                                <label for="startDate">Ngày bắt đầu</label>
+                                <input type="date" id="startDate" name="startDate" value="${startDate}" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endDate">Ngày kết thúc</label>
+                                <input type="date" id="endDate" name="endDate" value="${endDate}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Có thể thêm section khác ở đây nếu cần -->
+                    <div class="form-section" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left-color: #17a2b8;">
+                        <div class="section-title" style="color: #17a2b8;">
+                            <span style="margin-right: 10px;">📋</span>
+                            Ghi chú
+                        </div>
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.5;">
+                            • Chọn ít nhất một phòng (sáng hoặc chiều)<br>
+                            • Thời gian làm việc đã được thiết lập sẵn<br>
+                            • Kiểm tra tình trạng phòng trước khi gán
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="history.back()">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary">Gán phòng</button>
+                </div>
             </div>
         </form>
     </div>
@@ -400,6 +479,19 @@
                 }, 300);
             });
         }, 5000);
+
+        // Thêm hiệu ứng hover cho form sections
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+            });
+            
+            section.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
     </script>
 </body>
 </html>

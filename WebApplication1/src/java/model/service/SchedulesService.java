@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.entity.Rooms;
 import model.entity.Users;
 import model.dao.RoomsDAO;
@@ -47,7 +50,7 @@ public void generateSchedule(List<Integer> userIds, List<String> roles, int crea
     scheduleDAO.addSchedule(userIds, roles, defaultRoomId, createdBy, startDate, weeks);
 }
     // Lấy tất cả các slot lịch làm việc
-    public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException, ClassNotFoundException {
+    public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException{
         return scheduleDAO.getAllScheduleEmployees();
     }
 
@@ -329,4 +332,32 @@ public void generateSchedule(List<Integer> userIds, List<String> roles, int crea
     }
     return scheduleDAO.getAllSchedulesByUserId(userId);
 }
+   public List<ScheduleEmployee> getAssignedSchedulesByUserId(int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
+        try {
+            return scheduleDAO.getAssignedSchedulesByUserId(userId, startDate, endDate);
+        } catch (SQLException e) {
+            throw new SQLException("Lỗi khi lấy lịch đã gán: " + e.getMessage(), e);
+        }
+    }
+ 
+public List<ScheduleEmployee> getSchedulesByDateRange(LocalDate startDate, LocalDate endDate) throws SQLException {
+    return scheduleDAO.getScheduleEmployeesByDateRange(startDate, endDate);
 }
+    public Map<String, Object> getWeeklyScheduleFull() throws SQLException {
+        // Gọi hàm từ DAO và trả về trực tiếp
+        // Logic nghiệp vụ (nếu có) sẽ được thêm ở đây
+        return scheduleDAO.getWeeklyScheduleFullEmployeeCentricNoRoom();
+    }
+
+    public Map<String, Object> getWeeklyScheduleByRange(String startDate, String endDate) throws SQLException {
+      
+        return scheduleDAO.getWeeklyScheduleByRangeEmployeeCentricNoRoom(startDate, endDate);
+    }
+ public List<ScheduleEmployee> searchSchedules(String keyword) throws SQLException {
+        return scheduleDAO.searchSchedules(keyword);
+    }
+public List<ScheduleEmployee> getSchedulesByUserIdAndRole(int userId, String role) throws SQLException {
+        return scheduleDAO.getSchedulesByUserIdAndRole(userId, role);
+    }
+}
+

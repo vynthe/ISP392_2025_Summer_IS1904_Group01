@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -225,39 +226,32 @@ public class ScheduleDAO {
         }
     }
 
-    public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException, ClassNotFoundException {
-        List<ScheduleEmployee> slots = new ArrayList<>();
-        // Removed IsAbsent and AbsenceReason from SELECT statement
-        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt FROM ScheduleEmployee";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                ScheduleEmployee slot = new ScheduleEmployee();
-                slot.setSlotId(rs.getInt("SlotID"));
-                slot.setUserId(rs.getInt("UserID"));
-                slot.setRole(rs.getString("Role"));
-                
-                // Read RoomID, it can be null
-                int roomId = rs.getInt("RoomID");
-                if (rs.wasNull()) {
-                    slot.setRoomId(0); // Represent NULL as 0 or handle as Integer object
-                } else {
-                    slot.setRoomId(roomId);
-                }
-
-                slot.setSlotDate(rs.getDate("SlotDate").toLocalDate());
-                slot.setStartTime(rs.getTime("StartTime").toLocalTime());
-                slot.setEndTime(rs.getTime("EndTime").toLocalTime());
-                // Removed slot.setAbsent(rs.getBoolean("IsAbsent"));
-                // Removed slot.setAbsenceReason(rs.getString("AbsenceReason"));
-                slot.setStatus(rs.getString("Status"));
-                slot.setCreatedBy(rs.getInt("CreatedBy"));
-                slot.setCreatedAt(rs.getObject("CreatedAt", LocalDateTime.class));
-                slot.setUpdatedAt(rs.getObject("UpdatedAt", LocalDateTime.class));
-                slots.add(slot);
-            }
+   public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException {
+    List<ScheduleEmployee> slots = new ArrayList<>();
+    String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, " +
+                 "CreatedBy, CreatedAt, UpdatedAt FROM ScheduleEmployee";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) {
+            ScheduleEmployee slot = new ScheduleEmployee();
+            slot.setSlotId(rs.getInt("SlotID"));
+            slot.setUserId(rs.getInt("UserID"));
+            slot.setRole(rs.getString("Role"));
+            int roomId = rs.getInt("RoomID");
+            slot.setRoomId(rs.wasNull() ? 0 : roomId);
+            slot.setSlotDate(rs.getDate("SlotDate").toLocalDate());
+            slot.setStartTime(rs.getTime("StartTime").toLocalTime());
+            slot.setEndTime(rs.getTime("EndTime").toLocalTime());
+            slot.setStatus(rs.getString("Status"));
+            slot.setCreatedBy(rs.getInt("CreatedBy"));
+            slot.setCreatedAt(rs.getObject("CreatedAt", LocalDateTime.class));
+            slot.setUpdatedAt(rs.getObject("UpdatedAt", LocalDateTime.class));
+            slots.add(slot);
         }
-        return slots;
     }
+    return slots;
+}
 
     public ScheduleEmployee getScheduleEmployeeById(int slotId) throws SQLException, ClassNotFoundException {
         // Removed IsAbsent and AbsenceReason from SELECT statement
@@ -819,4 +813,320 @@ public class ScheduleDAO {
         }
         return schedules;
     }
+  public List<ScheduleEmployee> getAssignedSchedulesByUserId(int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
+        List<ScheduleEmployee> assignedSchedules = new ArrayList<>();
+        String sql = "SELECT * FROM ScheduleEmployee WHERE UserID = ? AND SlotDate BETWEEN ? AND ? AND RoomID IS NOT NULL";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDate(2, java.sql.Date.valueOf(startDate)); // Chuyển LocalDate sang java.sql.Date
+            pstmt.setDate(3, java.sql.Date.valueOf(endDate));   // Chuyển LocalDate sang java.sql.Date
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    ScheduleEmployee schedule = new ScheduleEmployee();
+                    schedule.setSlotId(rs.getInt("SlotID"));
+                    schedule.setUserId(rs.getInt("UserID"));
+                    schedule.setRole(rs.getString("Role"));
+                    schedule.setRoomId(rs.getInt("RoomID")); // Có thể null, nhưng ở đây đã lọc RoomID IS NOT NULL
+                    schedule.setSlotDate(rs.getDate("SlotDate").toLocalDate());
+                    schedule.setStartTime(rs.getTime("StartTime").toLocalTime());
+                    schedule.setEndTime(rs.getTime("EndTime").toLocalTime());
+                    schedule.setStatus(rs.getString("Status"));
+                    schedule.setCreatedBy(rs.getInt("CreatedBy"));
+                    schedule.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+                    schedule.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
+                    schedule.setPatientId(rs.getInt("PatientID")); // Có thể null
+
+                    assignedSchedules.add(schedule);
+                }
+            }
+        }
+     return assignedSchedules;
+  }
+
+private Map<Integer, Map<String, String>> getAllEmployees() throws SQLException {
+        Map<Integer, Map<String, String>> allEmployees = new LinkedHashMap<>();
+        String sqlEmployees = "SELECT UserID, FullName, Role FROM Users WHERE Role IN ('Doctor', 'Nurse', 'Receptionist') AND Status = 'Active'";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlEmployees);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int userId = rs.getInt("UserID");
+                String fullName = rs.getString("FullName");
+                String role = rs.getString("Role");
+                Map<String, String> employeeInfo = new HashMap<>();
+                employeeInfo.put("FullName", fullName);
+                employeeInfo.put("Role", role);
+                allEmployees.put(userId, employeeInfo);
+            }
+        }
+        return allEmployees;
+    }
+
+    public Map<String, Object> getWeeklyScheduleFullEmployeeCentricNoRoom() throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        // scheduleData: FullName -> Day -> Shift -> AssignedRoleForSlot (e.g., "Doctor", "N/A")
+        Map<String, Map<String, Map<String, String>>> scheduleData = new LinkedHashMap<>();
+        List<String> days = new ArrayList<>();
+        Map<String, String> dayNameMap = new LinkedHashMap<>();
+        String startDate = null, endDate = null;
+
+        // 1. Get current week dates (Monday to Sunday)
+        String sqlDays = "SELECT CONVERT(varchar, DATEADD(DAY, v.number, weekStart), 23) as Day, DATENAME(weekday, DATEADD(DAY, v.number, weekStart)) as WeekDay " +
+                "FROM (SELECT DATEADD(DAY, 1 - DATEPART(WEEKDAY, GETDATE()), CAST(GETDATE() AS DATE)) as weekStart) d " +
+                "CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6)) v(number)";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlDays);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String day = rs.getString("Day");
+                String weekDay = rs.getString("WeekDay");
+                days.add(day);
+                dayNameMap.put(day, weekDay);
+            }
+            if (!days.isEmpty()) {
+                startDate = days.get(0);
+                endDate = days.get(days.size() - 1);
+            }
+        }
+
+        // 2. Get all relevant employees (Doctors, Nurses, Receptionists)
+        Map<Integer, Map<String, String>> allEmployees = getAllEmployees();
+
+        // 3. Fetch schedule data for employees (NO ROOM JOIN)
+        String sql = "SELECT u.UserID, u.FullName, se.Role AS AssignedRole, " + // Use se.Role to get the specific role for the slot
+                "CASE WHEN FORMAT(se.StartTime, 'HH:mm') < '12:00' THEN 'Ca sáng' ELSE 'Ca chiều' END AS Shift, " +
+                "CONVERT(varchar, se.SlotDate, 23) as Day " +
+                "FROM Users u " +
+                "LEFT JOIN ScheduleEmployee se ON u.UserID = se.UserID AND se.SlotDate BETWEEN ? AND ? " +
+                "WHERE u.Role IN ('Doctor', 'Nurse', 'Receptionist') AND u.Status = 'Active'";
+
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String employeeName = rs.getString("FullName");
+                    String assignedRoleForSlot = rs.getString("AssignedRole"); // Role from ScheduleEmployee table for the slot
+                    String shift = rs.getString("Shift") != null ? rs.getString("Shift") : "Ca sáng"; // Default if no StartTime
+                    String day = rs.getString("Day");
+
+                    // Only process actual scheduled days (ignore rows where se.SlotDate was null due to LEFT JOIN)
+                    if (day == null) continue;
+
+                    // Ensure map structure exists: FullName -> Day -> Shift
+                    scheduleData.putIfAbsent(employeeName, new LinkedHashMap<>());
+                    scheduleData.get(employeeName).putIfAbsent(day, new LinkedHashMap<>());
+
+                    // Store the specific role for that slot, or a generic "Scheduled" if assignedRoleForSlot is null
+                    scheduleData.get(employeeName).get(day).put(shift, assignedRoleForSlot != null ? assignedRoleForSlot : "Scheduled");
+                }
+            }
+        }
+
+      
+        for (Map.Entry<Integer, Map<String, String>> entry : allEmployees.entrySet()) {
+            String employeeName = entry.getValue().get("FullName");
+
+            scheduleData.putIfAbsent(employeeName, new LinkedHashMap<>()); // Ensure employee exists in scheduleData
+
+            for (String day : days) {
+                scheduleData.get(employeeName).putIfAbsent(day, new LinkedHashMap<>()); // Ensure day exists for employee
+                // Add placeholders for morning/afternoon shifts if they are not filled
+                scheduleData.get(employeeName).get(day).putIfAbsent("Ca sáng", "N/A"); // "N/A" means Not Assigned / Available
+                scheduleData.get(employeeName).get(day).putIfAbsent("Ca chiều", "N/A"); // "N/A" means Not Assigned / Available
+            }
+        }
+
+        result.put("scheduleData", scheduleData);
+        result.put("days", days);
+        result.put("dayNameMap", dayNameMap);
+        result.put("startDate", startDate);
+        result.put("endDate", endDate);
+        return result;
+    }
+    public Map<String, Object> getWeeklyScheduleByRangeEmployeeCentricNoRoom(String startDate, String endDate) throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        // scheduleData: FullName -> Day -> Shift -> AssignedRoleForSlot (e.g., "Doctor", "N/A")
+        Map<String, Map<String, Map<String, String>>> scheduleData = new LinkedHashMap<>();
+        List<String> days = new ArrayList<>();
+        Map<String, String> dayNameMap = new LinkedHashMap<>();
+
+        // 1. Get dates within the specified range
+        String sqlDays = "SELECT CONVERT(varchar, d, 23) as Day, DATENAME(weekday, d) as WeekDay " +
+                "FROM (SELECT TOP (DATEDIFF(DAY, ?, ?) + 1) DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, ?) as d " +
+                "FROM sys.all_objects) AS x";
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlDays)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            ps.setString(3, startDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String day = rs.getString("Day");
+                    String weekDay = rs.getString("WeekDay");
+                    days.add(day);
+                    dayNameMap.put(day, weekDay);
+                }
+            }
+        }
+
+       
+        Map<Integer, Map<String, String>> allEmployees = getAllEmployees();
+        String sql = "SELECT u.UserID, u.FullName, se.Role AS AssignedRole, " + // Use se.Role for the specific slot role
+                "CASE WHEN FORMAT(se.StartTime, 'HH:mm') < '12:00' THEN 'Ca sáng' ELSE 'Ca chiều' END AS Shift, " +
+                "CONVERT(varchar, se.SlotDate, 23) as Day " +
+                "FROM Users u " +
+                "LEFT JOIN ScheduleEmployee se ON u.UserID = se.UserID AND se.SlotDate BETWEEN ? AND ? " +
+                "WHERE u.Role IN ('Doctor', 'Nurse', 'Receptionist') AND u.Status = 'Active'";
+
+        try (Connection con = dbContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String employeeName = rs.getString("FullName");
+                    String assignedRoleForSlot = rs.getString("AssignedRole");
+                    String shift = rs.getString("Shift") != null ? rs.getString("Shift") : "Ca sáng";
+                    String day = rs.getString("Day");
+
+                    if (day == null) continue;
+
+                    scheduleData.putIfAbsent(employeeName, new LinkedHashMap<>());
+                    scheduleData.get(employeeName).putIfAbsent(day, new LinkedHashMap<>());
+                    scheduleData.get(employeeName).get(day).put(shift, assignedRoleForSlot != null ? assignedRoleForSlot : "Scheduled");
+                }
+            }
+        }
+
+        // 4. Ensure all employees have entries for all days/shifts in the range
+        for (Map.Entry<Integer, Map<String, String>> entry : allEmployees.entrySet()) {
+            String employeeName = entry.getValue().get("FullName");
+
+            scheduleData.putIfAbsent(employeeName, new LinkedHashMap<>());
+
+            for (String day : days) {
+                scheduleData.get(employeeName).putIfAbsent(day, new LinkedHashMap<>());
+                scheduleData.get(employeeName).get(day).putIfAbsent("Ca sáng", "N/A");
+                scheduleData.get(employeeName).get(day).putIfAbsent("Ca chiều", "N/A");
+            }
+        }
+
+        result.put("scheduleData", scheduleData);
+        result.put("days", days);
+        result.put("dayNameMap", dayNameMap);
+        result.put("startDate", days.isEmpty() ? startDate : days.get(0));
+        result.put("endDate", days.isEmpty() ? endDate : days.get(days.size() - 1));
+        return result;
+    }
+
+    public List<ScheduleEmployee> searchSchedules(String keyword) throws SQLException{
+        List<ScheduleEmployee> schedules = new ArrayList<>();
+        String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, " +
+                     "u.FullName, r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
+                     "FROM ScheduleEmployee se " +
+                     "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                     "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                     "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                     "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                     "WHERE (u.FullName LIKE ? OR se.Role LIKE ? OR CONVERT(VARCHAR, se.SlotDate) LIKE ? OR se.Status LIKE ?) " +
+                     "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                     "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, u.FullName, r.RoomName";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            stmt.setString(4, searchPattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    List<String> serviceNames = new ArrayList<>();
+                    String serviceNamesStr = rs.getString("ServiceNames");
+                    if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
+                        serviceNames.addAll(java.util.Arrays.asList(serviceNamesStr.split(",")));
+                    }
+
+                    ScheduleEmployee schedule = new ScheduleEmployee(
+                        rs.getInt("SlotID"),
+                        rs.getInt("UserID"),
+                        rs.getString("Role"),
+                        rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
+                        rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
+                        rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
+                        rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
+                        rs.getString("Status"),
+                        rs.getInt("CreatedBy"),
+                        rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
+                        rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
+                        rs.getString("FullName"),
+                        rs.getString("RoomName"),
+                        serviceNames
+                    );
+                    schedule.setPatientId(rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                    schedules.add(schedule);
+                }
+            }
+        }
+        return schedules;
+    }
+    public List<ScheduleEmployee> getSchedulesByUserIdAndRole(int userId, String role) throws SQLException {
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, " +
+                 "u.FullName, r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
+                 "FROM ScheduleEmployee se " +
+                 "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                 "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                 "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                 "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                 "WHERE se.UserID = ? AND se.Role = ? " +
+                 "GROUP BY se.SlotID, se.UserID, se.Role, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Status, " +
+                 "se.CreatedBy, se.CreatedAt, se.UpdatedAt, se.PatientID, u.FullName, r.RoomName";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userId);
+        stmt.setString(2, role);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                List<String> serviceNames = new ArrayList<>();
+                String serviceNamesStr = rs.getString("ServiceNames");
+                if (serviceNamesStr != null && !serviceNamesStr.isEmpty()) {
+                    serviceNames.addAll(Arrays.asList(serviceNamesStr.split(",")));
+                }
+
+                ScheduleEmployee schedule = new ScheduleEmployee(
+                    rs.getInt("SlotID"),
+                    rs.getInt("UserID"),
+                    rs.getString("Role"),
+                    rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null,
+                    rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null,
+                    rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null,
+                    rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null,
+                    rs.getString("Status"),
+                    rs.getInt("CreatedBy"),
+                    rs.getTimestamp("CreatedAt") != null ? rs.getTimestamp("CreatedAt").toLocalDateTime() : null,
+                    rs.getTimestamp("UpdatedAt") != null ? rs.getTimestamp("UpdatedAt").toLocalDateTime() : null,
+                    rs.getString("FullName"),
+                    rs.getString("RoomName"),
+                    serviceNames
+                );
+                schedule.setPatientId(rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                schedules.add(schedule);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in getSchedulesByUserIdAndRole: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+    return schedules;
+}
 }
