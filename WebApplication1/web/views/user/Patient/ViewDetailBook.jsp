@@ -472,6 +472,12 @@
                 overflow: hidden;
             }
 
+            .book-btn:disabled {
+                background: var(--warning-gradient);
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+
             .book-btn::before {
                 content: '';
                 position: absolute;
@@ -487,12 +493,12 @@
                 left: 100%;
             }
 
-            .book-btn:hover {
+            .book-btn:hover:not(:disabled) {
                 transform: translateY(-3px);
                 box-shadow: 0 12px 35px rgba(79, 172, 254, 0.5);
             }
 
-            .book-btn:active {
+            .book-btn:active:not(:disabled) {
                 transform: translateY(-1px);
             }
 
@@ -901,12 +907,12 @@
                                                         </c:choose>
                                                     </div>
                                                     <c:if test="${schedule.status == 'Available' and not empty schedule.slotDate and not empty schedule.startTime and scheduleDateObj >= now}">
-                                                        <form action="${pageContext.request.contextPath}/BookAppointmentServlet" method="post">
+                                                        <form action="${pageContext.request.contextPath}/BookAppointmentServlet" method="post" onsubmit="return validateForm(this);">
                                                             <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
                                                             <input type="hidden" name="slotId" value="${fn:escapeXml(schedule.slotId)}">
                                                             <input type="hidden" name="roomId" value="${fn:escapeXml(doctorDetails.roomId)}">
                                                             <input type="hidden" name="patientId" value="${fn:escapeXml(patientId)}">
-                                                            <button type="submit" class="book-btn" onclick="return checkFormValues(this.form);">
+                                                            <button type="submit" class="book-btn">
                                                                 <i class="fas fa-calendar-check"></i>
                                                                 Đặt Lịch Ngay
                                                             </button>
@@ -990,3 +996,49 @@
                     </a>
                 </div>
             </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h4><i class="fas fa-hospital"></i> Về Chúng Tôi</h4>
+                    <p>Chúng tôi cung cấp dịch vụ y tế chất lượng cao với đội ngũ bác sĩ chuyên nghiệp.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-map-marker-alt"></i> Địa Chỉ</h4>
+                    <ul>
+                        <li><i class="fas fa-location-arrow"></i> 123 Đường Y Tế, Quận 1, TP. HCM</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-phone-alt"></i> Liên Hệ</h4>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +84 981 234 567</li>
+                        <li><i class="fas fa-envelope"></i> support@healthcare.vn</li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            function validateForm(form) {
+                const slotId = form.slotId.value.trim();
+                console.log("Validating slotId: ", slotId); // Debug
+                if (!slotId || isNaN(slotId) || parseInt(slotId) <= 0) {
+                    alert('Vui lòng chọn một khung giờ hợp lệ!');
+                    return false;
+                }
+                return true;
+            }
+
+            // Debug slotId values on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const forms = document.querySelectorAll('form');
+                forms.forEach(form => {
+                    const slotId = form.querySelector('input[name="slotId"]').value;
+                    console.log("SlotId from form: ", slotId); // Debug
+                });
+            });
+        </script>
+    </body>
+</html>

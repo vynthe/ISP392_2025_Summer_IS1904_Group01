@@ -103,9 +103,7 @@ public class BookAppointmentServlet extends HttpServlet {
         }
     }
 
-    // Thêm debug chi tiết vào method handleInitialLoad trong BookAppointmentServlet
-
-private void handleInitialLoad(HttpServletRequest request, HttpServletResponse response)
+    private void handleInitialLoad(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
@@ -400,7 +398,7 @@ private void handleInitialLoad(HttpServletRequest request, HttpServletResponse r
                 request.setAttribute("doctorId", doctorId);
             }
 
-            // ✅ Preserve slotId if available
+            // ✅ Preserve slotId if available from original request
             String slotIdParam = request.getParameter("slotId");
             if (slotIdParam != null && !slotIdParam.trim().isEmpty()) {
                 try {
@@ -410,14 +408,16 @@ private void handleInitialLoad(HttpServletRequest request, HttpServletResponse r
                         LOGGER.info("✅ Preserved slotId on error: " + slotId);
                     }
                 } catch (NumberFormatException e) {
-                    // Set null nếu slotId không hợp lệ
-                    request.setAttribute("slotId", null);
-                    LOGGER.warning("❌ Invalid slotId on error, set to null");
+                    // Keep existing slotId from request attribute if set, otherwise null
+                    Integer existingSlotId = (Integer) request.getAttribute("slotId");
+                    request.setAttribute("slotId", existingSlotId != null ? existingSlotId : null);
+                    LOGGER.warning("❌ Invalid slotId on error, using existing or set to null: " + existingSlotId);
                 }
             } else {
-                // Set null nếu không có slotId
-                request.setAttribute("slotId", null);
-                LOGGER.info("❌ No slotId on error, set to null");
+                // Preserve slotId from request attribute if it exists
+                Integer existingSlotId = (Integer) request.getAttribute("slotId");
+                request.setAttribute("slotId", existingSlotId != null ? existingSlotId : null);
+                LOGGER.info("❌ No slotId in request, using existing or set to null: " + existingSlotId);
             }
 
             // ✅ Preserve roomId nếu có
@@ -429,7 +429,9 @@ private void handleInitialLoad(HttpServletRequest request, HttpServletResponse r
                         request.setAttribute("roomId", roomId);
                     }
                 } catch (NumberFormatException e) {
-                    // Ignore invalid roomId
+                    // Ignore invalid roomId, keep existing if set
+                    Integer existingRoomId = (Integer) request.getAttribute("roomId");
+                    request.setAttribute("roomId", existingRoomId != null ? existingRoomId : null);
                 }
             }
 
