@@ -196,6 +196,18 @@
             margin-bottom: 2px;
         }
 
+        /* Styling for the room link */
+        .appointment-room .room-link {
+            color: var(--accent-blue); /* Blue color to indicate it's a link */
+            text-decoration: underline; /* Underline for better visibility */
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .appointment-room .room-link:hover {
+            color: #1976d2; /* Darker blue on hover */
+        }
+
         .appointment-time {
             color: #444;
             font-size: 0.9em;
@@ -305,7 +317,7 @@
             <tbody>
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 0 </div>
+                        <div class="slot-number">Slot 0 (05:00 - 07:00)</div>
                     </td>
                     <td class="slot-cell" id="slot0-mon"></td>
                     <td class="slot-cell" id="slot0-tue"></td>
@@ -318,7 +330,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 1 </div>
+                        <div class="slot-number">Slot 1 (07:00 - 13:00)</div>
                     </td>
                     <td class="slot-cell" id="slot1-mon"></td>
                     <td class="slot-cell" id="slot1-tue"></td>
@@ -331,7 +343,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 2 </div>
+                        <div class="slot-number">Slot 2 (13:00 - 15:00)</div>
                     </td>
                     <td class="slot-cell" id="slot2-mon"></td>
                     <td class="slot-cell" id="slot2-tue"></td>
@@ -344,7 +356,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 3 </div>
+                        <div class="slot-number">Slot 3 (15:00 - 17:00)</div>
                     </td>
                     <td class="slot-cell" id="slot3-mon"></td>
                     <td class="slot-cell" id="slot3-tue"></td>
@@ -383,6 +395,7 @@
                     userId: '${schedule.userId}',
                     fullName: '<c:out value="${schedule.fullName}" escapeXml="true"/>',
                     role: '<c:out value="${schedule.role}" escapeXml="true"/>',
+                    // Đảm bảo roomId và roomName được truyền chính xác
                     roomId: '${schedule.roomId != null ? schedule.roomId : ""}',
                     roomName: '<c:out value="${roomName}" escapeXml="true"/>',
                     slotDate: '${schedule.slotDate}',
@@ -428,7 +441,7 @@
                     var day = days[i];
                     var cell = document.getElementById('slot' + slot + '-' + day);
                     if (cell) {
-                        // Clear existing appointments and add the default "No schedule" message
+                        // Clear existing appointments and add the default "Chưa có lịch" message
                         cell.innerHTML = '';
                         var defaultMessageDiv = document.createElement('div');
                         defaultMessageDiv.style.cssText = "color: #999; font-size: 11px; text-align: center; padding: 10px;";
@@ -440,18 +453,18 @@
         }
 
         function getSlotFromTime(startTime) {
-            // Updated slot logic based on your provided ranges:
-            // Slot 1: 05:00 - 07:00 (index 0)
-            // Slot 2: 07:00 - 13:00 (index 1)
-            // Slot 3: 13:00 - 15:00 (index 2)
-            // Slot 4: 15:00 - 17:00 (index 3)
+            // Slots based on the doctor/nurse schedule logic
+            // Slot 0: 05:00 - 07:00
+            // Slot 1: 07:00 - 13:00
+            // Slot 2: 13:00 - 15:00
+            // Slot 3: 15:00 - 17:00
             if (!startTime) return -1; // Indicate no valid slot
 
             var hour = parseInt(startTime.split(':')[0]);
-            if (hour >= 5 && hour < 7) return 0; // Slot 1
-            if (hour >= 7 && hour < 13) return 1; // Slot 2
-            if (hour >= 13 && hour < 15) return 2; // Slot 3
-            if (hour >= 15 && hour < 17) return 3; // Slot 4
+            if (hour >= 5 && hour < 7) return 0; // Slot 0 (5-7 AM)
+            if (hour >= 7 && hour < 13) return 1; // Slot 1 (7 AM - 1 PM)
+            if (hour >= 13 && hour < 15) return 2; // Slot 2 (1 PM - 3 PM)
+            if (hour >= 15 && hour < 17) return 3; // Slot 3 (3 PM - 5 PM)
             return -1; // Default or outside defined slots
         }
 
@@ -468,15 +481,15 @@
         }
 
         function getStatusClass(status) {
-            if (status === 'Hoàn Thành') return 'status-attended'; // Changed to 'Hoàn Thành'
-            if (status === 'Đã Hủy') return 'status-cancelled'; // Changed to 'Đã Hủy'
+            if (status === 'Hoàn Thành') return 'status-attended';
+            if (status === 'Đã Hủy') return 'status-cancelled';
             return ''; // No class for "Chưa khám" or other statuses
         }
 
         function getStatusText(status) {
-            if (status === 'Hoàn Thành') return 'Đã Hoàn Thành'; // Changed to 'Đã Hoàn Thành'
-            if (status === 'Đã Hủy') return 'Đã Hủy'; // Changed to 'Đã Hủy'
-            if (status === 'Chưa khám') return 'Chưa khám'; // Keep 'Chưa khám' if it's a possible status
+            if (status === 'Hoàn Thành') return 'Đã Hoàn Thành';
+            if (status === 'Đã Hủy') return 'Đã Hủy';
+            if (status === 'Chưa khám') return 'Chưa khám';
             return ''; 
         }
 
@@ -525,14 +538,24 @@
                         var statusText = getStatusText(schedule.status);
                         var statusBadgeHtml = statusText ? '<div class="status-badge ' + statusClass + '">' + statusText + '</div>' : '';
 
+                        // Logic để tạo link cho roomId
+                        var roomHtml = '';
+                        if (schedule.roomId && schedule.roomId !== '') {
+                            // !!! QUAN TRỌNG: Thay thế "/doctornurse/rooms?roomId=" bằng URL thực tế của bạn
+                            // Ví dụ: nếu bạn có Servlet RoomDetailServlet xử lý đường dẫn "/room-details", thì URL có thể là "/room-details?roomId="
+                            roomHtml = 'Phòng: <a href="${pageContext.request.contextPath}/doctornurse/rooms?roomId=' + schedule.roomId + '" class="room-link">' + schedule.roomName + '</a>';
+                        } else {
+                            roomHtml = 'Phòng: ' + schedule.roomName;
+                        }
+
                         appointmentDiv.innerHTML = 
                             '<div class="appointment-patient">' + schedule.fullName + '</div>' +
-                            '<div class="appointment-room">' + schedule.roomName + '</div>' +
+                            '<div class="appointment-room">' + roomHtml + '</div>' + // Đã cập nhật
                             '<div class="appointment-time">' + 
                                 (schedule.startTime || '') + ' - ' + (schedule.endTime || '') + 
                             '</div>' +
                             '<div class="appointment-service">' + services + '</div>' +
-                            statusBadgeHtml; // Only add badge if statusText is not empty
+                            statusBadgeHtml; 
                         
                         cell.appendChild(appointmentDiv);
                     }

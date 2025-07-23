@@ -196,6 +196,19 @@
             margin-bottom: 2px;
         }
 
+        /* Styling for the room link */
+        .appointment-room .room-link {
+            color: var(--accent-blue); /* Blue color to indicate it's a link */
+            text-decoration: underline; /* Underline for better visibility */
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .appointment-room .room-link:hover {
+            color: #1976d2; /* Darker blue on hover */
+        }
+
+
         .appointment-time {
             color: #444;
             font-size: 0.9em;
@@ -305,7 +318,7 @@
             <tbody>
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 0 </div>
+                        <div class="slot-number">Slot 0 (05:00 - 07:00)</div>
                     </td>
                     <td class="slot-cell" id="slot0-mon"></td>
                     <td class="slot-cell" id="slot0-tue"></td>
@@ -318,7 +331,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 1 </div>
+                        <div class="slot-number">Slot 1 (07:00 - 13:00)</div>
                     </td>
                     <td class="slot-cell" id="slot1-mon"></td>
                     <td class="slot-cell" id="slot1-tue"></td>
@@ -331,7 +344,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 2 </div>
+                        <div class="slot-number">Slot 2 (13:00 - 15:00)</div>
                     </td>
                     <td class="slot-cell" id="slot2-mon"></td>
                     <td class="slot-cell" id="slot2-tue"></td>
@@ -344,7 +357,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 3</div>
+                        <div class="slot-number">Slot 3 (15:00 - 17:00)</div>
                     </td>
                     <td class="slot-cell" id="slot3-mon"></td>
                     <td class="slot-cell" id="slot3-tue"></td>
@@ -364,7 +377,7 @@
             </div>
         </c:if>
 
-        <a href="${pageContext.request.contextPath}/views/receptionist/ReceptionistDashBoard.jsp" class="back-link">← Quay lại Dashboard</a>
+        <a href="${pageContext.request.contextPath}/views//user/Receptionist/ReceptionistDashBoard.jsp" class="back-link">← Quay lại Dashboard</a>
     </div>
 
     <script>
@@ -382,6 +395,7 @@
                     slotId: '${schedule.slotId}',
                     fullName: '<c:out value="${schedule.fullName}" escapeXml="true"/>',
                     role: '<c:out value="${schedule.role}" escapeXml="true"/>',
+                    // Đảm bảo roomId và roomName được truyền chính xác
                     roomId: '${schedule.roomId != null ? schedule.roomId : ""}',
                     roomName: '<c:out value="${roomName}" escapeXml="true"/>',
                     slotDate: '${schedule.slotDate}',
@@ -521,14 +535,24 @@
                         var statusText = getStatusText(schedule.status);
                         var statusBadgeHtml = statusText ? '<div class="status-badge ' + statusClass + '">' + statusText + '</div>' : '';
 
+                        // Logic để tạo link cho roomId
+                        var roomHtml = '';
+                        if (schedule.roomId && schedule.roomId !== '') {
+                            // !!! QUAN TRỌNG: Thay thế "/receptionist/rooms?roomId=" bằng URL thực tế của bạn
+                            // Ví dụ: nếu bạn có Servlet RoomDetailServlet xử lý đường dẫn "/room-details", thì URL có thể là "/room-details?roomId="
+                            roomHtml = 'Phòng: <a href="${pageContext.request.contextPath}/receptionist/rooms?roomId=' + schedule.roomId + '" class="room-link">' + schedule.roomName + '</a>';
+                        } else {
+                            roomHtml = 'Phòng: ' + schedule.roomName;
+                        }
+
                         appointmentDiv.innerHTML = 
                             '<div class="appointment-info">' + schedule.fullName + ' - ' + schedule.role + '</div>' +
-                            '<div class="appointment-room">' + schedule.roomName + '</div>' +
+                            '<div class="appointment-room">' + roomHtml + '</div>' + // Đã cập nhật
                             '<div class="appointment-time">' + 
                                 (schedule.startTime || '') + ' - ' + (schedule.endTime || '') + 
                             '</div>' +
                             '<div class="appointment-service">' + services + '</div>' +
-                            statusBadgeHtml; // Only add badge if statusText is not empty
+                            statusBadgeHtml; 
                         
                         cell.appendChild(appointmentDiv);
                     }
