@@ -106,167 +106,171 @@ public class BookAppointmentServlet extends HttpServlet {
     // Thêm debug chi tiết vào method handleInitialLoad trong BookAppointmentServlet
 
 private void handleInitialLoad(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    response.setContentType("text/html; charset=UTF-8");
-    request.setCharacterEncoding("UTF-8");
+            throws ServletException, IOException {
+        response.setContentType("text/html; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
 
-    HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession(false);
 
-    // ✅ Kiểm tra đăng nhập
-    if (session == null || session.getAttribute("user") == null) {
-        response.sendRedirect(request.getContextPath() + "/LoginServlet?error=session_expired");
-        return;
-    }
-
-    // ✅ Lấy user từ session và kiểm tra role
-    Users user = (Users) session.getAttribute("user");
-    if (user == null || !"patient".equals(user.getRole())) {
-        LOGGER.warning("⚠️ WARNING: User not found or role is not patient");
-        response.sendRedirect(request.getContextPath() + "/LoginServlet?error=unauthorized");
-        return;
-    }
-
-    // ✅ DEBUG: In tất cả parameters
-    LOGGER.info("🔍 === DEBUG ALL REQUEST PARAMETERS ===");
-    LOGGER.info("Request URL: " + request.getRequestURL());
-    LOGGER.info("Query String: " + request.getQueryString());
-    LOGGER.info("Request Method: " + request.getMethod());
-    
-    // In tất cả parameters
-    java.util.Enumeration<String> paramNames = request.getParameterNames();
-    while (paramNames.hasMoreElements()) {
-        String paramName = paramNames.nextElement();
-        String[] paramValues = request.getParameterValues(paramName);
-        LOGGER.info("Parameter [" + paramName + "] = " + java.util.Arrays.toString(paramValues));
-    }
-    LOGGER.info("=====================================");
-
-    // ✅ Lấy patientId từ user
-    int patientIdInt = user.getUserID();
-    String patientId = String.valueOf(patientIdInt);
-    request.setAttribute("patientId", patientId);
-    LOGGER.info("✅ Found patientId (userID): " + patientId);
-
-    try {
-        // ✅ Extract parameters với logging chi tiết
-        String doctorIdParam = request.getParameter("doctorId");
-        String appointmentDate = request.getParameter("appointmentDate");
-        String slotIdParam = request.getParameter("slotId");
-        
-        LOGGER.info("🔍 EXTRACTED PARAMETERS:");
-        LOGGER.info("  doctorIdParam: [" + doctorIdParam + "]");
-        LOGGER.info("  appointmentDate: [" + appointmentDate + "]");
-        LOGGER.info("  slotIdParam: [" + slotIdParam + "]");
-
-        // ✅ Validate doctorId
-        if (doctorIdParam == null || doctorIdParam.trim().isEmpty()) {
-            LOGGER.severe("❌ ERROR: doctorIdParam is null or empty");
-            setErrorAndForward(request, response, "Vui lòng cung cấp ID bác sĩ hợp lệ");
+        // ✅ Kiểm tra đăng nhập
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/LoginServlet?error=session_expired");
             return;
         }
 
-        int doctorId;
-        try {
-            doctorId = Integer.parseInt(doctorIdParam.trim());
-            if (doctorId <= 0) {
-                throw new NumberFormatException("Doctor ID must be positive");
-            }
-            LOGGER.info("✅ Parsed doctorId: " + doctorId);
-        } catch (NumberFormatException e) {
-            LOGGER.severe("❌ ERROR: Invalid doctorId: " + doctorIdParam);
-            setErrorAndForward(request, response, "ID bác sĩ không hợp lệ: " + doctorIdParam);
+        // ✅ Lấy user từ session và kiểm tra role
+        Users user = (Users) session.getAttribute("user");
+        if (user == null || !"patient".equals(user.getRole())) {
+            LOGGER.warning("⚠️ WARNING: User not found or role is not patient");
+            response.sendRedirect(request.getContextPath() + "/LoginServlet?error=unauthorized");
             return;
         }
 
-        // ✅ Process slotId với logging chi tiết
-        Integer slotId = null;
-        LOGGER.info("🔍 PROCESSING SLOTID:");
-        LOGGER.info("  slotIdParam raw: [" + slotIdParam + "]");
-        LOGGER.info("  slotIdParam == null: " + (slotIdParam == null));
-        LOGGER.info("  slotIdParam.isEmpty(): " + (slotIdParam != null ? slotIdParam.isEmpty() : "N/A"));
-        LOGGER.info("  slotIdParam.trim().isEmpty(): " + (slotIdParam != null ? slotIdParam.trim().isEmpty() : "N/A"));
+        // ✅ DEBUG: In tất cả parameters
+        LOGGER.info("🔍 === DEBUG ALL REQUEST PARAMETERS ===");
+        LOGGER.info("Request URL: " + request.getRequestURL());
+        LOGGER.info("Query String: " + request.getQueryString());
+        LOGGER.info("Request Method: " + request.getMethod());
         
-        if (slotIdParam != null && !slotIdParam.trim().isEmpty()) {
-            try {
-                slotId = Integer.parseInt(slotIdParam.trim());
-                if (slotId <= 0) {
-                    LOGGER.severe("❌ ERROR: SlotId must be positive, got: " + slotId);
-                    throw new NumberFormatException("Slot ID must be positive");
-                }
-                request.setAttribute("slotId", slotId);
-                LOGGER.info("✅ SUCCESS: Parsed and set slotId: " + slotId);
-            } catch (NumberFormatException e) {
-                LOGGER.severe("❌ ERROR: Invalid slotId parameter: " + slotIdParam + ", error: " + e.getMessage());
-                setErrorAndForward(request, response, "ID slot không hợp lệ: " + slotIdParam);
-                return;
-            }
-        } else {
-            LOGGER.warning("⚠️ WARNING: No slotId parameter provided or empty");
-            LOGGER.warning("  Setting slotId to null in request attributes");
-            request.setAttribute("slotId", null);
+        java.util.Enumeration<String> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String paramName = paramNames.nextElement();
+            String[] paramValues = request.getParameterValues(paramName);
+            LOGGER.info("Parameter [" + paramName + "] = " + java.util.Arrays.toString(paramValues));
         }
-
-        // ✅ Validate ngày hẹn
-        LocalDate parsedDate = null;
-        if (appointmentDate != null && !appointmentDate.trim().isEmpty()) {
-            try {
-                parsedDate = LocalDate.parse(appointmentDate.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-                request.setAttribute("appointmentDate", parsedDate);
-                LOGGER.info("✅ Parsed appointmentDate: " + parsedDate);
-            } catch (DateTimeParseException e) {
-                LOGGER.severe("❌ ERROR: Invalid appointment date: " + appointmentDate);
-                setErrorAndForward(request, response, "Ngày hẹn không hợp lệ: " + appointmentDate);
-                return;
-            }
-        } else {
-            parsedDate = LocalDate.now();
-            request.setAttribute("appointmentDate", parsedDate);
-            LOGGER.info("✅ Using default date: " + parsedDate);
-        }
-
-        // ✅ Load doctor details
-        Map<String, Object> doctorDetails = appointmentService.viewDetailBook(doctorId);
-        
-        if (doctorDetails == null || doctorDetails.isEmpty()) {
-            LOGGER.severe("❌ ERROR: No doctor details found for doctorId: " + doctorId);
-            setErrorAndForward(request, response, "Không tìm thấy thông tin bác sĩ với ID: " + doctorId);
-            return;
-        }
-
-        // ✅ Get roomID from doctor details
-        String roomID = (doctorDetails.get("roomID") != null) ? doctorDetails.get("roomID").toString() : null;
-        
-        // Set attributes for JSP
-        request.setAttribute("doctorDetails", doctorDetails);
-        request.setAttribute("doctorId", doctorId);
-        request.setAttribute("currentDate", parsedDate);
-        
-        if (roomID != null && !roomID.equals("null")) {
-            request.setAttribute("roomId", roomID);
-            LOGGER.info("✅ Set roomId: " + roomID);
-        }
-        
-        // ✅ Final debug info
-        LOGGER.info("🔧 === FINAL REQUEST ATTRIBUTES ===");
-        LOGGER.info("  doctorId: " + request.getAttribute("doctorId"));
-        LOGGER.info("  patientId: " + request.getAttribute("patientId"));
-        LOGGER.info("  slotId: " + request.getAttribute("slotId"));
-        LOGGER.info("  roomId: " + request.getAttribute("roomId"));
-        LOGGER.info("  appointmentDate: " + request.getAttribute("appointmentDate"));
         LOGGER.info("=====================================");
-        
-        // Forward to JSP
-        request.getRequestDispatcher("/views/user/Patient/BookAppointment.jsp").forward(request, response);
-        
-    } catch (SQLException e) {
-        LOGGER.severe("SQLException in BookAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
-        setErrorAndForward(request, response, "Lỗi hệ thống: Không thể tải thông tin bác sĩ. Vui lòng thử lại sau.");
-    } catch (Exception e) {
-        LOGGER.severe("Unexpected error in BookAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
-        e.printStackTrace();
-        setErrorAndForward(request, response, "Lỗi không xác định: " + e.getMessage());
+
+        // ✅ Lấy patientId từ user
+        int patientIdInt = user.getUserID();
+        String patientId = String.valueOf(patientIdInt);
+        if (patientId == null || patientId.isEmpty()) {
+            LOGGER.severe("❌ ERROR: patientId is null or empty");
+            response.sendRedirect(request.getContextPath() + "/LoginServlet?error=invalid_user");
+            return;
+        }
+        request.setAttribute("patientId", patientId);
+        LOGGER.info("✅ Found patientId (userID): " + patientId);
+
+        try {
+            // ✅ Extract parameters với logging chi tiết
+            String doctorIdParam = request.getParameter("doctorId");
+            String appointmentDate = request.getParameter("appointmentDate");
+            String slotIdParam = request.getParameter("slotId");
+            
+            LOGGER.info("🔍 EXTRACTED PARAMETERS:");
+            LOGGER.info("  doctorIdParam: [" + doctorIdParam + "]");
+            LOGGER.info("  appointmentDate: [" + appointmentDate + "]");
+            LOGGER.info("  slotIdParam: [" + slotIdParam + "]");
+
+            // ✅ Validate doctorId
+            if (doctorIdParam == null || doctorIdParam.trim().isEmpty()) {
+                LOGGER.severe("❌ ERROR: doctorIdParam is null or empty");
+                setErrorAndForward(request, response, "Vui lòng cung cấp ID bác sĩ hợp lệ");
+                return;
+            }
+
+            int doctorId;
+            try {
+                doctorId = Integer.parseInt(doctorIdParam.trim());
+                if (doctorId <= 0) {
+                    throw new NumberFormatException("Doctor ID must be positive");
+                }
+                LOGGER.info("✅ Parsed doctorId: " + doctorId);
+            } catch (NumberFormatException e) {
+                LOGGER.severe("❌ ERROR: Invalid doctorId: " + doctorIdParam);
+                setErrorAndForward(request, response, "ID bác sĩ không hợp lệ: " + doctorIdParam);
+                return;
+            }
+
+            // ✅ Process slotId với logging chi tiết, aligned with ViewDetailBookServlet
+            Integer slotId = null;
+            LOGGER.info("🔍 PROCESSING SLOTID:");
+            LOGGER.info("  slotIdParam raw: [" + slotIdParam + "]");
+            LOGGER.info("  slotIdParam == null: " + (slotIdParam == null));
+            LOGGER.info("  slotIdParam.isEmpty(): " + (slotIdParam != null ? slotIdParam.isEmpty() : "N/A"));
+            LOGGER.info("  slotIdParam.trim().isEmpty(): " + (slotIdParam != null ? slotIdParam.trim().isEmpty() : "N/A"));
+            
+            if (slotIdParam != null && !slotIdParam.trim().isEmpty()) {
+                try {
+                    slotId = Integer.parseInt(slotIdParam.trim());
+                    if (slotId <= 0) {
+                        LOGGER.severe("❌ ERROR: SlotId must be positive, got: " + slotId);
+                        throw new NumberFormatException("Slot ID must be positive");
+                    }
+                    request.setAttribute("slotId", slotId);
+                    LOGGER.info("✅ SUCCESS: Parsed and set slotId: " + slotId);
+                } catch (NumberFormatException e) {
+                    LOGGER.severe("❌ ERROR: Invalid slotId parameter: " + slotIdParam + ", error: " + e.getMessage());
+                    setErrorAndForward(request, response, "ID slot không hợp lệ: " + slotIdParam);
+                    return;
+                }
+            } else {
+                LOGGER.warning("⚠️ WARNING: No slotId parameter provided or empty");
+                LOGGER.warning("  Setting slotId to null in request attributes");
+                request.setAttribute("slotId", null);
+            }
+
+            // ✅ Validate ngày hẹn
+            LocalDate parsedDate = null;
+            if (appointmentDate != null && !appointmentDate.trim().isEmpty()) {
+                try {
+                    parsedDate = LocalDate.parse(appointmentDate.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+                    request.setAttribute("appointmentDate", parsedDate);
+                    LOGGER.info("✅ Parsed appointmentDate: " + parsedDate);
+                } catch (DateTimeParseException e) {
+                    LOGGER.severe("❌ ERROR: Invalid appointment date: " + appointmentDate);
+                    setErrorAndForward(request, response, "Ngày hẹn không hợp lệ: " + appointmentDate);
+                    return;
+                }
+            } else {
+                parsedDate = LocalDate.now();
+                request.setAttribute("appointmentDate", parsedDate);
+                LOGGER.info("✅ Using default date: " + parsedDate);
+            }
+
+            // ✅ Load doctor details
+            Map<String, Object> doctorDetails = appointmentService.viewDetailBook(doctorId);
+            
+            if (doctorDetails == null || doctorDetails.isEmpty()) {
+                LOGGER.severe("❌ ERROR: No doctor details found for doctorId: " + doctorId);
+                setErrorAndForward(request, response, "Không tìm thấy thông tin bác sĩ với ID: " + doctorId);
+                return;
+            }
+
+            // ✅ Get roomID from doctor details
+            String roomID = (doctorDetails.get("roomID") != null) ? doctorDetails.get("roomID").toString() : null;
+            
+            // Set attributes for JSP
+            request.setAttribute("doctorDetails", doctorDetails);
+            request.setAttribute("doctorId", doctorId);
+            request.setAttribute("currentDate", parsedDate);
+            
+            if (roomID != null && !roomID.equals("null")) {
+                request.setAttribute("roomId", roomID);
+                LOGGER.info("✅ Set roomId: " + roomID);
+            }
+            
+            // ✅ Final debug info
+            LOGGER.info("🔧 === FINAL REQUEST ATTRIBUTES ===");
+            LOGGER.info("  doctorId: " + request.getAttribute("doctorId"));
+            LOGGER.info("  patientId: " + request.getAttribute("patientId"));
+            LOGGER.info("  slotId: " + request.getAttribute("slotId"));
+            LOGGER.info("  roomId: " + request.getAttribute("roomId"));
+            LOGGER.info("  appointmentDate: " + request.getAttribute("appointmentDate"));
+            LOGGER.info("=====================================");
+            
+            // Forward to JSP
+            request.getRequestDispatcher("/views/user/Patient/BookAppointment.jsp").forward(request, response);
+            
+        } catch (SQLException e) {
+            LOGGER.severe("SQLException in BookAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            setErrorAndForward(request, response, "Lỗi hệ thống: Không thể tải thông tin bác sĩ. Vui lòng thử lại sau.");
+        } catch (Exception e) {
+            LOGGER.severe("Unexpected error in BookAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            e.printStackTrace();
+            setErrorAndForward(request, response, "Lỗi không xác định: " + e.getMessage());
+        }
     }
-}
 
     private Users validateSession(HttpSession session) {
         if (session == null || session.getAttribute("user") == null) {
