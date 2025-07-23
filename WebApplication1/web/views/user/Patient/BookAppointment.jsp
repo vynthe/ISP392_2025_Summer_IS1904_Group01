@@ -263,263 +263,227 @@
                 <div class="subtitle">Hệ thống quản lý lịch khám bệnh</div>
             </div>
 
-            <div class="content">
-                <!-- Alert Messages -->
-                <c:if test="${not empty error}">
-                    <div class="alert alert-error">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>${fn:escapeXml(error)}</span>
-                    </div>
-                </c:if>
-
-                <c:if test="${not empty success}">
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i>
-                        <span>${fn:escapeXml(success)}</span>
-                    </div>
-                </c:if>
+            <c:if test="${not empty success}">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${fn:escapeXml(success)}</span>
+                </div>
+            </c:if>
 
 
-                <!-- Booking Form -->
-                <div class="form-section">
-                    <h3><i class="fas fa-clipboard-list"></i> Thông Tin Đặt Lịch</h3>
+            <!-- Booking Form -->
+            <div class="form-section">
+                <h3><i class="fas fa-clipboard-list"></i> Thông Tin Đặt Lịch</h3>
 
-                    <form action="${pageContext.request.contextPath}/BookAppointmentServlet" 
-                          method="post" id="appointmentForm" onsubmit="return validateAndSubmitForm(this)">
+                <form action="${pageContext.request.contextPath}/BookAppointmentServlet" 
+                      method="post" id="appointmentForm" onsubmit="return validateAndSubmitForm(this)">
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><i class="fas fa-user-md"></i> Mã Bác Sĩ:</label>
-                                <div class="value-display">
-                                    ${fn:escapeXml(param.doctorId != null ? param.doctorId : requestScope.doctorId)}
-                                </div>
-                                <input type="hidden" name="doctorId" 
-                                       value="${fn:escapeXml(param.doctorId != null ? param.doctorId : requestScope.doctorId)}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user-md"></i> Mã Bác Sĩ:</label>
+                            <div class="value-display">
+                                ${fn:escapeXml(param.doctorId != null ? param.doctorId : requestScope.doctorId)}
                             </div>
+                            <input type="hidden" name="doctorId" 
+                                   value="${fn:escapeXml(param.doctorId != null ? param.doctorId : requestScope.doctorId)}">
+                        </div>
 
-                            <!-- Thay thế phần hiển thị slotId và roomId trong JSP -->
-                            <div class="form-group">
-                                <label><i class="fas fa-clock"></i> Mã Khung Giờ:</label>
-                                <div class="value-display">
-                                    <c:choose>
-                                        <c:when test="${not empty requestScope.slotId and requestScope.slotId != null}">
-                                            ${fn:escapeXml(requestScope.slotId)}
-                                        </c:when>
-                                        <c:when test="${not empty param.slotId and param.slotId != null and param.slotId != ''}">
-                                            ${fn:escapeXml(param.slotId)}
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span style="color: #dc3545; font-weight: bold;">
-                                                <i class="fas fa-exclamation-triangle"></i> Chưa chọn slot
-                                            </span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <input type="hidden" name="slotId" 
-                                       value="${not empty requestScope.slotId ? requestScope.slotId : (not empty param.slotId ? param.slotId : '')}">
+                        <!-- Thay thế phần hiển thị slotId và roomId trong JSP -->
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Mã Khung Giờ:</label>
+                            <div class="value-display">
+                                <c:choose>
+                                    <c:when test="${not empty requestScope.slotId and requestScope.slotId != null}">
+                                        ${fn:escapeXml(requestScope.slotId)}
+                                    </c:when>
+                                    <c:when test="${not empty param.slotId and param.slotId != null and param.slotId != ''}">
+                                        ${fn:escapeXml(param.slotId)}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color: #dc3545; font-weight: bold;">
+                                            <i class="fas fa-exclamation-triangle"></i> Chưa chọn slot
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
-
-                            <div class="form-group">
-                                <label><i class="fas fa-door-open"></i> Mã Phòng:</label>
-                                <div class="value-display">
-                                    <c:choose>
-                                        <c:when test="${not empty requestScope.roomId}">
-                                            ${fn:escapeXml(requestScope.roomId)}
-                                        </c:when>
-                                        <c:when test="${not empty param.roomId}">
-                                            ${fn:escapeXml(param.roomId)}
-                                        </c:when>
-                                        <c:when test="${not empty doctorDetails.roomID}">
-                                            ${fn:escapeXml(doctorDetails.roomID)}
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span style="color: #dc3545;">Chưa có phòng</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <input type="hidden" name="roomId" 
-                                       value="${fn:escapeXml(not empty requestScope.roomId ? requestScope.roomId : (not empty param.roomId ? param.roomId : doctorDetails.roomID))}">
-                            </div>
-
-                            <div class="form-group">
-                                <label><i class="fas fa-user"></i> Mã Bệnh Nhân:</label>
-                                <div class="value-display">
-                                    <c:choose>
-                                        <c:when test="${not empty currentUser}">
-                                            ${fn:escapeXml(currentUser.userID)}
-                                        </c:when>
-                                        <c:otherwise>
-                                            ${fn:escapeXml(param.patientId != null ? param.patientId : requestScope.patientId)}
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <input type="hidden" name="patientId" 
-                                       value="${fn:escapeXml(not empty currentUser ? currentUser.userID : (param.patientId != null ? param.patientId : requestScope.patientId))}">
-                            </div>
+                            <input type="hidden" name="slotId" 
+                                   value="${not empty requestScope.slotId ? requestScope.slotId : (not empty param.slotId ? param.slotId : '')}">
                         </div>
 
                         <div class="form-group">
-                            <label for="serviceId">
-                                <i class="fas fa-stethoscope"></i> 
-                                Chọn Dịch Vụ <span class="required">*</span>
-                            </label>
-                            <select name="serviceIdTemp" id="serviceId" required>
-                                <option value="">-- Vui lòng chọn dịch vụ --</option>
-                                <c:forEach var="service" items="${doctorDetails.services}">
-                                    <option value="${fn:escapeXml(service.serviceID)}" 
-                                            ${(param.serviceIdTemp == service.serviceID || requestScope.serviceIdTemp == service.serviceID) ? 'selected' : ''}>
-                                        ${fn:escapeXml(service.serviceName)} - 
-                                        <fmt:formatNumber value="${service.price}" pattern="#,##0" type="number"/> VNĐ
-                                    </option>
-                                </c:forEach>
-                            </select>
+                            <label><i class="fas fa-door-open"></i> Mã Phòng:</label>
+                            <div class="value-display">
+                                <c:choose>
+                                    <c:when test="${not empty requestScope.roomId}">
+                                        ${fn:escapeXml(requestScope.roomId)}
+                                    </c:when>
+                                    <c:when test="${not empty param.roomId}">
+                                        ${fn:escapeXml(param.roomId)}
+                                    </c:when>
+                                    <c:when test="${not empty doctorDetails.roomID}">
+                                        ${fn:escapeXml(doctorDetails.roomID)}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color: #dc3545;">Chưa có phòng</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <input type="hidden" name="roomId" 
+                                   value="${fn:escapeXml(not empty requestScope.roomId ? requestScope.roomId : (not empty param.roomId ? param.roomId : doctorDetails.roomID))}">
                         </div>
 
-                        <div class="btn-container">
-                            <button type="button" class="btn-back" onclick="history.back()">
-                                <i class="fas fa-arrow-left"></i> Quay Lại
-                            </button>
-                            <button type="submit" class="btn-book" id="submitBtn">
-                                <i class="fas fa-calendar-check"></i> Xác Nhận Đặt Lịch
-                            </button>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Mã Bệnh Nhân:</label>
+                            <div class="value-display">
+                                <c:choose>
+                                    <c:when test="${not empty currentUser}">
+                                        ${fn:escapeXml(currentUser.userID)}
+                                    </c:when>
+                                    <c:otherwise>
+                                        ${fn:escapeXml(param.patientId != null ? param.patientId : requestScope.patientId)}
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <input type="hidden" name="patientId" 
+                                   value="${fn:escapeXml(not empty currentUser ? currentUser.userID : (param.patientId != null ? param.patientId : requestScope.patientId))}">
                         </div>
-                    </form>
-
-                    <div class="loading" id="loadingDiv">
-                        <i class="fas fa-spinner"></i> Đang xử lý yêu cầu...
                     </div>
+
+                    <div class="form-group">
+                        <label for="serviceId">
+                            <i class="fas fa-stethoscope"></i> 
+                            Chọn Dịch Vụ <span class="required">*</span>
+                        </label>
+                        <select name="serviceIdTemp" id="serviceId" required>
+                            <option value="">-- Vui lòng chọn dịch vụ --</option>
+                            <c:forEach var="service" items="${doctorDetails.services}">
+                                <option value="${fn:escapeXml(service.serviceID)}" 
+                                        ${(param.serviceIdTemp == service.serviceID || requestScope.serviceIdTemp == service.serviceID) ? 'selected' : ''}>
+                                    ${fn:escapeXml(service.serviceName)} - 
+                                    <fmt:formatNumber value="${service.price}" pattern="#,##0" type="number"/> VNĐ
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="button" class="btn-back" onclick="history.back()">
+                            <i class="fas fa-arrow-left"></i> Quay Lại
+                        </button>
+                        <button type="submit" class="btn-book" id="submitBtn">
+                            <i class="fas fa-calendar-check"></i> Xác Nhận Đặt Lịch
+                        </button>
+                    </div>
+                </form>
+
+                <div class="loading" id="loadingDiv">
+                    <i class="fas fa-spinner"></i> Đang xử lý yêu cầu...
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            function validateAndSubmitForm(form) {
-                // Get form data
-                const formData = {
-                    doctorId: form.doctorId.value,
-                    slotId: form.slotId.value,
-                    roomId: form.roomId.value,
-                    patientId: form.patientId.value,
-                    serviceId: form.serviceIdTemp.value
-                };
+    <script>
+        function validateAndSubmitForm(form) {
+            // Get form data
+            const formData = {
+                doctorId: form.doctorId.value,
+                slotId: form.slotId.value,
+                roomId: form.roomId.value,
+                patientId: form.patientId.value,
+                serviceId: form.serviceIdTemp.value
+            };
 
-                console.log("=== FORM VALIDATION DEBUG ===");
-                console.log("Form Data:", formData);
-                console.log("============================");
+            console.log("=== FORM VALIDATION DEBUG ===");
+            console.log("Form Data:", formData);
+            console.log("============================");
 
-                // Validate required fields
-                const requiredFields = [
-                    {field: 'doctorId', name: 'Mã bác sĩ'},
-                    {field: 'slotId', name: 'Mã khung giờ'},
-                    {field: 'roomId', name: 'Mã phòng'},
-                    {field: 'patientId', name: 'Mã bệnh nhân'},
-                    {field: 'serviceId', name: 'Dịch vụ'}
-                ];
+            // Validate required fields
+            const requiredFields = [
+                {field: 'doctorId', name: 'Mã bác sĩ'},
+                {field: 'slotId', name: 'Mã khung giờ'},
+                {field: 'roomId', name: 'Mã phòng'},
+                {field: 'patientId', name: 'Mã bệnh nhân'},
+                {field: 'serviceId', name: 'Dịch vụ'}
+            ];
 
-                for (const item of requiredFields) {
-                    const value = formData[item.field];
-                    if (!value || value.trim() === '') {
-                        showAlert('❌ Lỗi: ' + item.name + ' không được để trống!', 'error');
-                        return false;
-                    }
-
-                    // Validate numeric fields
-                    if (item.field !== 'serviceId' && (isNaN(value) || parseInt(value) <= 0)) {
-                        showAlert('❌ Lỗi: ' + item.name + ' phải là số dương hợp lệ!', 'error');
-                        return false;
-                    }
-                }
-
-                // Special validation for service selection
-                if (!formData.serviceId || formData.serviceId === '') {
-                    showAlert('❌ Lỗi: Vui lòng chọn dịch vụ!', 'error');
-                    document.getElementById('serviceId').focus();
+            for (const item of requiredFields) {
+                const value = formData[item.field];
+                if (!value || value.trim() === '') {
+                    showAlert('❌ Lỗi: ' + item.name + ' không được để trống!', 'error');
                     return false;
                 }
 
-                // Show confirmation dialog
-                const selectedServiceText = document.getElementById('serviceId').selectedOptions[0].textContent;
-                const confirmMessage =
-                        "🏥 XÁC NHẬN THÔNG TIN ĐẶT LỊCH HẸN\n\n" +
-                        "📋 Chi tiết lịch hẹn:\n" +
-                        "• Mã bác sĩ: " + formData.doctorId + "\n" +
-                        "• Mã khung giờ: " + formData.slotId + "\n" +
-                        "• Mã phòng: " + formData.roomId + "\n" +
-                        "• Mã bệnh nhân: " + formData.patientId + "\n" +
-                        "• Dịch vụ: " + selectedServiceText + "\n\n" +
-                        "⚠️  LƯU Ý: Sau khi xác nhận, bạn sẽ không thể thay đổi thông tin!\n\n" +
-                        "❓ Bạn có chắc chắn muốn đặt lịch hẹn này không?";
-
-                if (!confirm(confirmMessage)) {
+                // Validate numeric fields
+                if (item.field !== 'serviceId' && (isNaN(value) || parseInt(value) <= 0)) {
+                    showAlert('❌ Lỗi: ' + item.name + ' phải là số dương hợp lệ!', 'error');
                     return false;
                 }
-
-                // Show loading state
-                showLoading(true);
-                return true;
             }
 
-            function showAlert(message, type) {
-                // Remove existing alerts
-                const existingAlerts = document.querySelectorAll('.alert');
-                existingAlerts.forEach(alert => alert.remove());
-
-                // Create new alert
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-' + type;
-                alertDiv.innerHTML =
-                        '<i class="fas fa-' + (type === 'error' ? 'exclamation-triangle' : 'check-circle') + '"></i>' +
-                        '<span>' + message + '</span>';
-
-                // Insert at the beginning of content
-                const content = document.querySelector('.content');
-                content.insertBefore(alertDiv, content.firstChild);
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    if (alertDiv.parentNode) {
-                        alertDiv.remove();
-                    }
-                }, 5000);
-
-                // Scroll to top to show alert
-                window.scrollTo({top: 0, behavior: 'smooth'});
+            // Special validation for service selection
+            if (!formData.serviceId || formData.serviceId === '') {
+                showAlert('❌ Lỗi: Vui lòng chọn dịch vụ!', 'error');
+                document.getElementById('serviceId').focus();
+                return false;
             }
 
-            function showLoading(show) {
-                const loadingDiv = document.getElementById('loadingDiv');
-                const submitBtn = document.getElementById('submitBtn');
+            // Show confirmation dialog
+            const selectedServiceText = document.getElementById('serviceId').selectedOptions[0].textContent;
+            const confirmMessage =
+                    "🏥 XÁC NHẬN THÔNG TIN ĐẶT LỊCH HẸN\n\n" +
+                    "📋 Chi tiết lịch hẹn:\n" +
+                    "• Mã bác sĩ: " + formData.doctorId + "\n" +
+                    "• Mã khung giờ: " + formData.slotId + "\n" +
+                    "• Mã phòng: " + formData.roomId + "\n" +
+                    "• Mã bệnh nhân: " + formData.patientId + "\n" +
+                    "• Dịch vụ: " + selectedServiceText + "\n\n" +
+                    "⚠️  LƯU Ý: Sau khi xác nhận, bạn sẽ không thể thay đổi thông tin!\n\n" +
+                    "❓ Bạn có chắc chắn muốn đặt lịch hẹn này không?";
 
-                if (show) {
-                    loadingDiv.style.display = 'block';
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-                } else {
-                    loadingDiv.style.display = 'none';
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Xác Nhận Đặt Lịch';
-                }
+            if (!confirm(confirmMessage)) {
+                return false;
             }
 
-            // Handle page load events
-            document.addEventListener('DOMContentLoaded', function () {
+            // Show loading state
+            showLoading(true);
+            return true;
+        }
+
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loadingDiv');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (show) {
+                loadingDiv.style.display = 'block';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            } else {
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Xác Nhận Đặt Lịch';
+            }
+        }
+
+        // Handle page load events
+        document.addEventListener('DOMContentLoaded', function () {
+            showLoading(false);
+
+            // Focus on service selection if empty
+            const serviceSelect = document.getElementById('serviceId');
+            if (serviceSelect && !serviceSelect.value) {
+                serviceSelect.focus();
+            }
+        });
+
+        // Handle form submission timeout
+        document.getElementById('appointmentForm').addEventListener('submit', function () {
+            // Reset loading state after 30 seconds if no response
+            setTimeout(function () {
                 showLoading(false);
-
-                // Focus on service selection if empty
-                const serviceSelect = document.getElementById('serviceId');
-                if (serviceSelect && !serviceSelect.value) {
-                    serviceSelect.focus();
-                }
-            });
-
-            // Handle form submission timeout
-            document.getElementById('appointmentForm').addEventListener('submit', function () {
-                // Reset loading state after 30 seconds if no response
-                setTimeout(function () {
-                    showLoading(false);
-                    showAlert('⏰ Yêu cầu đang xử lý lâu hơn bình thường. Vui lòng kiểm tra kết quả hoặc thử lại.', 'error');
-                }, 30000);
-            });
-        </script>
-    </body>
+                showAlert('⏰ Yêu cầu đang xử lý lâu hơn bình thường. Vui lòng kiểm tra kết quả hoặc thử lại.', 'error');
+            }, 30000);
+        });
+    </script>
+</body>
 </html>

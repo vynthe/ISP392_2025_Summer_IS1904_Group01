@@ -469,7 +469,7 @@ public class AppointmentDAO {
 
             // Chèn appointment
             String insertSql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, SlotID, RoomID, AppointmentTime, Status, CreatedBy, CreatedAt, UpdatedAt) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?, ?)";
+                    + "VALUES (?, ?, ?, ?, ?, ?, 'Approved', ?, ?, ?)";
 
             try (PreparedStatement pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 pstmt.setInt(1, patientId);
