@@ -536,7 +536,7 @@
                 <div class="banner-actions">
                     <a href="${pageContext.request.contextPath}/BookAppointmentGuestServlet" class="cta-button">
                         <i class="fas fa-calendar-plus"></i>
-                        Đặt lịch khám
+                        Đăng Kí Tư Vấn
                     </a>
                     
                     <!-- Success Message -->

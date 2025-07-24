@@ -443,7 +443,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/userDetails?userID=${user.userID}" class="details-button">
+                                            <a href="${pageContext.request.contextPath}/ViewScheduleDoctorNurse?userID=${user.userID}" class="details-button">
                                                 <i class="fas fa-eye"></i> Xem chi tiết
                                             </a>
                                         </td>

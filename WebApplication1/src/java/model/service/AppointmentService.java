@@ -9,6 +9,7 @@ import model.dao.AppointmentDAO;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -286,6 +287,76 @@ public String getServiceNameById(int serviceId) throws SQLException {
     }
     return appointmentDAO.getServiceNameById(serviceId);
 }
+public boolean updateAppointmentSlot(int appointmentId, int newSlotId, int doctorId, int roomId) throws SQLException {
+        // Validate input parameters
+        if (appointmentId <= 0 || newSlotId <= 0 || doctorId <= 0 || roomId <= 0) {
+            throw new IllegalArgumentException("Invalid input: All IDs must be positive");
+        }
 
+        // Additional business logic validation (if needed)
+        // Example: Ensure the new slot is for the same doctor as the original appointment
+        Map<String, Object> appointmentDetails = appointmentDAO.getAppointmentById(appointmentId);
+        if (appointmentDetails == null) {
+            System.err.println("❌ Appointment " + appointmentId + " not found at " + LocalDateTime.now() + " +07");
+            return false;
+        }
 
+        Integer appointmentDoctorId = (Integer) appointmentDetails.get("doctorId");
+        if (appointmentDoctorId == null || appointmentDoctorId != doctorId) {
+            System.err.println("❌ Doctor ID mismatch for appointment " + appointmentId + 
+                               " (expected: " + appointmentDoctorId + ", provided: " + doctorId + ") at " + LocalDateTime.now() + " +07");
+            return false;
+        }
+
+        // Call DAO to update the appointment slot
+        try {
+            boolean updated = appointmentDAO.updateAppointmentSlot(appointmentId, newSlotId, doctorId, roomId);
+            if (updated) {
+                System.out.println("✅ Service: Appointment " + appointmentId + " slot updated successfully to slot " + newSlotId + 
+                                   " at " + LocalDateTime.now() + " +07");
+            } else {
+                System.err.println("❌ Service: Failed to update appointment " + appointmentId + " to slot " + newSlotId + 
+                                   " at " + LocalDateTime.now() + " +07");
+            }
+            return updated;
+        } catch (SQLException e) {
+            System.err.println("SQLException in updateAppointmentSlot (appointmentId=" + appointmentId + ", newSlotId=" + newSlotId + 
+                               "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+ public List<Map<String, Object>> getAvailableSlotsForDoctor(int doctorId) throws SQLException {
+        try {
+            List<ScheduleEmployee> schedules = appointmentDAO.getSchedulesByRoleAndUserId("Doctor", doctorId);
+            List<Map<String, Object>> availableSlots = new ArrayList<>();
+            for (ScheduleEmployee schedule : schedules) {
+                // Check if slot has less than 5 appointments
+                int appointmentCount = appointmentDAO.countAppointmentsBySlotId(schedule.getSlotId());
+                if (appointmentCount < 5) {
+                    Map<String, Object> slot = new HashMap<>();
+                    slot.put("slotId", schedule.getSlotId());
+                    slot.put("slotDate", schedule.getSlotDate());
+                    slot.put("startTime", schedule.getStartTime());
+                    slot.put("endTime", schedule.getEndTime());
+                    slot.put("roomId", schedule.getRoomId());
+                    slot.put("status", schedule.getStatus());
+                    availableSlots.add(slot);
+                }
+            }
+            return availableSlots;
+        } catch (SQLException e) {
+            System.err.println("SQLException in getAvailableSlotsForDoctor (doctorId=" + doctorId + 
+                               "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+ // Lấy danh sách lịch khám chi tiết theo PatientID
+    public List<Map<String, Object>> getDetailedAppointmentsByPatientId(int patientId) throws SQLException {
+        try {
+            return appointmentDAO.getDetailedAppointmentsByPatientId(patientId);
+        } catch (SQLException e) {
+            throw new SQLException("Error getting detailed appointments by patient ID: " + e.getMessage(), e);
+        }
+    }
 }
+

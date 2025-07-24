@@ -8,6 +8,7 @@
         <title>Patient Dashboard - Nha Khoa PDC - Nụ cười tự tin, sức khỏe hoàn hảo</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <style>
+            /* Existing styles remain unchanged */
             * {
                 margin: 0;
                 padding: 0;
@@ -290,7 +291,8 @@
             .banner-actions {
                 margin-top: 40px;
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
+                justify-content: center;
                 align-items: center;
                 gap: 20px;
             }
@@ -568,6 +570,10 @@
                     font-size: 18px;
                 }
 
+                .banner-actions {
+                    flex-direction: column;
+                }
+
                 .services-grid {
                     grid-template-columns: 1fr;
                     gap: 20px;
@@ -610,7 +616,7 @@
                         </a>
                     </nav>
 
-                    <!-- User Menu (thay thế Auth Buttons) -->
+                    <!-- User Menu -->
                     <div class="user-menu">
                         <button class="user-menu-btn" id="userMenuBtn">
                             <div class="user-avatar">
@@ -631,6 +637,10 @@
                             <a href="${pageContext.request.contextPath}/ChangePasswordController">
                                 <i class="fas fa-edit"></i>
                                 Đổi mật khẩu
+                            </a>
+                            <a href="${pageContext.request.contextPath}/ViewAppointmentPatient">
+                                <i class="fas fa-calendar-check"></i>
+                                Xem lịch khám
                             </a>
                             <a href="${pageContext.request.contextPath}/LogoutServlet" 
                                class="danger" 
@@ -656,6 +666,14 @@
                         <a href="${pageContext.request.contextPath}/ViewMedicalAppointmentServlet" class="cta-button">
                             <i class="fas fa-calendar-plus"></i>
                             Đặt lịch khám
+                        </a>
+                        <a href="${pageContext.request.contextPath}/UpdateAppointments" class="cta-button">
+                            <i class="fas fa-calendar-alt"></i>
+                            Sửa lịch khám
+                        </a>
+                        <a href="${pageContext.request.contextPath}/ViewAppointmentPatient" class="cta-button">
+                            <i class="fas fa-calendar-check"></i>
+                            Xem lịch khám
                         </a>
 
                         <!-- Success Message -->

@@ -332,6 +332,12 @@ public void generateSchedule(List<Integer> userIds, List<String> roles, int crea
     }
     return scheduleDAO.getAllSchedulesByUserId(userId);
 }
+    public List<ScheduleEmployee> getAllSchedulesByDoctorNurseId(int userId) throws SQLException {
+    if (userId <= 0) {
+        throw new IllegalArgumentException("User ID must be positive.");
+    }
+    return scheduleDAO.getAllSchedulesByDoctorNurseId(userId);
+}
    public List<ScheduleEmployee> getAssignedSchedulesByUserId(int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
         try {
             return scheduleDAO.getAssignedSchedulesByUserId(userId, startDate, endDate);
@@ -359,32 +365,7 @@ public List<ScheduleEmployee> getSchedulesByDateRange(LocalDate startDate, Local
 public List<ScheduleEmployee> getSchedulesByUserIdAndRole(int userId, String role) throws SQLException {
         return scheduleDAO.getSchedulesByUserIdAndRole(userId, role);
     }
-public boolean updateScheduleEmployeeRoom(int slotId, int newUserId, int createdBy) throws SQLException {
-        try {
-            // Call DAO method to perform the update
-            return scheduleDAO.updateScheduleEmployeeRoom(slotId, newUserId, createdBy);
-        } catch (ClassNotFoundException e) {
-            // Log the error and convert to SQLException for consistency
-            System.err.println("ClassNotFoundException in updateScheduleEmployeeRoom: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw new SQLException("Database driver not found", e);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            // Re-throw these exceptions as they are business logic errors
-            throw e;
-        } catch (SQLException e) {
-            // Log and re-throw SQLException
-            System.err.println("SQLException in updateScheduleEmployeeRoom (Service): " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
-        }
-    }
-public String checkRoomAvailability(int roomId, LocalDate slotDate, LocalTime startTime, LocalTime endTime, String role) {
-        try {
-            boolean canAssign = scheduleDAO.checkRoomAssignmentConstraints(roomId, slotDate, startTime, endTime, role);
-            return canAssign ? "Phòng có thể gán cho vai trò " + role + "." : "Phòng không khả dụng cho vai trò " + role + ".";
-        } catch (IllegalArgumentException e) {
-            return "Lỗi: " + e.getMessage();
-        } catch (SQLException e) {
-            return "Lỗi cơ sở dữ liệu: " + e.getMessage();
-        }
-    }
+
 }
+
 

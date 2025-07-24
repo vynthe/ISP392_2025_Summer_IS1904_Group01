@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-green: #4CAF50; /* Green for medical theme */
+            --primary-green: #4CAF50;  Green for medical theme 
             --secondary-green: #66BB6A; /* Light Green */
             --light-green: #C8E6C9; /* Very Light Green */
             --accent-blue: #2196F3; /* Blue for links/buttons */
@@ -223,6 +223,30 @@
             color: #2e7d32; /* Even darker green */
             font-size: 0.9em;
             font-style: italic;
+        }
+
+        .appointment-actions {
+            margin-top: 5px;
+        }
+
+        .appointment-actions form {
+            display: inline;
+        }
+
+        .appointment-actions button {
+            background-color: var(--accent-blue);
+            color: var(--text-light);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .appointment-actions button:hover {
+            background-color: #1976d2;
         }
 
         .status-badge {
@@ -565,6 +589,18 @@
                                 (schedule.startTime || '') + ' - ' + (schedule.endTime || '') + 
                             '</div>' +
                             '<div class="appointment-service">' + services + '</div>' +
+                            '<div class="appointment-actions">' +
+                                '<form action="${pageContext.request.contextPath}/UpdateScheduleServlet" method="post">' +
+                                    '<input type="hidden" name="action" value="edit">' +
+                                    '<input type="hidden" name="index" value="' + i + '">' +
+                                    '<button type="submit">Sửa</button>' +
+                                '</form>' +
+                                '<form action="${pageContext.request.contextPath}/ScheduleServlet" method="post">' +
+                                    '<input type="hidden" name="action" value="delete">' +
+                                    '<input type="hidden" name="index" value="' + i + '">' +
+                                    '<button type="submit">Xóa</button>' +
+                                '</form>' +
+                            '</div>' +
                             statusBadgeHtml; 
                         
                         cell.appendChild(appointmentDiv);
