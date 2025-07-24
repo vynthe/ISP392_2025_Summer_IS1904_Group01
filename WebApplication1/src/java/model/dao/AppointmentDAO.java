@@ -726,4 +726,233 @@ public List<Map<String, Object>> getAllAppointments(int page, int pageSize) thro
     }
     return appointments;
 }
+public List<Map<String, Object>> searchAppointments(int page, int pageSize, String keyword) throws SQLException {
+        List<Map<String, Object>> appointments = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder("""
+            SELECT 
+                a.AppointmentID,
+                a.AppointmentTime,
+                a.Status,
+                a.CreatedAt,
+                a.UpdatedAt,
+                u1.FullName AS PatientName,
+                u1.UserID AS PatientID,
+                u1.Phone AS PatientPhone,
+                u1.Email AS PatientEmail,
+                u2.FullName AS DoctorName,
+                u2.UserID AS DoctorID,
+                s.ServiceName,
+                s.ServiceID,
+                r.RoomName,
+                r.RoomID,
+                se.SlotID,
+                se.SlotDate,
+                se.StartTime,
+                se.EndTime
+            FROM Appointments a
+            LEFT JOIN Users u1 ON a.PatientID = u1.UserID
+            JOIN Users u2 ON a.DoctorID = u2.UserID
+            JOIN Services s ON a.ServiceID = s.ServiceID
+            JOIN Rooms r ON a.RoomID = r.RoomID
+            JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+            WHERE 1=1
+        """);
+
+        List<String> params = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("""
+                AND (
+                    CAST(a.AppointmentID AS NVARCHAR) LIKE ?
+                    OR u1.FullName LIKE ?
+                    OR u1.Phone LIKE ?
+                    OR u1.Email LIKE ?
+                    OR u2.FullName LIKE ?
+                    OR s.ServiceName LIKE ?
+                    OR r.RoomName LIKE ?
+                )
+            """);
+            String likePattern = "%" + keyword.trim() + "%";
+            for (int i = 0; i < 7; i++) {
+                params.add(likePattern);
+            }
+        }
+
+        sql.append("""
+            ORDER BY a.AppointmentTime DESC
+            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+        """);
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            for (String param : params) {
+                pstmt.setString(paramIndex++, param);
+            }
+            pstmt.setInt(paramIndex++, (page - 1) * pageSize);
+            pstmt.setInt(paramIndex, pageSize);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> appointment = new HashMap<>();
+                    
+                    appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                    appointment.put("patientId", rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                    appointment.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                    appointment.put("patientPhone", rs.getString("PatientPhone") != null ? rs.getString("PatientPhone") : "N/A");
+                    appointment.put("patientEmail", rs.getString("PatientEmail") != null ? rs.getString("PatientEmail") : "N/A");
+                    appointment.put("doctorId", rs.getInt("DoctorID"));
+                    appointment.put("doctorName", rs.getString("DoctorName"));
+                    appointment.put("serviceId", rs.getInt("ServiceID"));
+                    appointment.put("serviceName", rs.getString("ServiceName"));
+                    appointment.put("roomId", rs.getInt("RoomID"));
+                    appointment.put("roomName", rs.getString("RoomName"));
+                    appointment.put("slotId", rs.getInt("SlotID"));
+                    appointment.put("slotDate", rs.getDate("SlotDate"));
+                    appointment.put("startTime", rs.getTime("StartTime"));
+                    appointment.put("endTime", rs.getTime("EndTime"));
+                    appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
+                    appointment.put("status", rs.getString("Status"));
+                    appointment.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    appointment.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                    
+                    appointments.add(appointment);
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException trong searchAppointments tại %s +07: %s, SQLState: %s",
+                LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+        
+        return appointments;
+    }
+
+    /**
+     * Đếm tổng số bản ghi lịch hẹn khớp với từ khóa tìm kiếm
+     * @param keyword Từ khóa tìm kiếm
+     * @return Tổng số bản ghi khớp
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public int getTotalFilteredRecords(String keyword) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(*) AS Total
+            FROM Appointments a
+            LEFT JOIN Users u1 ON a.PatientID = u1.UserID
+            JOIN Users u2 ON a.DoctorID = u2.UserID
+            JOIN Services s ON a.ServiceID = s.ServiceID
+            JOIN Rooms r ON a.RoomID = r.RoomID
+            JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+            WHERE 1=1
+        """);
+
+        List<String> params = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("""
+                AND (
+                    CAST(a.AppointmentID AS NVARCHAR) LIKE ?
+                    OR u1.FullName LIKE ?
+                    OR u1.Phone LIKE ?
+                    OR u1.Email LIKE ?
+                    OR u2.FullName LIKE ?
+                    OR s.ServiceName LIKE ?
+                    OR r.RoomName LIKE ?
+                )
+            """);
+            String likePattern = "%" + keyword.trim() + "%";
+            for (int i = 0; i < 7; i++) {
+                params.add(likePattern);
+            }
+        }
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            for (String param : params) {
+                pstmt.setString(paramIndex++, param);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Total");
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException trong getTotalFilteredRecords tại %s +07: %s, SQLState: %s",
+                LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+        
+        return 0;
+    }
+  public List<Map<String, Object>> getScheduleWithAppointments(int roomId, int slotId) throws SQLException {
+    List<Map<String, Object>> list = new ArrayList<>();
+
+    String sql = """
+        SELECT 
+            se.SlotID, se.UserID, se.RoomID, se.SlotDate, se.StartTime, se.EndTime, se.Role, se.Status AS ScheduleStatus,
+            ap.AppointmentID, ap.PatientID, ap.DoctorID, ap.ServiceID, ap.Status AS AppointmentStatus
+        FROM ScheduleEmployee se
+        LEFT JOIN Appointments ap ON se.SlotID = ap.SlotID AND se.RoomID = ap.RoomID
+        WHERE se.RoomID = ? AND se.SlotID = ?
+    """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, roomId);
+        ps.setInt(2, slotId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("slotId", rs.getInt("SlotID"));
+                map.put("roomId", rs.getInt("RoomID"));
+                map.put("userId", rs.getInt("UserID"));
+                map.put("role", rs.getString("Role"));
+                map.put("slotDate", rs.getDate("SlotDate"));
+                map.put("startTime", rs.getTimestamp("StartTime"));
+                map.put("endTime", rs.getTimestamp("EndTime"));
+                map.put("scheduleStatus", rs.getString("ScheduleStatus"));
+
+                map.put("appointmentId", rs.getObject("AppointmentID")); // có thể null
+                map.put("doctorId", rs.getObject("DoctorID"));
+                map.put("patientId", rs.getObject("PatientID"));
+                map.put("serviceId", rs.getObject("ServiceID"));
+                map.put("appointmentStatus", rs.getString("AppointmentStatus"));
+
+                list.add(map);
+            }
+        }
+    }
+
+    return list;
+}
+
+
+    public String getUserNameById(int userId) throws SQLException {
+        String sql = "SELECT FullName FROM Users WHERE UserID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next() ? rs.getString("FullName") : "N/A";
+            }
+        }
+    }
+
+    public String getServiceNameById(int serviceId) throws SQLException {
+        String sql = "SELECT ServiceName FROM Services WHERE ServiceID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, serviceId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next() ? rs.getString("ServiceName") : "N/A";
+            }
+        }
+    }
+
 }
