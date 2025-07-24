@@ -32,27 +32,27 @@ public class ViewExaminationResults extends HttpServlet {
         // Get the session without creating a new one
         HttpSession session = request.getSession(false);
 
-        // Check if user is logged in and is a Doctor
-        Users user = (session != null) ? (Users) session.getAttribute("user") : null;
-        if (user == null || !"doctor".equalsIgnoreCase(user.getRole())) {
-            request.setAttribute("error", "You must be logged in as a doctor to access this page.");
+        // Check if user is logged in
+        if (session == null || session.getAttribute("user") == null) {
+            request.setAttribute("error", "Bạn cần đăng nhập để truy cập trang này.");
             request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
             return;
         }
 
-        try {
-            // Lấy tham số doctorId, page, pageSize từ request
-            int doctorId;
-            try {
-                doctorId = Integer.parseInt(request.getParameter("doctorId"));
-                // Kiểm tra doctorId phải là số dương
-                if (doctorId <= 0) {
-                    throw new IllegalArgumentException("Doctor ID must be positive");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Doctor ID must be a valid number");
-            }
+        // Get user from session and verify role is Doctor
+        Users user = (Users) session.getAttribute("user");
+        System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole());
+        if (!"Doctor".equalsIgnoreCase(user.getRole())) {
+            request.setAttribute("error", "Chỉ bác sĩ mới có quyền truy cập vào trang này.");
+            request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
+            return;
+        }
 
+        try {
+            // Use UserID from session as doctorId
+            int doctorId = user.getUserID();
+
+            // Get page and pageSize parameters
             int page = 1;
             int pageSize = 10;
             try {
@@ -64,34 +64,34 @@ public class ViewExaminationResults extends HttpServlet {
                 if (pageSizeParam != null && !pageSizeParam.isEmpty()) {
                     pageSize = Integer.parseInt(pageSizeParam);
                 }
-                // Đảm bảo page và pageSize là số dương
+                // Ensure page and pageSize are positive
                 if (page < 1) page = 1;
                 if (pageSize < 1) pageSize = 10;
             } catch (NumberFormatException e) {
-                // Giữ giá trị mặc định nếu tham số không hợp lệ
+                // Keep default values if parameters are invalid
+                System.err.println("Invalid page or pageSize parameters at " + LocalDateTime.now() + " +07: " + e.getMessage());
             }
 
-            // Gọi service để lấy danh sách lịch hẹn
+            // Get appointments and total count
             List<Map<String, Object>> appointments = examinationResultsService.getAppointmentsWithPatientByDoctorId(doctorId, page, pageSize);
+            int totalAppointments = examinationResultsService.getTotalAppointmentsByDoctorId(doctorId);
+            int totalPages = (int) Math.ceil((double) totalAppointments / pageSize);
 
-            // Đặt dữ liệu vào request để chuyển sang JSP
+            // Set data to request for JSP
             request.setAttribute("appointments", appointments);
             request.setAttribute("doctorId", doctorId);
             request.setAttribute("currentPage", page);
             request.setAttribute("pageSize", pageSize);
+            request.setAttribute("totalPages", totalPages);
 
-            // Chuyển hướng đến JSP để hiển thị
+            // Forward to JSP for display
             request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
 
-        } catch (IllegalArgumentException e) {
-            // Xử lý lỗi tham số không hợp lệ (bao gồm doctorId không hợp lệ)
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
         } catch (SQLException e) {
-            // Ghi log lỗi và chuyển hướng đến trang lỗi
-            System.err.println("SQLException in ViewExaminationResults at " + LocalDateTime.now() + " +07: " + e.getMessage());
-            request.setAttribute("errorMessage", "Error retrieving examination results: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            // Log and handle database errors
+            System.err.println("SQLException in ViewExaminationResults for doctorId " + user.getUserID() + " at " + LocalDateTime.now() + " +07: " + e.getMessage() + ", SQLState: " + e.getSQLState());
+            request.setAttribute("errorMessage", "Lỗi khi lấy dữ liệu lịch hẹn: " + e.getMessage());
+            request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
         }
     }
 }

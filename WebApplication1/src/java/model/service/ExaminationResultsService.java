@@ -41,4 +41,8 @@ public class ExaminationResultsService {
             throw e;
         }
     }
+    // Thêm phương thức mới để lấy tổng số lịch hẹn
+    public int getTotalAppointmentsByDoctorId(int doctorId) throws SQLException {
+        return examinationResultsDAO.getTotalAppointmentsByDoctorId(doctorId);
+    }
 }
