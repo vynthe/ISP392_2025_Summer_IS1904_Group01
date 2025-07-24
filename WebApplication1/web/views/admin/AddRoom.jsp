@@ -312,25 +312,7 @@
                         <i class="fas fa-file-alt"></i>Mô Tả
                     </label>
                     <textarea id="description" name="description" class="form-control" 
-                              placeholder="Nhập mô tả chi tiết về phòng...">${description}</textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="doctorID">
-                        <i class="fas fa-user-md"></i>ID Bác Sĩ
-                    </label>
-                    <input type="number" id="doctorID" name="doctorID" value="${doctorID}" 
-                           class="form-control" placeholder="Nhập ID bác sĩ..." >
-                </div>
-                
-                <div class="form-group">
-                    <label for="nurseID">
-                        <i class="fas fa-user-nurse"></i>ID Y Tá
-                    </label>
-                    <input type="number" id="nurseID" name="nurseID" value="${nurseID}" 
-                           class="form-control" placeholder="Nhập ID y tá..." >
-                </div>
-                
+                              placeholder="Nhập mô tả chi tiết về phòng...">${description}</textarea>              
                 <div class="form-group">
                     <label for="status">
                         <i class="fas fa-info-circle"></i>Trạng Thái
