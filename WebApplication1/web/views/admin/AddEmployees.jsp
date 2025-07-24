@@ -488,5 +488,7 @@
                 </form>
             </div>
         </div>
+                                         <div style="height: 200px;"></div>
+    <jsp:include page="/assets/footer.jsp" />
     </body>
 </html>
