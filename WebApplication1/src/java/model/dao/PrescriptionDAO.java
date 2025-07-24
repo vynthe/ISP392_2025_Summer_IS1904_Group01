@@ -6,11 +6,13 @@ import model.service.MedicationService;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PrescriptionDAO {
 
-    private final DBContext dbContext;
+    public final DBContext dbContext;
     private final MedicationService medicationService;
 
     public PrescriptionDAO() {
@@ -18,80 +20,251 @@ public class PrescriptionDAO {
         this.medicationService = new MedicationService();
     }
 
-    private boolean validateForeignKeys(Connection conn, Prescriptions prescription) throws SQLException {
-        String checkPatient = "SELECT 1 FROM Users WHERE UserID = ? AND Role = 'Patient'";
-        String checkDoctor = "SELECT 1 FROM Users WHERE UserID = ? AND Role = 'Doctor'";
-
-        try (PreparedStatement pstmt1 = conn.prepareStatement(checkPatient); PreparedStatement pstmt2 = conn.prepareStatement(checkDoctor)) {
-            pstmt1.setInt(1, prescription.getPatientId());
-            pstmt2.setInt(1, prescription.getDoctorId());
-
-            if (!pstmt1.executeQuery().next()) {
-                throw new SQLException("Invalid PatientID: " + prescription.getPatientId());
+    public List<Map<String, Object>> getExaminationResultsByPatientId(int patientId) throws SQLException {
+        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
+                     "d.FullName as doctorName, p.FullName as patientName, " +
+                     "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
+                     "FROM ExaminationResults r " +
+                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                     "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                     "WHERE r.PatientID = ?";
+        
+        System.out.println("DEBUG - SQL Query: " + sql);
+        System.out.println("DEBUG - PatientID parameter: " + patientId);
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, patientId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<Map<String, Object>> results = new ArrayList<>();
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("resultId", rs.getInt("ResultID"));
+                    row.put("appointmentId", rs.getInt("AppointmentID"));
+                    row.put("doctorId", rs.getInt("DoctorID"));
+                    row.put("patientId", rs.getInt("PatientID"));
+                    row.put("doctorName", rs.getString("doctorName"));
+                    row.put("patientName", rs.getString("patientName"));
+                    row.put("nurseName", rs.getString("nurseName"));
+                    row.put("serviceName", rs.getString("ServiceName"));
+                    row.put("resultName", rs.getString("ResultName"));
+                    row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                    
+                    System.out.println("DEBUG - Row added: " + row);
+                    results.add(row);
+                }
+                System.out.println("DEBUG - Total results found: " + results.size());
+                return results;
             }
-            if (!pstmt2.executeQuery().next()) {
-                throw new SQLException("Invalid DoctorID: " + prescription.getDoctorId());
-            }
-            return true;
+        } catch (SQLException e) {
+            System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
-    public boolean addPrescription(Prescriptions prescription, List<Integer> medicationIds, List<String> dosageInstructions) throws SQLException {
+    public List<Map<String, Object>> getAllExaminationResults() throws SQLException {
+        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
+                     "d.FullName as doctorName, p.FullName as patientName, " +
+                     "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
+                     "FROM ExaminationResults r " +
+                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                     "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID";
+        
+        System.out.println("DEBUG - SQL Query for all results: " + sql);
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            List<Map<String, Object>> results = new ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("resultId", rs.getInt("ResultID"));
+                row.put("appointmentId", rs.getInt("AppointmentID"));
+                row.put("doctorId", rs.getInt("DoctorID"));
+                row.put("patientId", rs.getInt("PatientID"));
+                row.put("doctorName", rs.getString("doctorName"));
+                row.put("patientName", rs.getString("patientName"));
+                row.put("nurseName", rs.getString("nurseName"));
+                row.put("serviceName", rs.getString("ServiceName"));
+                row.put("resultName", rs.getString("ResultName"));
+                row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                
+                System.out.println("DEBUG - Row added: " + row);
+                results.add(row);
+            }
+            System.out.println("DEBUG - Total results found: " + results.size());
+            return results;
+        } catch (SQLException e) {
+            System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+   public boolean addPrescription(Prescriptions prescription, int resultId, int appointmentId, List<Integer> medicationId) throws SQLException {
         if (prescription == null) {
-            throw new SQLException("Prescription object cannot be null.");
+            throw new IllegalArgumentException("Prescription object cannot be null.");
+        }
+        if (medicationId == null || medicationId.isEmpty()) {
+            throw new IllegalArgumentException("Medication IDs list cannot be null or empty.");
+        }
+        if (appointmentId <= 0) {
+            throw new IllegalArgumentException("Appointment ID must be a positive integer.");
         }
 
-        String sqlPrescription = "INSERT INTO Prescriptions (PatientID, DoctorID, PrescriptionDetails, Status) VALUES (?, ?, ?, ?)";
+        String sqlPrescription = "INSERT INTO Prescriptions (ResultID, PatientID, AppointmentID, DoctorID, PrescriptionDetails, CreatedAt, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
+        PreparedStatement pstmtPrescription = null;
+
         try {
             conn = dbContext.getConnection();
             conn.setAutoCommit(false);
-            validateForeignKeys(conn, prescription);
 
-            // Insert prescription
-            int prescriptionId;
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlPrescription, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setInt(1, prescription.getPatientId());
-                pstmt.setInt(2, prescription.getDoctorId());
-                pstmt.setString(3, prescription.getPrescriptionDetails());
-                pstmt.setString(4, prescription.getStatus());
+            validateForeignKeys(conn, prescription, resultId, appointmentId);
+            validateMedicationIds(conn, medicationId);
 
-                int affectedRows = pstmt.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Failed to insert prescription.");
-                }
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        prescriptionId = generatedKeys.getInt(1);
-                        prescription.setPrescriptionId(prescriptionId);
-                    } else {
-                        throw new SQLException("Failed to retrieve generated prescription ID.");
+            // Fetch medication Name and Dosage
+            List<String> medDetails = new ArrayList<>();
+            String sqlMedication = "SELECT Name, Dosage FROM Medications WHERE MedicationID = ?";
+            try (PreparedStatement pstmtMedication = conn.prepareStatement(sqlMedication)) {
+                for (Integer medId : medicationId) {
+                    pstmtMedication.setInt(1, medId);
+                    try (ResultSet rs = pstmtMedication.executeQuery()) {
+                        if (rs.next()) {
+                            String name = rs.getString("Name");
+                            String dosage = rs.getString("Dosage");
+                            medDetails.add("Name: " + name + ", Dosage: " + dosage);
+                        } else {
+                            throw new SQLException("Medication not found for ID: " + medId);
+                        }
                     }
                 }
             }
 
+            // Construct PrescriptionDetails if not provided
+            String prescriptionDetails = prescription.getPrescriptionDetails();
+            if (prescriptionDetails == null || prescriptionDetails.trim().isEmpty()) {
+                prescriptionDetails = String.join("; ", medDetails);
+                prescription.setPrescriptionDetails(prescriptionDetails);
+            }
+
+            // Insert into Prescriptions table
+            pstmtPrescription = conn.prepareStatement(sqlPrescription, Statement.RETURN_GENERATED_KEYS);
+            pstmtPrescription.setInt(1, resultId);
+            pstmtPrescription.setInt(2, prescription.getPatientId());
+            pstmtPrescription.setInt(3, appointmentId);
+            pstmtPrescription.setInt(4, prescription.getDoctorId());
+            pstmtPrescription.setString(5, prescriptionDetails);
+            LocalDateTime now = LocalDateTime.now();
+            pstmtPrescription.setTimestamp(6, Timestamp.valueOf(now));
+            pstmtPrescription.setTimestamp(7, Timestamp.valueOf(now));
+
+            int affectedRows = pstmtPrescription.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Failed to insert prescription - no rows affected.");
+            }
+
+            int prescriptionId;
+            try (ResultSet generatedKeys = pstmtPrescription.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    prescriptionId = generatedKeys.getInt(1);
+                    prescription.setPrescriptionId(prescriptionId);
+                } else {
+                    throw new SQLException("Failed to retrieve generated prescription ID.");
+                }
+            }
+
             conn.commit();
+
+            System.out.println("Prescription added successfully with ID: " + prescriptionId + 
+                             " at " + LocalDateTime.now() + " +07");
             return true;
+
         } catch (SQLException e) {
             if (conn != null) {
                 try {
                     conn.rollback();
+                    System.err.println("Transaction rolled back due to error in addPrescription: " + e.getMessage() + 
+                                     " at " + LocalDateTime.now() + " +07");
                 } catch (SQLException rollbackEx) {
-                    System.err.println("Rollback failed: " + rollbackEx.getMessage());
+                    System.err.println("Rollback failed: " + rollbackEx.getMessage() + 
+                                     " at " + LocalDateTime.now() + " +07");
                 }
             }
-            e.printStackTrace();
-            System.err.println("SQLException in addPrescription: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
+            throw new SQLException("Failed to add prescription: " + e.getMessage(), e);
         } finally {
-            if (conn != null) {
-                try {
+            try {
+                if (pstmtPrescription != null) pstmtPrescription.close();
+                if (conn != null) {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (SQLException closeEx) {
-                    System.err.println("Failed to close connection: " + closeEx.getMessage());
                 }
+            } catch (SQLException closeEx) {
+                System.err.println("Failed to close resources: " + closeEx.getMessage() + 
+                                 " at " + LocalDateTime.now() + " +07");
+            }
+        }
+    }
+    private void validateForeignKeys(Connection conn, Prescriptions prescription, int resultId, int appointmentId) throws SQLException {
+        String checkPatient = "SELECT 1 FROM ExaminationResults WHERE PatientID = ?";
+        String checkDoctor = "SELECT 1 FROM ExaminationResults WHERE DoctorID = ?";
+        String checkResult = "SELECT 1 FROM ExaminationResults WHERE ResultID = ?";
+        String checkAppointment = "SELECT 1 FROM ExaminationResults WHERE AppointmentID = ?";
+
+        try (PreparedStatement pstmtPatient = conn.prepareStatement(checkPatient);
+             PreparedStatement pstmtDoctor = conn.prepareStatement(checkDoctor);
+             PreparedStatement pstmtResult = conn.prepareStatement(checkResult);
+             PreparedStatement pstmtAppointment = conn.prepareStatement(checkAppointment))
+        {
+
+            pstmtPatient.setInt(1, prescription.getPatientId());
+            pstmtDoctor.setInt(1, prescription.getDoctorId());
+            pstmtResult.setInt(1, resultId);
+            pstmtAppointment.setInt(1, appointmentId);
+
+
+            if (!pstmtPatient.executeQuery().next()) {
+                throw new SQLException("Invalid PatientID: " + prescription.getPatientId());
+            }
+            if (!pstmtDoctor.executeQuery().next()) {
+                throw new SQLException("Invalid DoctorID: " + prescription.getDoctorId());
+            }
+            if (!pstmtResult.executeQuery().next()) {
+                throw new SQLException("Invalid ResultID: " + resultId);
+            }
+            if (!pstmtAppointment.executeQuery().next()) {
+                throw new SQLException("Invalid AppointmentID: " + appointmentId);
+            }
+           
+        }
+    }
+
+    public void validateMedicationIds(Connection conn, List<Integer> medicationIds) throws SQLException {
+        String checkMedication = "SELECT 1 FROM Medications WHERE MedicationID = ?";
+        try (PreparedStatement pstmtMedication = conn.prepareStatement(checkMedication)) {
+            for (Integer medId : medicationIds) {
+                pstmtMedication.setInt(1, medId);
+                if (!pstmtMedication.executeQuery().next()) {
+                    throw new SQLException("Invalid MedicationID: " + medId);
+                }
+            }
+        }
+    }
+    
+    private boolean validateMedicationExists(Connection conn, Integer medicationId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Medications WHERE MedicationID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, medicationId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
             }
         }
     }
@@ -100,33 +273,36 @@ public class PrescriptionDAO {
         try {
             return medicationService.getAllMedications();
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getAllMedications: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
     }
 
     public List<Prescriptions> getAllPrescriptions() throws SQLException {
         List<Prescriptions> prescriptions = new ArrayList<>();
-        String sql = "SELECT * FROM Prescriptions WHERE Status != 'CANCELLED'";
+        String sql = "SELECT * FROM Prescriptions";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql); 
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 prescriptions.add(mapResultSetToPrescription(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getAllPrescriptions: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return prescriptions;
     }
 
     public Prescriptions getPrescriptionById(int prescriptionId) throws SQLException {
-        String sql = "SELECT * FROM Prescriptions WHERE PrescriptionID = ? AND Status != 'CANCELLED'";
+        String sql = "SELECT * FROM Prescriptions WHERE PrescriptionID = ?";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, prescriptionId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -134,8 +310,8 @@ public class PrescriptionDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getPrescriptionById: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return null;
@@ -143,10 +319,11 @@ public class PrescriptionDAO {
 
     public List<Prescriptions> getPrescriptionsByPage(int page, int pageSize) throws SQLException {
         List<Prescriptions> prescriptions = new ArrayList<>();
-        String sql = "SELECT p.* FROM Prescriptions p WHERE p.Status != 'CANCELLED' "
-                + "ORDER BY p.PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT * FROM Prescriptions " +
+                     "ORDER BY PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, (page - 1) * pageSize);
             pstmt.setInt(2, pageSize);
 
@@ -156,24 +333,26 @@ public class PrescriptionDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getPrescriptionsByPage: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return prescriptions;
     }
 
     public int getTotalPrescriptionCount() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Prescriptions WHERE Status != 'CANCELLED'";
+        String sql = "SELECT COUNT(*) FROM Prescriptions";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql); 
+             ResultSet rs = pstmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getTotalPrescriptionCount: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return 0;
@@ -182,9 +361,8 @@ public class PrescriptionDAO {
     public List<Prescriptions> searchPrescriptionsByPatientAndMedication(String patientNameKeyword, String medicationNameKeyword, int page, int pageSize) throws SQLException {
         List<Prescriptions> prescriptions = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT p.* FROM Prescriptions p "
-                + "JOIN Users u ON p.PatientID = u.UserID "
-                + "WHERE p.Status != 'CANCELLED'"
+                "SELECT p.* FROM Prescriptions p " +
+                "JOIN Users u ON p.PatientID = u.UserID "
         );
         List<String> conditions = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -199,11 +377,12 @@ public class PrescriptionDAO {
         }
 
         if (!conditions.isEmpty()) {
-            sql.append(" AND ").append(String.join(" AND ", conditions));
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
         }
         sql.append(" ORDER BY p.PrescriptionID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             for (Object param : parameters) {
                 pstmt.setObject(paramIndex++, param);
@@ -217,8 +396,8 @@ public class PrescriptionDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in searchPrescriptionsByPatientAndMedication: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return prescriptions;
@@ -226,9 +405,8 @@ public class PrescriptionDAO {
 
     public int getTotalCountByPatientAndMedication(String patientNameKeyword, String medicationNameKeyword) throws SQLException {
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) FROM Prescriptions p "
-                + "JOIN Users u ON p.PatientID = u.UserID "
-                + "WHERE p.Status != 'CANCELLED'"
+                "SELECT COUNT(*) FROM Prescriptions p " +
+                "JOIN Users u ON p.PatientID = u.UserID "
         );
         List<String> conditions = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -243,10 +421,11 @@ public class PrescriptionDAO {
         }
 
         if (!conditions.isEmpty()) {
-            sql.append(" AND ").append(String.join(" AND ", conditions));
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
         }
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             for (Object param : parameters) {
                 pstmt.setObject(paramIndex++, param);
@@ -258,8 +437,8 @@ public class PrescriptionDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.println("SQLException in getTotalCountByPatientAndMedication: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
             throw e;
         }
         return 0;
@@ -271,7 +450,6 @@ public class PrescriptionDAO {
         prescription.setPatientId(rs.getInt("PatientID"));
         prescription.setDoctorId(rs.getInt("DoctorID"));
         prescription.setPrescriptionDetails(rs.getString("PrescriptionDetails"));
-        prescription.setStatus(rs.getString("Status"));
 
         Timestamp created = rs.getTimestamp("CreatedAt");
         if (created != null) {
@@ -285,5 +463,5 @@ public class PrescriptionDAO {
 
         return prescription;
     }
-
+    
 }

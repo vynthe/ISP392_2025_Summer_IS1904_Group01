@@ -1,146 +1,294 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="model.service.PrescriptionService" %>
-<%@ page import="model.service.UserService" %>
 <%@ page import="model.entity.Medication" %>
-<%@ page import="model.entity.Users" %>
 <%@ page import="java.util.List" %>
 <html>
 <head>
-    <title>Thêm Đơn Thuốc - Pure Dental Care</title>
+    <title>Thêm Đơn Thuốc - Phòng Khám Nha Khoa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #6b7280;
+            --accent: #a855f7;
+            --success: #10b981;
+            --error: #ef4444;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #2563eb;
-            --primary-light: #3b82f6;
-            --secondary: #64748b;
-            --success: #059669;
-            --danger: #dc2626;
-            --warning: #d97706;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --white: #ffffff;
-            --radius: 8px;
-            --radius-lg: 12px;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: var(--gray-800);
-            line-height: 1.6;
+            background-color: var(--gray-50);
             min-height: 100vh;
-            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            color: var(--gray-900);
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
+        /* Header */
+        .main-header {
             background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
+            z-index: 1000;
+            border-bottom: 1px solid var(--gray-200);
         }
 
-        .header-content {
-            position: relative;
-            z-index: 1;
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .logo {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .subtitle {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .form-container {
-            padding: 2rem;
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .form-title {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
             font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 0.5rem;
+            font-weight: bold;
         }
 
-        .form-description {
-            color: var(--gray-500);
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-item {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
             font-size: 0.875rem;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: var(--radius);
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--danger);
-            background: #fef2f2;
-            color: var(--danger);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .form-grid {
+        .nav-item:hover {
+            color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .dental-container {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 1280px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dental-header {
+            background: var(--gradient-primary);
+            padding: 1.5rem 2rem;
+            color: var(--white);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dental-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            padding: 2rem;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .stats-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-grid {
             display: grid;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
+            margin-bottom: 1rem;
         }
 
         .form-label {
@@ -152,69 +300,58 @@
 
         .required::after {
             content: " *";
-            color: var(--danger);
+            color: var(--error);
         }
 
-        .form-input,
-        .form-select,
-        .form-textarea {
+        .form-select {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
             font-size: 0.875rem;
-            transition: all 0.2s ease;
-            background: var(--white);
+            transition: var(--transition);
         }
 
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
+        .form-select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 80px;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .medications-section {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .section-title {
             font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 1rem;
             font-size: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .medication-item {
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
             padding: 1rem;
             margin-bottom: 1rem;
             position: relative;
             background: var(--gray-50);
+            transition: var(--transition);
         }
 
-        .medication-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .medication-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .remove-btn {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            background: var(--danger);
-            color: white;
+            background: var(--error);
+            color: var(--white);
             border: none;
             border-radius: 50%;
             width: 24px;
@@ -224,287 +361,415 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .remove-btn:hover {
-            background: #b91c1c;
+            background: #dc2626;
             transform: scale(1.1);
         }
 
         .add-btn {
             background: var(--success);
-            color: white;
+            color: var(--white);
             border: none;
             padding: 0.75rem 1rem;
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
             font-size: 0.875rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1rem;
         }
 
         .add-btn:hover {
-            background: #047857;
-            transform: translateY(-1px);
+            background: #0d9b6f;
+            transform: translateY(-2px);
         }
 
         .form-actions {
             display: flex;
             gap: 1rem;
             justify-content: center;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .btn {
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
+            transition: var(--transition);
+            display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .btn-primary {
             background: var(--primary);
-            color: white;
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-200);
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .back-link {
             text-align: center;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--gray-200);
+            margin-top: 1.5rem;
         }
 
         .back-link a {
             color: var(--primary);
             text-decoration: none;
             font-size: 0.875rem;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 0.5rem;
+            justify-content: center;
         }
 
         .back-link a:hover {
             text-decoration: underline;
         }
 
-        @media (max-width: 640px) {
-            body {
-                padding: 0.5rem;
-            }
-            
-            .header {
-                padding: 1.5rem;
-            }
-            
-            .form-container {
-                padding: 1.5rem;
-            }
-            
-            .medication-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-actions {
+        /* Footer */
+        .main-footer {
+            background: var(--gray-800);
+            color: var(--gray-200);
+            margin-top: auto;
+            padding: 2rem;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .footer-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section p, .footer-links a, .contact-item {
+            font-size: 0.875rem;
+            color: var(--gray-300);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contact-icon {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--gray-700);
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+
+        .copyright {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .main-wrapper { padding: 1rem; }
+            .header-container {
                 flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+                height: auto;
             }
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .user-menu { justify-content: flex-end; width: 100%; }
+            .dental-container { border-radius: var(--border-radius); }
+            .header-content { flex-direction: column; text-align: center; }
+            .form-actions { flex-direction: column; }
+            .footer-sections { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <div class="logo">🦷</div>
-                <h1 class="title">Pure Dental Care</h1>
-                <p class="subtitle">Hệ Thống Quản Lý Nha Khoa</p>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="logo">PDC</div>
+                <div class="brand-name">Phòng Khám Nha Khoa</div>
+            </div>
+            <nav class="nav-menu">
+                <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" class="nav-item">
+                    <i class="fas fa-home"></i> Trang chủ
+                </a>
+                <a href="${pageContext.request.contextPath}/ViewPatientResultServlet" class="nav-item">
+                    <i class="fas fa-stethoscope"></i> Danh Sách Đơn Thuốc
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-prescription"></i> Kê Đơn Thuốc
+                </a>
+            </nav>
+            <div class="user-menu">
+                <div class="user-avatar"><i class="fas fa-user-md"></i></div>
+                <div class="user-info">
+                    <div class="user-name">Bác sĩ ${sessionScope.doctorName != null ? sessionScope.doctorName : 'Admin'}</div>
+                    <div class="user-role">Nhân viên y tế</div>
+                </div>
             </div>
         </div>
+    </header>
 
-        <div class="form-container">
-            <div class="form-header">
-                <h2 class="form-title">Thêm Đơn Thuốc</h2>
-                <p class="form-description">Nhập thông tin để tạo đơn thuốc mới</p>
+    <main class="main-wrapper">
+        <div class="dental-container">
+            <div class="dental-header">
+                <div class="header-content">
+                    <div class="dental-logo">🩺</div>
+                    <div>
+                        <h1 class="page-title">Thêm Đơn Thuốc</h1>
+                        <p class="page-subtitle">Tạo đơn thuốc mới cho bệnh nhân</p>
+                    </div>
+                </div>
             </div>
 
-            <c:if test="${not empty sessionScope.statusMessage}">
-                <div class="alert">
-                    <span>⚠️</span>
-                    <span>${sessionScope.statusMessage}</span>
-                </div>
-                <c:remove var="statusMessage" scope="session"/>
-            </c:if>
-
-            <form action="${pageContext.request.contextPath}/AddPrescriptionServlet" method="post" onsubmit="return validateForm()">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="patientId" class="form-label required">Bệnh Nhân</label>
-                        <select id="patientId" name="patientId" class="form-select" required>
-                            <option value="">Chọn bệnh nhân</option>
-                            <% 
-                                UserService userService = new UserService();
-                                List<Users> patients = userService.getAllPatient();
-                                for (Users patient : patients) {
-                                    String displayName = patient.getFullName() != null && !patient.getFullName().isEmpty() ? 
-                                        patient.getFullName() : "Bệnh nhân " + patient.getUserID();
-                            %>
-                            <option value="<%= patient.getUserID() %>" <%= String.valueOf(patient.getUserID()).equals(request.getAttribute("formPatientId")) ? "selected" : "" %>>
-                                <%= displayName %>
-                            </option>
-                            <% } %>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="doctorId" class="form-label required">Bác Sĩ</label>
-                        <select id="doctorId" name="doctorId" class="form-select" required>
-                            <option value="">Chọn bác sĩ</option>
-                            <% 
-                                List<Users> doctors = userService.getUsersByRole("doctor");
-                                for (Users doctor : doctors) {
-                                    String displayName = doctor.getFullName() != null && !doctor.getFullName().isEmpty() ? 
-                                        doctor.getFullName() : "Bác sĩ " + doctor.getUserID();
-                            %>
-                            <option value="<%= doctor.getUserID() %>" <%= String.valueOf(doctor.getUserID()).equals(request.getAttribute("formDoctorId")) ? "selected" : "" %>>
-                                <%= displayName %>
-                            </option>
-                            <% } %>
-                        </select>
-                    </div>
+            <div class="content-section">
+                <div class="form-header">
+                    <h2 class="form-title">Thông Tin Đơn Thuốc</h2>
                 </div>
 
-                <div class="medications-section">
-                    <h3 class="section-title">
-                        <span>💊</span>
-                        <span>Danh Sách Thuốc</span>
-                    </h3>
-                    
-                    <div id="medicationList">
-                        <div class="medication-item">
-                            <div class="medication-grid">
+                <c:if test="${not empty errorMessage}">
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>${errorMessage}</span>
+                    </div>
+                </c:if>
+                <c:if test="${not empty successMessage}">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${successMessage}</span>
+                    </div>
+                </c:if>
+                <c:if test="${empty medications}">
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Không có thuốc nào trong hệ thống. Vui lòng thêm thuốc trước khi tạo đơn.</span>
+                    </div>
+                </c:if>
+
+                <form action="${pageContext.request.contextPath}/AddPrescriptionServlet" method="post" onsubmit="return validateForm()">
+                    <input type="hidden" name="patientId" value="${param.patientId != null ? param.patientId : formPatientId}">
+                    <input type="hidden" name="doctorId" value="${param.doctorId != null ? param.doctorId : formDoctorId}">
+                    <input type="hidden" name="resultId" value="${param.resultId != null ? param.resultId : formResultId}">
+                    <input type="hidden" name="appointmentId" value="${appointmentId != null && appointmentId != 'N/A' && appointmentId != 'null' ? appointmentId : ''}">
+
+                    <div class="stats-section">
+                        <h3 class="section-title"><i class="fas fa-info-circle"></i> Thông Tin Bệnh Nhân</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Bệnh Nhân</div>
+                                <div class="stat-value">${patientName != null ? patientName : 'Không xác định'}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Bác Sĩ</div>
+                                <div class="stat-value">${doctorName != null ? doctorName : 'Không xác định'}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Kết Quả Khám</div>
+                                <div class="stat-value">${resultName != null ? resultName : 'Không xác định'}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Mã Lịch Hẹn</div>
+                                <div class="stat-value">
+                                    <c:choose>
+                                        <c:when test="${appointmentId != null && appointmentId != 'N/A' && appointmentId != 'null' && appointmentId != ''}">
+                                            ${appointmentId}
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span style="color: var(--gray-500); font-style: italic;">Không có thông tin</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="medications-section">
+                        <h3 class="section-title"><i class="fas fa-capsules"></i> Danh Sách Thuốc</h3>
+                        <div id="medicationList">
+                            <div class="medication-item">
                                 <div class="form-group">
                                     <label class="form-label required">Tên Thuốc</label>
                                     <select name="medicationIds" class="form-select" required>
                                         <option value="">Chọn thuốc</option>
-                                        <% 
-                                            PrescriptionService prescriptionService = new PrescriptionService();
-                                            List<Medication> medications = prescriptionService.getAllMedications();
-                                            for (Medication med : medications) {
-                                        %>
-                                        <option value="<%= med.getMedicationID() %>">
-                                            <%= med.getName() %> - <%= med.getDosage() %>
-                                        </option>
-                                        <% } %>
+                                        <c:if test="${not empty medications}">
+                                            <c:forEach var="med" items="${medications}">
+                                                <option value="${med.medicationID}" <c:if test="${formMedicationIds != null && formMedicationIds.contains(String.valueOf(med.medicationID))}">selected</c:if>>
+                                                    ${med.name} - ${med.dosage}
+                                                </option>
+                                            </c:forEach>
+                                        </c:if>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label required">Liều Uống</label>
-                                    <input type="text" name="dosageInstructions" class="form-input" 
-                                           placeholder="VD: 2 viên/ngày" required>
-                                </div>
+                                <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
                             </div>
-                            <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
                         </div>
+                        <button type="button" class="add-btn" onclick="addMedication()">
+                            <i class="fas fa-plus"></i> Thêm Thuốc
+                        </button>
                     </div>
 
-                    <button type="button" class="add-btn" onclick="addMedication()">
-                        <span>+</span>
-                        <span>Thêm Thuốc</span>
-                    </button>
-                </div>
+                    <input type="hidden" name="save" value="true">
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="prescriptionDetails" class="form-label">Ghi Chú</label>
-                        <textarea id="prescriptionDetails" name="prescriptionDetails" class="form-textarea" 
-                                  placeholder="Nhập ghi chú cho đơn thuốc...">${formPrescriptionDetails}</textarea>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Tạo Đơn Thuốc
+                        </button>
                     </div>
 
-                    <div class="form-group">
-                        <label for="status" class="form-label required">Trạng Thái</label>
-                        <select id="status" name="status" class="form-select" required>
-                            <option value="">Chọn trạng thái</option>
-                            <option value="Pending" ${formStatus == 'Pending' ? 'selected' : ''}>Đang chờ</option>
-                            <option value="In Progress" ${formStatus == 'In Progress' ? 'selected' : ''}>Đang xử lý</option>
-                            <option value="Completed" ${formStatus == 'Completed' ? 'selected' : ''}>Hoàn thành</option>
-                            <option value="Dispensed" ${formStatus == 'Dispensed' ? 'selected' : ''}>Đã cấp phát</option>
-                            <option value="Cancelled" ${formStatus == 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
-                        </select>
+                    <div class="back-link">
+                        <a href="${pageContext.request.contextPath}/ViewPatientResultServlet">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách kết quả khám
+                        </a>
                     </div>
-                </div>
-
-                <input type="hidden" name="save" value="true">
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <span>✓</span>
-                        <span>Tạo Đơn Thuốc</span>
-                    </button>
-                </div>
-            </form>
-
-            <div class="back-link">
-                <a href="${pageContext.request.contextPath}/ViewPrescriptionServlet">
-                    <span>←</span>
-                    <span>Quay lại danh sách</span>
-                </a>
+                </form>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-sections">
+                <div class="footer-section">
+                    <h3>Về Chúng Tôi</h3>
+                    <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm và hệ thống quản lý hiện đại.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Liên Kết Nhanh</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-stethoscope"></i> Kết Quả Khám</a></li>
+                        <li><a href="#"><i class="fas fa-pills"></i> Danh Sách Thuốc</a></li>
+                        <li><a href="#"><i class="fas fa-prescription"></i> Kê Đơn Thuốc</a></li>
+                        <li><a href="#"><i class="fas fa-calendar-check"></i> Lịch Làm Việc</a></li>
+                        <li><a href="#"><i class="fas fa-door-open"></i> Quản Lý Phòng</a></li>
+                        <li><a href="#"><i class="fas fa-headset"></i> Hỗ trợ kỹ thuật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Liên Hệ</h3>
+                    <div class="contact-info">
+                        <div class="contact-item"><i class="fas fa-map-marker-alt contact-icon"></i> DH FPT, Hòa Lạc, Hà Nội</div>
+                        <div class="contact-item"><i class="fas fa-phone contact-icon"></i> (098) 1234 5678</div>
+                        <div class="contact-item"><i class="fas fa-envelope contact-icon"></i> PhongKhamPDC@gmail.com</div>
+                        <div class="contact-item"><i class="fas fa-clock contact-icon"></i> Thứ 2 - Chủ nhật: 8:00 - 20:00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="copyright">© 2024 Phòng Khám Nha Khoa PDC. Tất cả quyền được bảo lưu.</div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         let medicationCount = 1;
+        const medicationsData = [
+            <c:if test="${not empty medications}">
+                <c:forEach var="med" items="${medications}" varStatus="status">
+                    {id: ${med.medicationID}, name: '${med.name.replace("'", "\\'")}', dosage: '${med.dosage.replace("'", "\\'")}'}${!status.last ? ',' : ''}
+                </c:forEach>
+            </c:if>
+        ];
+        console.log("medicationsData:", medicationsData); // Debugging
 
         function addMedication() {
+            console.log("addMedication called, medicationsData:", medicationsData); // Debugging
             const medicationList = document.getElementById('medicationList');
             const newMedication = document.createElement('div');
             newMedication.className = 'medication-item';
-            newMedication.innerHTML = `
-                <div class="medication-grid">
-                    <div class="form-group">
-                        <label class="form-label required">Tên Thuốc</label>
-                        <select name="medicationIds" class="form-select" required>
-                            <option value="">Chọn thuốc</option>
-                            <% for (Medication med : medications) { %>
-                            <option value="<%= med.getMedicationID() %>">
-                                <%= med.getName() %> - <%= med.getDosage() %>
-                            </option>
-                            <% } %>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label required">Liều Uống</label>
-                        <input type="text" name="dosageInstructions" class="form-input" 
-                               placeholder="VD: 2 viên/ngày" required>
-                    </div>
-                </div>
-                <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
-            `;
+
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+
+            const label = document.createElement('label');
+            label.className = 'form-label required';
+            label.textContent = 'Tên Thuốc';
+
+            const select = document.createElement('select');
+            select.name = 'medicationIds';
+            select.className = 'form-select';
+            select.required = true;
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Chọn thuốc';
+            select.appendChild(defaultOption);
+
+            if (medicationsData.length === 0) {
+                console.log("No medications available for dropdown"); // Debugging
+            } else {
+                medicationsData.forEach(med => {
+                    console.log("Adding option:", med); // Debugging
+                    const option = document.createElement('option');
+                    option.value = med.id;
+                    option.textContent = `${med.name} - ${med.dosage}`;
+                    select.appendChild(option);
+                });
+            }
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-btn';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = function() { removeMedication(this); };
+
+            formGroup.appendChild(label);
+            formGroup.appendChild(select);
+            newMedication.appendChild(formGroup);
+            newMedication.appendChild(removeBtn);
             medicationList.appendChild(newMedication);
             medicationCount++;
         }
@@ -513,54 +778,72 @@
             const medicationItems = document.querySelectorAll('.medication-item');
             if (medicationItems.length > 1) {
                 button.parentElement.remove();
+                medicationCount--;
             } else {
                 alert('Phải có ít nhất một loại thuốc trong đơn.');
             }
         }
 
         function validateForm() {
-            const patientId = document.getElementById('patientId').value;
-            const doctorId = document.getElementById('doctorId').value;
-            const status = document.getElementById('status').value;
             const medicationIds = document.getElementsByName('medicationIds');
-            const dosageInstructions = document.getElementsByName('dosageInstructions');
-
-            if (!patientId) {
-                alert('Vui lòng chọn bệnh nhân.');
-                return false;
-            }
-            if (!doctorId) {
-                alert('Vui lòng chọn bác sĩ.');
-                return false;
-            }
-            if (!status) {
-                alert('Vui lòng chọn trạng thái.');
-                return false;
-            }
-            
+            let hasEmptySelection = false;
+            let selectedMeds = [];
             for (let i = 0; i < medicationIds.length; i++) {
-                if (!medicationIds[i].value) {
-                    alert('Vui lòng chọn thuốc cho tất cả các mục.');
-                    return false;
+                const value = medicationIds[i].value;
+                if (!value || value.trim() === '') {
+                    hasEmptySelection = true;
+                    break;
                 }
-                if (!dosageInstructions[i].value.trim()) {
-                    alert('Vui lòng nhập liều uống cho tất cả các thuốc.');
-                    return false;
-                }
+                selectedMeds.push(value);
+            }
+            if (hasEmptySelection) {
+                alert('Vui lòng chọn thuốc cho tất cả các mục.');
+                return false;
+            }
+            const uniqueMeds = [...new Set(selectedMeds)];
+            if (selectedMeds.length !== uniqueMeds.length) {
+                alert('Không được chọn trùng thuốc. Vui lòng chọn các loại thuốc khác nhau.');
+                return false;
             }
             return true;
         }
 
-        // Smooth form interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.style.transform = 'translateY(-1px)';
+        document.addEventListener('DOMContentLoaded', function () {
+            const submitBtn = document.querySelector('.btn-primary');
+            if (medicationsData.length === 0) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+                console.log("Disabling submit button: no medications available"); // Debugging
+            }
+
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function() {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo đơn thuốc...';
+                submitBtn.disabled = true;
+            });
+
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-4px)';
+                    card.style.boxShadow = 'var(--shadow-lg)';
                 });
-                input.addEventListener('blur', function() {
-                    this.style.transform = 'translateY(0)';
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'var(--shadow-sm)';
                 });
+            });
+
+            const medicationItems = document.querySelectorAll('.medication-item');
+            medicationItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.3s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 100);
             });
         });
     </script>

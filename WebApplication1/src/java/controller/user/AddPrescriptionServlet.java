@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "AddPrescriptionServlet", urlPatterns = {"/AddPrescriptionServlet"})
 public class AddPrescriptionServlet extends HttpServlet {
@@ -24,118 +25,379 @@ public class AddPrescriptionServlet extends HttpServlet {
         prescriptionService = new PrescriptionService();
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            request.setAttribute("medications", prescriptionService.getAllMedications());
-            request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
-        } catch (SQLException e) {
-            log.error("SQLException fetching medications: " + e.getMessage(), e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi khi lấy danh sách thuốc: " + e.getMessage());
+@Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    try {
+        log.info("Loading AddPrescription form at " + java.time.LocalDateTime.now() + " +07");
+        
+        // Set UTF-8 encoding for Vietnamese support
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        
+        // Fetch medications
+        List<model.entity.Medication> medications = prescriptionService.getAllMedications();
+        request.setAttribute("medications", medications);
+        
+        // Get parameters
+        String patientIdStr = request.getParameter("patientId");
+        String doctorIdStr = request.getParameter("doctorId");
+        String resultIdStr = request.getParameter("resultId");
+        String appointmentIdStr = request.getParameter("appointmentId");
+        String patientName = request.getParameter("patientName");
+        String doctorName = request.getParameter("doctorName");
+        String resultName = request.getParameter("resultName");
+        
+        // Log parameters
+        log.info("Received GET parameters - patientId: " + patientIdStr + ", doctorId: " + doctorIdStr + 
+                 ", resultId: " + resultIdStr + ", appointmentId: " + appointmentIdStr + 
+                 ", patientName: " + patientName + ", doctorName: " + doctorName + 
+                 ", resultName: " + resultName);
+        
+        // Decode and set patient name
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            patientName = java.net.URLDecoder.decode(patientName, "UTF-8");
+            request.setAttribute("patientName", patientName);
+        } else {
+            request.setAttribute("patientName", "Không xác định");
+            log.warn("No patient name provided");
         }
+        
+        // Decode and set doctor name
+        if (doctorName != null && !doctorName.trim().isEmpty()) {
+            doctorName = java.net.URLDecoder.decode(doctorName, "UTF-8");
+            request.setAttribute("doctorName", doctorName);
+        } else {
+            request.setAttribute("doctorName", "Không xác định");
+            log.warn("No doctor name provided");
+        }
+        
+        // Set result name
+        if (resultName != null && !resultName.trim().isEmpty()) {
+            resultName = java.net.URLDecoder.decode(resultName, "UTF-8");
+            request.setAttribute("resultName", resultName);
+        } else if (resultIdStr != null && !resultIdStr.trim().isEmpty()) {
+            request.setAttribute("resultName", "Kết quả #" + resultIdStr);
+        } else {
+            request.setAttribute("resultName", "Không xác định");
+            log.warn("No result name provided");
+        }
+        
+        // Set IDs
+        request.setAttribute("patientId", patientIdStr);
+        request.setAttribute("doctorId", doctorIdStr);
+        request.setAttribute("resultId", resultIdStr);
+        
+        // FIXED: Xử lý appointmentId tốt hơn
+        if (appointmentIdStr != null && !appointmentIdStr.trim().isEmpty() && !"null".equals(appointmentIdStr)) {
+            request.setAttribute("appointmentId", appointmentIdStr);
+            log.info("AppointmentId set to: " + appointmentIdStr);
+        } else {
+            // Nếu không có appointmentId, cố gắng lấy từ database dựa trên resultId
+            if (resultIdStr != null && !resultIdStr.trim().isEmpty()) {
+                try {
+                    int resultId = Integer.parseInt(resultIdStr);
+                    // Có thể thêm method để get appointmentId từ resultId
+                    // String appointmentIdFromDB = prescriptionService.getAppointmentIdByResultId(resultId);
+                    // if (appointmentIdFromDB != null) {
+                    //     request.setAttribute("appointmentId", appointmentIdFromDB);
+                    //     log.info("AppointmentId retrieved from DB: " + appointmentIdFromDB);
+                    // } else {
+                        request.setAttribute("appointmentId", "N/A");
+                        log.warn("No appointment ID found for resultId: " + resultId);
+                    // }
+                } catch (NumberFormatException e) {
+                    request.setAttribute("appointmentId", "N/A");
+                    log.warn("Invalid resultId format: " + resultIdStr);
+                }
+            } else {
+                request.setAttribute("appointmentId", "N/A");
+                log.warn("No appointment ID or result ID provided");
+            }
+        }
+        
+        // Forward to JSP
+        request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
+        
+    } catch (SQLException e) {
+        log.error("SQLException fetching medications: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07", e);
+        request.setAttribute("errorMessage", "Lỗi khi lấy danh sách thuốc: " + e.getMessage());
+        request.setAttribute("medications", java.util.Collections.emptyList());
+        request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
+    } catch (Exception e) {
+        log.error("Unexpected error in doGet: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07", e);
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi hệ thống: " + e.getMessage());
     }
+}
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            // Set UTF-8 encoding
+            request.setCharacterEncoding("UTF-8");
+            response.setCharacterEncoding("UTF-8");
+
+            // Get parameters
             String patientIdStr = request.getParameter("patientId");
             String doctorIdStr = request.getParameter("doctorId");
-            String prescriptionDetails = request.getParameter("prescriptionDetails");
-            String status = request.getParameter("status");
+            String resultIdStr = request.getParameter("resultId");
+            String appointmentIdStr = request.getParameter("appointmentId");
             String[] medicationIdStrs = request.getParameterValues("medicationIds");
-            String[] dosageInstructions = request.getParameterValues("dosageInstructions");
+            String[] quantities = request.getParameterValues("quantities");
+            String[] instructions = request.getParameterValues("instructions");
             String saveToDB = request.getParameter("save");
+            
+            // Get display names for showing in form
+            String patientName = request.getParameter("patientName");
+            String doctorName = request.getParameter("doctorName");
+            String resultName = request.getParameter("resultName");
 
-            // Validation
-            if (patientIdStr == null || patientIdStr.trim().isEmpty() || !patientIdStr.matches("\\d+")) {
-                throw new IllegalArgumentException("Invalid or missing Patient ID.");
+            // Log parameters
+            log.info("Received POST parameters - patientId: " + patientIdStr + ", doctorId: " + doctorIdStr + 
+                     ", resultId: " + resultIdStr + ", appointmentId: " + appointmentIdStr + 
+                     ", medicationIds: " + Arrays.toString(medicationIdStrs) + 
+                     ", quantities: " + Arrays.toString(quantities) + 
+                     ", instructions: " + Arrays.toString(instructions) + 
+                     ", saveToDB: " + saveToDB);
+
+            // Validate parameters
+            if (patientIdStr == null || patientIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Mã bệnh nhân là bắt buộc.");
             }
-            if (doctorIdStr == null || doctorIdStr.trim().isEmpty() || !doctorIdStr.matches("\\d+")) {
-                throw new IllegalArgumentException("Invalid or missing Doctor ID.");
+            if (doctorIdStr == null || doctorIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Mã bác sĩ là bắt buộc.");
             }
-            if (status == null || status.trim().isEmpty()) {
-                throw new IllegalArgumentException("Status is required.");
+            if (resultIdStr == null || resultIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Mã kết quả khám là bắt buộc.");
             }
-            // Validate status against allowed values
-            List<String> validStatuses = Arrays.asList("Pending", "In Progress", "Completed", "Dispensed", "Cancelled");
-            String trimmedStatus = status.trim();
-            if (!validStatuses.contains(trimmedStatus)) {
-                throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận: " + String.join(", ", validStatuses) + ".");
-            }
-            if (medicationIdStrs == null || medicationIdStrs.length == 0 || Arrays.stream(medicationIdStrs).anyMatch(id -> !id.matches("\\d+"))) {
-                throw new IllegalArgumentException("At least one valid medication ID is required.");
-            }
-            if (dosageInstructions == null || dosageInstructions.length == 0 || Arrays.stream(dosageInstructions).anyMatch(di -> di == null || di.trim().isEmpty())) {
-                throw new IllegalArgumentException("Dosage instructions are required for each medication.");
-            }
-            if (medicationIdStrs.length != dosageInstructions.length) {
-                throw new IllegalArgumentException("Number of medications and dosage instructions must match.");
+            if (medicationIdStrs == null || medicationIdStrs.length == 0) {
+                throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc.");
             }
 
-            int patientId = Integer.parseInt(patientIdStr);
-            int doctorId = Integer.parseInt(doctorIdStr);
+            // Parse IDs
+            int patientId = parsePositiveInt(patientIdStr, "Mã bệnh nhân");
+            int doctorId = parsePositiveInt(doctorIdStr, "Mã bác sĩ");
+            int resultId = parsePositiveInt(resultIdStr, "Mã kết quả khám");
+            
+            // FIXED: Xử lý appointmentId có thể null hoặc không hợp lệ
+            Integer appointmentId = null;
+            if (appointmentIdStr != null && !appointmentIdStr.trim().isEmpty() && 
+                !"N/A".equals(appointmentIdStr) && !"null".equals(appointmentIdStr)) {
+                try {
+                    appointmentId = parsePositiveInt(appointmentIdStr, "Mã cuộc hẹn");
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid appointmentId: " + appointmentIdStr + ", setting to null");
+                    appointmentId = null;
+                }
+            }
+
+            // Parse and validate medication IDs
             List<Integer> medicationIds = Arrays.stream(medicationIdStrs)
-                    .map(Integer::parseInt)
-                    .toList();
+                    .filter(id -> id != null && !id.trim().isEmpty())
+                    .map(id -> parsePositiveInt(id, "Mã thuốc"))
+                    .distinct()
+                    .collect(Collectors.toList());
 
-            if (patientId <= 0 || doctorId <= 0 || medicationIds.stream().anyMatch(id -> id <= 0)) {
-                throw new IllegalArgumentException("All IDs must be positive integers.");
+            if (medicationIds.isEmpty()) {
+                throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc hợp lệ.");
             }
 
-            log.info("Processing add request - patientId: " + patientId + ", doctorId: " + doctorId +
-                     ", status: " + trimmedStatus + ", medicationIds: " + Arrays.toString(medicationIdStrs));
+            // Create prescription details with medications
+            StringBuilder prescriptionDetails = new StringBuilder();
+            for (int i = 0; i < medicationIds.size(); i++) {
+                prescriptionDetails.append("MedicationID: ").append(medicationIds.get(i));
+                if (quantities != null && i < quantities.length) {
+                    prescriptionDetails.append(", Quantity: ").append(quantities[i]);
+                }
+                if (instructions != null && i < instructions.length) {
+                    prescriptionDetails.append(", Instructions: ").append(instructions[i].trim());
+                }
+                prescriptionDetails.append("; ");
+            }
 
+            // Create prescription object
             Prescriptions prescription = new Prescriptions();
             prescription.setPatientId(patientId);
             prescription.setDoctorId(doctorId);
-            prescription.setPrescriptionDetails(prescriptionDetails);
-            prescription.setStatus(trimmedStatus);
+            prescription.setPrescriptionDetails(prescriptionDetails.toString());
 
             if ("true".equals(saveToDB)) {
-                boolean added = prescriptionService.addPrescription(prescription, medicationIds, Arrays.asList(dosageInstructions));
+                // CHANGED: Thay vì redirect, hiển thị thông báo tại trang hiện tại
+                boolean added = prescriptionService.addPrescription(prescription, resultId, appointmentId, medicationIds);
+                
+                // Set display attributes for form
+                setDisplayAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, 
+                                   patientName, doctorName, resultName);
+                
+                // Get medications for form
+                request.setAttribute("medications", prescriptionService.getAllMedications());
+                
                 if (added) {
-                    log.info("Prescription added successfully for patientId: " + patientId + ", medicationIds: " + Arrays.toString(medicationIdStrs));
-                    request.getSession().setAttribute("statusMessage", "Tạo thành công");
+                    log.info("Prescription added successfully for patientId: " + patientId + 
+                             ", resultId: " + resultId + ", appointmentId: " + appointmentId + 
+                             ", medicationIds: " + medicationIds + 
+                             ", details: " + prescriptionDetails + 
+                             " at " + java.time.LocalDateTime.now() + " +07");
+                    
+                    // Set success message
+                    request.setAttribute("successMessage", "Tạo đơn thuốc thành công! Đơn thuốc đã được lưu vào hệ thống.");
                 } else {
-                    log.warn("Failed to add prescription for patientId: " + patientId + ", medicationIds: " + Arrays.toString(medicationIdStrs));
-                    request.getSession().setAttribute("statusMessage", "Tạo thất bại");
+                    log.warn("Failed to add prescription for patientId: " + patientId + 
+                             ", resultId: " + resultId + ", appointmentId: " + appointmentId + 
+                             ", medicationIds: " + medicationIds + 
+                             " at " + java.time.LocalDateTime.now() + " +07");
+                    
+                    // Set error message
+                    request.setAttribute("errorMessage", "Tạo đơn thuốc thất bại: Không thể lưu vào cơ sở dữ liệu.");
                 }
-                response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
+                
+                // Forward back to the same page with message
+                request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
+                
             } else {
-                log.info("Save not requested, returning to form for patientId: " + patientId);
-                setFormAttributes(request, patientIdStr, doctorIdStr, prescriptionDetails, trimmedStatus, medicationIdStrs, dosageInstructions);
+                log.info("Preview mode, returning to form for patientId: " + patientId + 
+                         " at " + java.time.LocalDateTime.now() + " +07");
+                setFormAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, medicationIdStrs, quantities, instructions);
+                setDisplayAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, 
+                                   patientName, doctorName, resultName);
                 request.setAttribute("medications", prescriptionService.getAllMedications());
                 request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
             }
-        } catch (NumberFormatException e) {
-            log.error("Invalid number format in form input: " + e.getMessage(), e);
-            request.getSession().setAttribute("statusMessage", "Tạo thất bại: Vui lòng nhập số hợp lệ cho các trường ID.");
-            response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
         } catch (IllegalArgumentException e) {
-            log.error("Validation error: " + e.getMessage(), e);
-            request.getSession().setAttribute("statusMessage", "Tạo thất bại: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
+            log.error("Validation error: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07", e);
+            
+            // Set display attributes and error message
+            setDisplayAttributes(request, 
+                               request.getParameter("patientId"), 
+                               request.getParameter("doctorId"), 
+                               request.getParameter("resultId"), 
+                               request.getParameter("appointmentId"),
+                               request.getParameter("patientName"),
+                               request.getParameter("doctorName"),
+                               request.getParameter("resultName"));
+            try {
+                request.setAttribute("medications", prescriptionService.getAllMedications());
+            } catch (SQLException ex) {
+                request.setAttribute("medications", java.util.Collections.emptyList());
+            }
+            request.setAttribute("errorMessage", "Tạo đơn thuốc thất bại: " + e.getMessage());
+            request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
+            
         } catch (SQLException e) {
-            log.error("SQLException adding prescription: " + e.getMessage(), e);
-            request.getSession().setAttribute("statusMessage", "Tạo thất bại: Lỗi cơ sở dữ liệu - " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
+            log.error("SQLException adding prescription: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07", e);
+            
+            // Set display attributes and error message
+            setDisplayAttributes(request, 
+                               request.getParameter("patientId"), 
+                               request.getParameter("doctorId"), 
+                               request.getParameter("resultId"), 
+                               request.getParameter("appointmentId"),
+                               request.getParameter("patientName"),
+                               request.getParameter("doctorName"),
+                               request.getParameter("resultName"));
+            try {
+                request.setAttribute("medications", prescriptionService.getAllMedications());
+            } catch (SQLException ex) {
+                request.setAttribute("medications", java.util.Collections.emptyList());
+            }
+            request.setAttribute("errorMessage", "Tạo đơn thuốc thất bại: Lỗi cơ sở dữ liệu - " + e.getMessage());
+            request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
+            
         } catch (Exception e) {
-            log.error("Unexpected error processing request: " + e.getMessage(), e);
-            request.getSession().setAttribute("statusMessage", "Tạo thất bại: Lỗi hệ thống - " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/ViewPrescriptionServlet");
+            log.error("Unexpected error processing request: " + e.getMessage() + " at " + java.time.LocalDateTime.now() + " +07", e);
+            
+            // Set display attributes and error message
+            setDisplayAttributes(request, 
+                               request.getParameter("patientId"), 
+                               request.getParameter("doctorId"), 
+                               request.getParameter("resultId"), 
+                               request.getParameter("appointmentId"),
+                               request.getParameter("patientName"),
+                               request.getParameter("doctorName"),
+                               request.getParameter("resultName"));
+            try {
+                request.setAttribute("medications", prescriptionService.getAllMedications());
+            } catch (SQLException ex) {
+                request.setAttribute("medications", java.util.Collections.emptyList());
+            }
+            request.setAttribute("errorMessage", "Tạo đơn thuốc thất bại: Lỗi hệ thống - " + e.getMessage());
+            request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
         }
     }
 
-    private void setFormAttributes(HttpServletRequest request, String patientId, String doctorId,
-                                  String prescriptionDetails, String status,
-                                  String[] medicationIds, String[] dosageInstructions) {
+    private int parsePositiveInt(String value, String fieldName) {
+        try {
+            int parsed = Integer.parseInt(value.trim());
+            if (parsed <= 0) {
+                throw new IllegalArgumentException(fieldName + " phải là số dương.");
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Định dạng " + fieldName + " không hợp lệ.");
+        }
+    }
+
+    private void setFormAttributes(HttpServletRequest request, String patientId, String doctorId, 
+                                 String resultId, String appointmentId, String[] medicationIds, 
+                                 String[] quantities, String[] instructions) {
         request.setAttribute("formPatientId", patientId);
         request.setAttribute("formDoctorId", doctorId);
-        request.setAttribute("formPrescriptionDetails", prescriptionDetails);
-        request.setAttribute("formStatus", status);
-        request.setAttribute("formMedicationIds", medicationIds);
-        request.setAttribute("formDosageInstructions", dosageInstructions);
+        request.setAttribute("formResultId", resultId);
+        request.setAttribute("formAppointmentId", appointmentId);
+        if (medicationIds != null) {
+            request.setAttribute("formMedicationIds", Arrays.asList(medicationIds));
+        }
+        if (quantities != null) {
+            request.setAttribute("formQuantities", Arrays.asList(quantities));
+        }
+        if (instructions != null) {
+            request.setAttribute("formInstructions", Arrays.asList(instructions));
+        }
+    }
+    
+    // NEW METHOD: Set display attributes for showing patient/doctor/result info
+    private void setDisplayAttributes(HttpServletRequest request, String patientId, String doctorId, 
+                                    String resultId, String appointmentId, String patientName, 
+                                    String doctorName, String resultName) {
+        // Set IDs
+        request.setAttribute("patientId", patientId);
+        request.setAttribute("doctorId", doctorId);
+        request.setAttribute("resultId", resultId);
+        
+        // Handle appointmentId
+        if (appointmentId != null && !appointmentId.trim().isEmpty() && !"null".equals(appointmentId)) {
+            request.setAttribute("appointmentId", appointmentId);
+        } else {
+            request.setAttribute("appointmentId", "N/A");
+        }
+        
+        // Set display names
+        try {
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                request.setAttribute("patientName", java.net.URLDecoder.decode(patientName, "UTF-8"));
+            } else {
+                request.setAttribute("patientName", "Không xác định");
+            }
+            
+            if (doctorName != null && !doctorName.trim().isEmpty()) {
+                request.setAttribute("doctorName", java.net.URLDecoder.decode(doctorName, "UTF-8"));
+            } else {
+                request.setAttribute("doctorName", "Không xác định");
+            }
+            
+            if (resultName != null && !resultName.trim().isEmpty()) {
+                request.setAttribute("resultName", java.net.URLDecoder.decode(resultName, "UTF-8"));
+            } else if (resultId != null && !resultId.trim().isEmpty()) {
+                request.setAttribute("resultName", "Kết quả #" + resultId);
+            } else {
+                request.setAttribute("resultName", "Không xác định");
+            }
+        } catch (Exception e) {
+            log.warn("Error decoding display names: " + e.getMessage());
+            request.setAttribute("patientName", patientName != null ? patientName : "Không xác định");
+            request.setAttribute("doctorName", doctorName != null ? doctorName : "Không xác định");
+            request.setAttribute("resultName", resultName != null ? resultName : "Không xác định");
+        }
     }
 }
