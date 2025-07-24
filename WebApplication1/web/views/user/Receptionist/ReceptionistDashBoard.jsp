@@ -457,5 +457,7 @@
                 });
             });
         </script>
+        <div style="height: 300px;"></div>
+<jsp:include page="/assets/footer.jsp" />
     </body>
 </html>
