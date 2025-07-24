@@ -1,8 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
-
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,7 +47,7 @@
         }
 
         .content-wrapper {
-            /* max-width: 1400px; */
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: var(--radius-lg);
@@ -56,7 +55,6 @@
             overflow: hidden;
         }
 
-        /* Header Section */
         .header-section {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
@@ -125,7 +123,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Navigation Section */
         .nav-section {
             background: var(--light-color);
             padding: 1.5rem 2rem;
@@ -161,7 +158,6 @@
             text-decoration: underline;
         }
 
-        /* Controls Section */
         .controls-section {
             padding: 1.5rem 2rem;
             background: white;
@@ -251,7 +247,6 @@
             background: #475569;
         }
 
-        /* Table Section */
         .table-section {
             padding: 0;
             overflow: hidden;
@@ -265,59 +260,49 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.875rem;
-            table-layout: fixed;
         }
 
-        .data-table th, .data-table td {
-            vertical-align: middle;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding: 0.75rem 0.5rem;
-        }
         .data-table th {
-            background: #f1f5f9;
-            color: #1e293b;
-            font-size: 1rem;
+            background: var(--light-color);
+            color: var(--dark-color);
+            padding: 1rem;
+            text-align: left;
             font-weight: 600;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
         }
-        .data-table tbody tr:hover {
-            background: #f0f7ff;
-            transition: background 0.2s;
-        }
-        .assignment-card {
-            background: #e0f2fe;
-            border-radius: 8px;
-            padding: 0.5rem 0.75rem;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-            min-width: 120px;
-        }
-        .assignment-card .icon {
-            color: #2563eb;
-            margin-right: 4px;
-        }
-        .btn-action {
-            display: inline-block;
-            margin: 2px 2px 0 0;
-            padding: 0.3rem 0.7rem;
-            font-size: 0.8rem;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            background: #f1f5f9;
-            color: #2563eb;
-            transition: background 0.2s;
-            text-decoration: none;
-        }
-        .btn-action.detail { background: #e0e7ff; color: #3730a3; }
-        .btn-action.edit { background: #fef9c3; color: #b45309; }
-        .btn-action.assign { background: #d1fae5; color: #059669; font-weight: 600; }
-        .btn-action:hover { opacity: 0.85; }
 
-        /* Status Badges */
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        .room-id {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        .room-name {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .no-assignment {
+            color: var(--secondary-color);
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -355,7 +340,6 @@
             color: #475569;
         }
 
-        /* Action Buttons */
         .action-group {
             display: flex;
             gap: 0.5rem;
@@ -420,7 +404,6 @@
             transform: translateY(-1px);
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -444,7 +427,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Loading States */
         .loading-spinner {
             display: inline-block;
             width: 1rem;
@@ -461,20 +443,19 @@
             }
         }
 
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .main-container {
                 padding: 1rem 0.5rem;
             }
-            
+
             .header-section {
                 padding: 1.5rem;
             }
-            
+
             .header-title {
                 font-size: 1.5rem;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
@@ -485,25 +466,25 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .search-form {
                 flex-direction: column;
             }
-            
+
             .search-group {
                 min-width: 100%;
             }
-            
+
             .action-group {
                 flex-direction: column;
                 gap: 0.25rem;
             }
-            
+
             .btn-action {
                 justify-content: center;
                 width: 100%;
             }
-            
+
             .data-table {
                 min-width: 800px;
             }
@@ -513,54 +494,14 @@
             .header-section {
                 padding: 1rem;
             }
-            
+
             .controls-section,
             .nav-section {
                 padding: 1rem;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
-            }
-        }
-        .week-nav {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        .week-nav form {
-            display: inline;
-        }
-        .week-nav-btn {
-            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-            color: #fff;
-            border: none;
-            border-radius: 999px;
-            padding: 0.6rem 1.6rem;
-            font-size: 1rem;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
-            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .week-nav-btn:hover {
-            background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 16px rgba(37,99,235,0.15);
-        }
-        @media (max-width: 600px) {
-            .week-nav {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-            .week-nav-btn {
-                width: 100%;
-                justify-content: center;
             }
         }
     </style>
@@ -569,14 +510,13 @@
     <div class="main-container">
         <div class="content-wrapper">
             <!-- Header Section -->
-            <div class="header-section">
+            <div class="header-section" role="banner">
                 <div class="header-content">
                     <h1 class="header-title">
-                        <i class="fas fa-hospital"></i>
+                        <i class="fas fa-hospital" aria-hidden="true"></i>
                         Quản lý Phòng Khám
                     </h1>
                     <p class="header-subtitle">Hệ thống quản lý phòng bệnh viện hiện đại và chuyên nghiệp</p>
-                    
                     <div class="stats-grid">
                         <div class="stat-card">
                             <span class="stat-number">${roomList.size()}</span>
@@ -584,25 +524,13 @@
                         </div>
                         <div class="stat-card">
                             <span class="stat-number">
-                                <c:set var="availableCount" value="0" />
-                                <c:forEach var="room" items="${roomList}">
-                                    <c:if test="${room.status == 'Available'}">
-                                        <c:set var="availableCount" value="${availableCount + 1}" />
-                                    </c:if>
-                                </c:forEach>
-                                ${availableCount}
+                                <c:out value="${roomList.stream().filter(room -> room.status == 'Available').count()}"/>
                             </span>
                             <div class="stat-label">Phòng trống</div>
                         </div>
                         <div class="stat-card">
                             <span class="stat-number">
-                                <c:set var="inProgressCount" value="0" />
-                                <c:forEach var="room" items="${roomList}">
-                                    <c:if test="${room.status == 'In Progress'}">
-                                        <c:set var="inProgressCount" value="${inProgressCount + 1}" />
-                                    </c:if>
-                                </c:forEach>
-                                ${inProgressCount}
+                                <c:out value="${roomList.stream().filter(room -> room.status == 'In Progress').count()}"/>
                             </span>
                             <div class="stat-label">Đang sử dụng</div>
                         </div>
@@ -611,220 +539,228 @@
             </div>
 
             <!-- Navigation Section -->
-            <div class="nav-section">
+            <div class="nav-section" role="navigation">
                 <div class="nav-left">
-                    <nav class="breadcrumb">
-                        <i class="fas fa-home"></i>
-                        <c:choose>
-                            <c:when test="${isAdmin}">
-                                <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp">Dashboard</a>
-                            </c:when>
-                            <c:otherwise>
-                                <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/dashboard.jsp">Dashboard</a>
-                            </c:otherwise>
-                        </c:choose>
-                        <i class="fas fa-chevron-right"></i>
-                        <span>Quản lý Phòng</span>
+                    <nav class="breadcrumb" aria-label="Breadcrumb">
+                        <i class="fas fa-home" aria-hidden="true"></i>
+                        <a href="${pageContext.request.contextPath}/${isAdmin ? 'views/admin/dashboard.jsp' : 'views/user/DoctorNurse/dashboard.jsp'}" 
+                           aria-current="page">Dashboard</a>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        <span aria-current="page">Quản lý Phòng</span>
                     </nav>
                 </div>
-                <c:choose>
-                    <c:when test="${isAdmin}">
-                        <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
-                        </a>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/dashboard.jsp" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
-                        </a>
-                    </c:otherwise>
-                </c:choose>
+                <a href="${pageContext.request.contextPath}/${isAdmin ? 'views/admin/dashboard.jsp' : 'views/user/DoctorNurse/dashboard.jsp'}" 
+                   class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Quay lại Dashboard
+                </a>
             </div>
 
             <!-- Controls Section -->
             <div class="controls-section">
-                <form class="search-form" method="get" action="${pageContext.request.contextPath}/ViewRoomServlet">
+                <form class="search-form" method="get" action="${pageContext.request.contextPath}/ViewRoomServlet" aria-label="Tìm kiếm phòng">
                     <div class="search-group">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" 
-                               name="keyword" 
-                               class="search-input"
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                        <input type="text" name="keyword" class="search-input" 
                                placeholder="Tìm kiếm theo tên phòng, mã phòng, bác sĩ, y tá..." 
-                               value="${keyword}">
+                               value="${keyword}" 
+                               aria-label="Tìm kiếm phòng">
+                        <select name="statusFilter" class="search-input" aria-label="Lọc theo trạng thái">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            <option value="Available" ${statusFilter == 'Available' ? 'selected' : ''}>Còn Phòng</option>
+                            <option value="In Progress" ${statusFilter == 'In Progress' ? 'selected' : ''}>Đang Khám</option>
+                            <option value="Completed" ${statusFilter == 'Completed' ? 'selected' : ''}>Hoàn Thành</option>
+                            <option value="Not Available" ${statusFilter == 'Not Available' ? 'selected' : ''}>Hết Phòng</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Tìm kiếm
+                    <button type="submit" class="btn btn-primary" aria-label="Tìm kiếm">
+                        <i class="fas fa-search" aria-hidden="true"></i> Tìm kiếm
                     </button>
                     <c:if test="${isAdmin}">
-                        <a href="${pageContext.request.contextPath}/views/admin/AddRoom.jsp" class="btn btn-success">
-                            <i class="fas fa-plus-circle"></i> Thêm phòng mới
+                        <a href="${pageContext.request.contextPath}/views/admin/AddRoom.jsp" 
+                           class="btn btn-success" 
+                           aria-label="Thêm phòng mới">
+                            <i class="fas fa-plus-circle" aria-hidden="true"></i> Thêm phòng mới
                         </a>
                     </c:if>
                 </form>
             </div>
 
-            <h5 class="text-center mb-3">
-                Bảng phân công theo ca và ngày trong tuần
-                <c:if test="${not empty startDate && not empty endDate}">
-                    (<span>${startDate}</span> - <span>${endDate}</span>)
-                </c:if>
-            </h5>
-            <div class="week-nav mb-3">
-                <form method="get" action="${pageContext.request.contextPath}/ViewRoomServlet">
-                    <input type="hidden" name="action" value="prev"/>
-                    <input type="hidden" name="startDate" value="${startDate}"/>
-                    <input type="hidden" name="endDate" value="${endDate}"/>
-                    <c:if test="${not empty keyword}">
-                        <input type="hidden" name="keyword" value="${keyword}"/>
-                    </c:if>
-                    <button type="submit" class="week-nav-btn"><i class="fas fa-angle-double-left"></i> Tuần trước</button>
-                </form>
-                <form method="get" action="${pageContext.request.contextPath}/ViewRoomServlet">
-                    <input type="hidden" name="action" value="next"/>
-                    <input type="hidden" name="startDate" value="${startDate}"/>
-                    <input type="hidden" name="endDate" value="${endDate}"/>
-                    <c:if test="${not empty keyword}">
-                        <input type="hidden" name="keyword" value="${keyword}"/>
-                    </c:if>
-                    <button type="submit" class="week-nav-btn">Tuần sau <i class="fas fa-angle-double-right"></i></button>
-                </form>
-            </div>
-            <div class="table-section" style="margin-top: 2rem;">
-              <div class="table-container">
-                <table class="data-table text-center align-middle">
-                  <thead>
-                    <tr>
-                      <th rowspan="2">Phòng</th>
-                      <th rowspan="2">Ca</th>
-                      <c:forEach var="d" items="${days}">
-                        <th>${dayNameMap[d]}</th>
-                      </c:forEach>
-                    </tr>
-                    <tr>
-                      <c:forEach var="d" items="${days}">
-                        <th>${d}</th>
-                      </c:forEach>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <c:forEach var="roomObj" items="${roomList}">
-                      <c:set var="room" value="${roomObj.roomName}" />
-                      <c:set var="shifts" value="${scheduleData[room]}" />
-                      <tr>
-                        <td rowspan="2" class="room-name">
-                          <a href="${pageContext.request.contextPath}/ViewRoomDetailServlet?id=${roomObj.roomID}" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">
-                            ${room}
-                          </a>
-                        </td>
-                        <td>Ca sáng</td>
-                        <c:set var="shift" value="Ca sáng" />
-                        <c:forEach var="d" items="${days}">
-                          <c:set var="roles" value="${shifts['Ca sáng'][d]}" />
-                          <td>
-                            <c:choose>
-                              <c:when test="${not empty roles.doctor or not empty roles.nurse}">
-                                <div class="assignment-card">
-                                  <span class="icon"><i class="fas fa-user-md"></i></span>
-                                  <span><b>Bác sĩ:</b> <c:out value="${roles.doctor}" /></span><br/>
-                                  <span class="icon"><i class="fas fa-user-nurse"></i></span>
-                                  <span><b>Y tá:</b> <c:out value="${roles.nurse}" /></span>
-                                </div>
-                                <br/>
-                                <a href="${pageContext.request.contextPath}/ScheduleDetailServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca sáng" class="btn-action detail">Chi tiết</a>
-                                <a href="${pageContext.request.contextPath}/ScheduleEditServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca sáng" class="btn-action edit">Sửa</a>
-                              </c:when>
-                              <c:otherwise>
-                                <a href="${pageContext.request.contextPath}/AssignScheduleServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca sáng" class="btn-action assign">
-                                  <i class="fas fa-plus"></i> Giao
-                                </a>
-                              </c:otherwise>
-                            </c:choose>
-                          </td>
-                        </c:forEach>
-                      </tr>
-                      <tr>
-                        <td>Ca chiều</td>
-                        <c:set var="shift" value="Ca chiều" />
-                        <c:forEach var="d" items="${days}">
-                          <c:set var="roles" value="${shifts['Ca chiều'][d]}" />
-                          <td>
-                            <c:choose>
-                              <c:when test="${not empty roles.doctor or not empty roles.nurse}">
-                                <div class="assignment-card">
-                                  <span class="icon"><i class="fas fa-user-md"></i></span>
-                                  <span><b>Bác sĩ:</b> <c:out value="${roles.doctor}" /></span><br/>
-                                  <span class="icon"><i class="fas fa-user-nurse"></i></span>
-                                  <span><b>Y tá:</b> <c:out value="${roles.nurse}" /></span>
-                                </div>
-                                <br/>
-                                <a href="${pageContext.request.contextPath}/ScheduleDetailServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca chiều" class="btn-action detail">Chi tiết</a>
-                                <a href="${pageContext.request.contextPath}/ScheduleEditServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca chiều" class="btn-action edit">Sửa</a>
-                              </c:when>
-                              <c:otherwise>
-                                <a href="${pageContext.request.contextPath}/AssignScheduleServlet?room=${roomObj.roomID}&amp;date=${d}&amp;shift=Ca chiều" class="btn-action assign">
-                                  <i class="fas fa-plus"></i> Giao
-                                </a>
-                              </c:otherwise>
-                            </c:choose>
-                          </td>
-                        </c:forEach>
-                      </tr>
-                    </c:forEach>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <!-- PHÂN TRANG -->
-            <div class="pagination" style="margin: 1rem 0; text-align: center;">
-                <c:if test="${totalPages > 1}">
-                    <c:forEach var="i" begin="1" end="${totalPages}">
-                        <c:choose>
-                            <c:when test="${i == currentPage}">
-                                <span style="margin:0 4px; font-weight:bold; color: var(--primary-color); background: #e0e7ff; padding: 6px 12px; border-radius: 4px;">${i}</span>
-                            </c:when>
-                            <c:otherwise>
+            <!-- Table Section -->
+            <div class="table-section" role="region" aria-label="Danh sách phòng">
+                <c:choose>
+                    <c:when test="${not empty roomList}">
+                        <div class="table-container">
+                            <table class="data-table" aria-label="Bảng danh sách phòng">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"><i class="fas fa-hashtag" aria-hidden="true"></i> Mã Phòng</th>
+                                        <th scope="col"><i class="fas fa-door-open" aria-hidden="true"></i> Tên Phòng</th>
+                                        <th scope="col"><i class="fas fa-align-left" aria-hidden="true"></i> Mô Tả</th>
+                                        <th scope="col"><i class="fas fa-info-circle" aria-hidden="true"></i> Trạng Thái</th>
+                                        <th scope="col"><i class="fas fa-user-plus" aria-hidden="true"></i> Người Tạo</th>
+                                        <c:if test="${isAdmin}">
+                                            <th scope="col"><i class="fas fa-cogs" aria-hidden="true"></i> Thao Tác</th>
+                                        </c:if>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="room" items="${roomList}">
+                                        <tr>
+                                            <td><span class="room-id">${room.roomID}</span></td>
+                                            <td><span class="room-name">${room.roomName}</span></td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty room.description}">
+                                                        <c:out value="${room.description}"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="no-assignment">Không có mô tả</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${room.status == 'Available'}">
+                                                        <span class="status-badge status-available">
+                                                            <i class="fas fa-check-circle" aria-hidden="true"></i> Còn Phòng
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${room.status == 'Completed'}">
+                                                        <span class="status-badge status-completed">
+                                                            <i class="fas fa-check-double" aria-hidden="true"></i> Hoàn Thành
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${room.status == 'Not Available'}">
+                                                        <span class="status-badge status-unavailable">
+                                                            <i class="fas fa-times-circle" aria-hidden="true"></i> Hết Phòng
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${room.status == 'In Progress'}">
+                                                        <span class="status-badge status-in-progress">
+                                                            <i class="fas fa-clock" aria-hidden="true"></i> Đang khám
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="status-badge status-unknown">
+                                                            <i class="fas fa-question-circle" aria-hidden="true"></i> Không xác định
+                                                        </span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty room.createdBy}">
+                                                        <strong><c:out value="${room.createdBy}"/></strong>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="no-assignment">Không rõ</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <c:if test="${isAdmin}">
+                                                <td>
+                                                    <div class="action-group">
+                                                        <a href="${pageContext.request.contextPath}/ViewRoomDetailServlet?id=${room.roomID}" 
+                                                           class="btn-action btn-view" 
+                                                           title="Xem chi tiết phòng"
+                                                           aria-label="Xem chi tiết phòng ${room.roomID}">
+                                                            <i class="fas fa-eye" aria-hidden="true"></i> Xem
+                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/UpdateRoomServlet?id=${room.roomID}" 
+                                                           class="btn-action btn-edit"
+                                                           title="Chỉnh sửa thông tin phòng"
+                                                           aria-label="Chỉnh sửa phòng ${room.roomID}">
+                                                            <i class="fas fa-edit" aria-hidden="true"></i> Sửa
+                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/DeleteRoomServlet?id=${room.roomID}" 
+                                                           class="btn-action btn-delete"
+                                                           title="Xóa phòng"
+                                                           aria-label="Xóa phòng ${room.roomID}">
+                                                            <i class="fas fa-trash" aria-hidden="true"></i> Xóa
+                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/AssignServiceToRoomServlet?roomId=${room.roomID}" 
+                                                           class="btn-action btn-service"
+                                                           title="Quản lý dịch vụ phòng"
+                                                           aria-label="Quản lý dịch vụ phòng ${room.roomID}">
+                                                            <i class="fas fa-plus-circle" aria-hidden="true"></i> Dịch vụ
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </c:if>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="empty-state" role="alert">
+                            <i class="fas fa-bed empty-icon" aria-hidden="true"></i>
+                            <h3 class="empty-title">Không tìm thấy phòng nào</h3>
+                            <p class="empty-description">
                                 <c:choose>
                                     <c:when test="${not empty keyword}">
-                                        <a href="?page=${i}&amp;keyword=${fn:escapeXml(keyword)}" style="margin:0 4px; text-decoration:none; padding: 6px 12px; border-radius: 4px; background: #f1f5f9; color: #2563eb;">${i}</a>
+                                        Không có phòng nào khớp với từ khóa tìm kiếm "<strong><c:out value="${keyword}"/></strong>".
+                                        <br>Thử tìm kiếm với từ khóa khác hoặc
                                     </c:when>
                                     <c:otherwise>
-                                        <a href="?page=${i}" style="margin:0 4px; text-decoration:none; padding: 6px 12px; border-radius: 4px; background: #f1f5f9; color: #2563eb;">${i}</a>
+                                        Hiện tại chưa có phòng nào trong hệ thống.
                                     </c:otherwise>
                                 </c:choose>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:forEach>
-                </c:if>
+                            </p>
+                            <c:if test="${isAdmin}">
+                                <a href="${pageContext.request.contextPath}/views/admin/AddRoom.jsp" 
+                                   class="btn btn-success" 
+                                   aria-label="Thêm phòng đầu tiên">
+                                    <i class="fas fa-plus-circle" aria-hidden="true"></i> Thêm phòng đầu tiên
+                                </a>
+                            </c:if>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
     </div>
 
-   <script>
-        // Thêm hiệu ứng loading khi submit form
-        document.querySelector('form').addEventListener('submit', function() {
+    <script>
+        // Form submission with loading state
+        const form = document.querySelector('.search-form');
+        form.addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tìm...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Đang tìm...';
+            submitBtn.disabled = true;
         });
 
-        // Thêm hiệu ứng hover cho các hàng trong bảng
-        document.querySelectorAll('.table tbody tr').forEach(row => {
+        // Row hover effects
+        document.querySelectorAll('.data-table tbody tr').forEach(row => {
             row.addEventListener('mouseenter', function() {
                 this.style.transform = 'scale(1.01)';
             });
-            
             row.addEventListener('mouseleave', function() {
                 this.style.transform = 'scale(1)';
             });
         });
 
-        // Confirm delete với style đẹp hơn
+        // Custom delete confirmation
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (confirm('⚠️ Bạn có chắc chắn muốn xóa phòng này không?\n\nHành động này không thể hoàn tác!')) {
+                const roomId = this.getAttribute('aria-label').match(/\d+/)[0];
+                if (confirm(`Bạn có chắc chắn muốn xóa phòng ${roomId} không?\nHành động này không thể hoàn tác!`)) {
                     window.location.href = this.href;
+                }
+            });
+        });
+
+        // Ensure accessibility for keyboard navigation
+        document.querySelectorAll('.btn-action').forEach(btn => {
+            btn.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
                 }
             });
         });
     </script>
 </body>
+</html>

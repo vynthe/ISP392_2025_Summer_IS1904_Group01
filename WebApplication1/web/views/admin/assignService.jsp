@@ -437,6 +437,17 @@
 </head>
 <body>
 <div class="container">
+                            <div style="margin-bottom: 20px; font-size: 14px; color: #6b7280;">
+    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" style="text-decoration: none; color: #3b82f6;">
+        <i class="fas fa-home"></i> Dashboard
+    </a>
+    <span style="margin: 0 8px;">&gt;</span>
+    <a href="${pageContext.request.contextPath}/ViewRoomServlet" style="text-decoration: none; color: #4b5563;">
+        Quản lý Phòng
+    </a>
+    <span style="margin: 0 8px;">&gt;</span>
+    <span style="color: #111827;">thêm dịch vụ</span>
+</div>
     <div class="header">
         <h2><i class="fas fa-plus-circle"></i> Gán Dịch Vụ Cho Phòng</h2>
         <p class="subtitle">Thêm và quản lý dịch vụ cho phòng khám</p>
@@ -514,9 +525,33 @@
         </ul>
     </div>
 
-    <a href="${pageContext.request.contextPath}/ViewRoomServlet" class="btn back-btn">
-        <i class="fas fa-arrow-left"></i> Quay lại danh sách phòng
-    </a>
+<a href="${pageContext.request.contextPath}/ViewRoomServlet" style="
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #3730a3;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+">
+    <i class="fas fa-arrow-left"></i> Quay lại danh sách phòng
+</a>
+
+<style>
+    a.back-hover:hover {
+        background: linear-gradient(135deg, #c7d2fe, #a5b4fc);
+        color: #1e3a8a;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+    }
+</style>
+
 </div>
 </body>
 </html>

@@ -197,6 +197,9 @@ public boolean addRoom(String roomName, String description, Integer doctorID, In
     public int countAvailableRooms() throws SQLException {
         return roomsDAO.countAvailableRooms();
     }
+      public List<Rooms> searchRoomsByKeywordAndStatus(String keyword, String status) throws SQLException {
+        return roomsDAO.searchRoomsByKeywordAndStatus(keyword, status);
+    }
 
     // Thêm phương thức lấy RoomID đầu tiên có sẵn
     public int getFirstAvailableRoomId() throws SQLException, ClassNotFoundException {

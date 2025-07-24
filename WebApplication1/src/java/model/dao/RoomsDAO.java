@@ -123,6 +123,43 @@ public class RoomsDAO {
     }
     return roomList;
 }
+public List<Rooms> searchRoomsByKeywordAndStatus(String keyword, String status) throws SQLException {
+    List<Rooms> roomList = new ArrayList<>();
+
+    String sql = """
+        SELECT RoomID, RoomName, [Description], [Status], CreatedBy
+        FROM Rooms
+        WHERE (RoomName LIKE ? OR CAST(RoomID AS VARCHAR) LIKE ?)
+          AND [Status] = ?
+    """;
+
+    try (Connection conn = DBContext.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        String searchPattern = "%" + (keyword != null ? keyword.trim() : "") + "%";
+        stmt.setString(1, searchPattern); // RoomName
+        stmt.setString(2, searchPattern); // RoomID
+        stmt.setString(3, status != null ? status : ""); // Avoid null
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Rooms room = new Rooms();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+                room.setDescription(rs.getString("Description"));
+                room.setStatus(rs.getString("Status"));
+                room.setCreatedBy(rs.getByte("CreatedBy"));
+                roomList.add(room);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ SQLException in searchRoomsByKeywordAndStatus at "
+            + java.time.LocalDateTime.now() + ": " + e.getMessage());
+        throw e;
+    }
+
+    return roomList;
+}
 
 
     public List<Rooms> getAllRooms() throws SQLException {
@@ -282,45 +319,63 @@ public class RoomsDAO {
         return roomList;
     }
 
-    public void deleteRoom(int roomID) throws SQLException {
-        String deleteSchedules = "DELETE FROM Schedules WHERE RoomID = ?";
-        String deleteRoomServices = "DELETE FROM RoomServices WHERE RoomID = ?";
-        String deleteAppointments = "DELETE FROM Appointments WHERE RoomID = ?";
-        String deleteRoom = "DELETE FROM Rooms WHERE RoomID = ?";
+    public void deleteRoom(int roomID) throws SQLException, ClassNotFoundException {
+    String checkFutureSchedules = """
+        SELECT COUNT(*) FROM ScheduleEmployee
+        WHERE RoomID = ?
+          AND SlotDate BETWEEN CAST(GETDATE() AS DATE) AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))
+          AND IsAbsent = 0
+    """;
 
-        try (Connection conn = dbContext.getConnection()) {
-            conn.setAutoCommit(false); // Bắt đầu transaction
+    String deleteSchedules = "DELETE FROM ScheduleEmployee WHERE RoomID = ?";
+    String deleteRoomServices = "DELETE FROM RoomServices WHERE RoomID = ?";
+    String deleteAppointments = "DELETE FROM Appointments WHERE RoomID = ?";
+    String deleteRoom = "DELETE FROM Rooms WHERE RoomID = ?";
 
-            try (PreparedStatement ps1 = conn.prepareStatement(deleteSchedules);
-                 PreparedStatement ps2 = conn.prepareStatement(deleteRoomServices);
-                 PreparedStatement ps3 = conn.prepareStatement(deleteAppointments);
-                 PreparedStatement ps4 = conn.prepareStatement(deleteRoom)) {
+    try (Connection conn = dbContext.getConnection()) {
+        conn.setAutoCommit(false); // Bắt đầu transaction
 
-                ps1.setInt(1, roomID);
-                ps1.executeUpdate();
-
-                ps2.setInt(1, roomID);
-                ps2.executeUpdate();
-
-                ps3.setInt(1, roomID);
-                ps3.executeUpdate();
-
-                ps4.setInt(1, roomID);
-                int rows = ps4.executeUpdate();
-
-                if (rows == 0) {
+        try (PreparedStatement checkStmt = conn.prepareStatement(checkFutureSchedules)) {
+            checkStmt.setInt(1, roomID);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
                     conn.rollback();
-                    throw new SQLException("❌ Không tìm thấy phòng có ID = " + roomID);
+                    throw new SQLException("❌ Không thể xóa phòng ID = " + roomID + " vì có lịch làm việc trong 7 ngày tới.");
                 }
-
-                conn.commit();
-                System.out.println("✅ Đã xóa phòng và dữ liệu liên quan.");
-            } catch (SQLException ex) {
-                conn.rollback(); // Lỗi thì rollback lại toàn bộ
-                throw ex;
             }
         }
+
+        try (PreparedStatement ps1 = conn.prepareStatement(deleteSchedules);
+             PreparedStatement ps2 = conn.prepareStatement(deleteRoomServices);
+             PreparedStatement ps3 = conn.prepareStatement(deleteAppointments);
+             PreparedStatement ps4 = conn.prepareStatement(deleteRoom)) {
+
+            ps1.setInt(1, roomID);
+            ps1.executeUpdate();
+
+            ps2.setInt(1, roomID);
+            ps2.executeUpdate();
+
+            ps3.setInt(1, roomID);
+            ps3.executeUpdate();
+
+            ps4.setInt(1, roomID);
+            int rows = ps4.executeUpdate();
+
+            if (rows == 0) {
+                conn.rollback();
+                throw new SQLException("❌ Không tìm thấy phòng có ID = " + roomID);
+            }
+
+            conn.commit();
+            System.out.println("✅ Đã xóa phòng và dữ liệu liên quan.");
+        } catch (SQLException ex) {
+            conn.rollback(); // Lỗi thì rollback lại toàn bộ
+            throw ex;
+        }
     }
+}
+
 
     public boolean isDoctorAssigned(Integer doctorID) throws SQLException {
         if (doctorID == null) return false;
@@ -734,4 +789,5 @@ public class RoomsDAO {
         result.put("endDate", days.isEmpty() ? endDate : days.get(days.size() - 1));
         return result;
     }
+
 }

@@ -304,7 +304,19 @@
     </style>
 </head>
 <body>
+
     <div class="container">
+            <div style="margin-bottom: 20px; font-size: 14px; color: #6b7280;">
+    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" style="text-decoration: none; color: #3b82f6;">
+        <i class="fas fa-home"></i> Dashboard
+    </a>
+    <span style="margin: 0 8px;">&gt;</span>
+    <a href="${pageContext.request.contextPath}/ViewRoomServlet" style="text-decoration: none; color: #4b5563;">
+        Quản lý Phòng
+    </a>
+    <span style="margin: 0 8px;">&gt;</span>
+    <span style="color: #111827;">Sửa phòng</span>
+</div>
         <div class="header">
             <h1><i class="fas fa-edit"></i> Cập nhật Phòng</h1>
             <p>Chỉnh sửa thông tin chi tiết của phòng khám</p>
@@ -339,25 +351,7 @@
                            class="form-input" placeholder="Mô tả chi tiết về phòng...">
                 </div>
 
-                <div class="form-group">
-                    <label for="doctorID" class="form-label">
-                        <i class="fas fa-user-md form-icon"></i>
-                        Mã Bác Sĩ
-                    </label>
-                    <input type="text" id="doctorID" name="doctorID" value="${room.doctorID}" 
-                           class="form-input" placeholder="Nhập mã bác sĩ...">
-                </div>
-
-                <div class="form-group">
-                    <label for="nurseID" class="form-label">
-                        <i class="fas fa-user-nurse form-icon"></i>
-                        Mã Y Tá
-                    </label>
-                    <input type="text" id="nurseID" name="nurseID" value="${room.nurseID}" 
-                           class="form-input" placeholder="Nhập mã y tá...">
-                </div>
-
-                <div class="form-group full-width">
+               <div class="form-group full-width">
                     <label for="status" class="form-label">
                         <i class="fas fa-info-circle form-icon"></i>
                         Trạng Thái

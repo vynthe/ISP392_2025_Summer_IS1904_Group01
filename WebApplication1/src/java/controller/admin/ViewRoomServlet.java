@@ -45,7 +45,11 @@ public class ViewRoomServlet extends HttpServlet {
 
         try {
             String keyword = request.getParameter("keyword");
-            boolean isSearching = keyword != null && !keyword.trim().isEmpty();
+            String statusFilter = request.getParameter("statusFilter");
+
+            boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+            boolean hasStatus = statusFilter != null && !statusFilter.trim().isEmpty();
+
             List<Rooms> roomList;
             String role;
             int userId = -1;
@@ -62,59 +66,19 @@ public class ViewRoomServlet extends HttpServlet {
 
             System.out.println("Role: " + role + ", UserID: " + userId);
 
-            // Xử lý điều hướng tuần
-            String action = request.getParameter("action");
-            String startDate = request.getParameter("startDate");
-            String endDate = request.getParameter("endDate");
-            java.util.Map<String, Object> scheduleFull;
-            if (startDate != null && endDate != null && ("prev".equals(action) || "next".equals(action))) {
-                // Tính tuần mới
-                java.time.LocalDate start = java.time.LocalDate.parse(startDate);
-                java.time.LocalDate end = java.time.LocalDate.parse(endDate);
-                int days = (int) java.time.temporal.ChronoUnit.DAYS.between(start, end);
-                if ("prev".equals(action)) {
-                    start = start.minusDays(days + 1);
-                    end = end.minusDays(days + 1);
-                } else if ("next".equals(action)) {
-                    start = start.plusDays(days + 1);
-                    end = end.plusDays(days + 1);
-                }
-                scheduleFull = roomService.getWeeklyScheduleByRange(start.toString(), end.toString());
-            } else if (startDate != null && endDate != null) {
-                scheduleFull = roomService.getWeeklyScheduleByRange(startDate, endDate);
-            } else {
-                scheduleFull = roomService.getWeeklyScheduleFull();
-            }
-            request.setAttribute("scheduleData", scheduleFull.get("scheduleData"));
-            request.setAttribute("days", scheduleFull.get("days"));
-            request.setAttribute("dayNameMap", scheduleFull.get("dayNameMap"));
-            request.setAttribute("startDate", scheduleFull.get("startDate"));
-            request.setAttribute("endDate", scheduleFull.get("endDate"));
-
-            int pageSize = 3;
-            int page = 1;
-            try {
-                String pageParam = request.getParameter("page");
-                if (pageParam != null) {
-                    page = Integer.parseInt(pageParam);
-                    if (page < 1) page = 1;
-                }
-            } catch (Exception e) { page = 1; }
-
             if ("admin".equals(role) || "receptionist".equals(role)) {
-                roomList = isSearching ? roomService.searchRooms(keyword) : roomService.getAllRooms();
-                int totalRooms = roomList.size();
-                int totalPages = (int) Math.ceil((double) totalRooms / pageSize);
-                if (page > totalPages) page = totalPages > 0 ? totalPages : 1;
-                if (page < 1) page = 1;
-                int fromIndex = (page - 1) * pageSize;
-                int toIndex = Math.min(fromIndex + pageSize, totalRooms);
-                List<model.entity.Rooms> pagedRooms = (fromIndex < toIndex) ? roomList.subList(fromIndex, toIndex) : new java.util.ArrayList<>();
-                request.setAttribute("roomList", pagedRooms);
-                request.setAttribute("currentPage", page);
-                request.setAttribute("totalPages", totalPages);
-                request.setAttribute("pageSize", pageSize);
+                if (hasKeyword || hasStatus) {
+                    roomList = roomService.searchRoomsByKeywordAndStatus(
+                        hasKeyword ? keyword.trim() : "",
+                        hasStatus ? statusFilter.trim() : ""
+                    );
+                } else {
+                    roomList = roomService.getAllRooms();
+                }
+
+                request.setAttribute("roomList", roomList);
                 request.setAttribute("keyword", keyword);
+                request.setAttribute("statusFilter", statusFilter);
                 request.setAttribute("isAdmin", "admin".equals(role));
                 request.getRequestDispatcher("/views/admin/ViewRoom.jsp").forward(request, response);
 
