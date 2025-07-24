@@ -356,6 +356,10 @@ public class UserService {
         List<Users> employees = userDAO.getAllEmployee();
         return (employees != null) ? employees : new ArrayList<>();
     }
+      public List<Users> getDoctorNurse() throws SQLException {
+        List<Users> employees = userDAO.getDoctorNurse();
+        return (employees != null) ? employees : new ArrayList<>();
+    }
 
     public Users getEmployeeByID(int userID) throws SQLException {
         return userDAO.getEmployeeByID(userID);

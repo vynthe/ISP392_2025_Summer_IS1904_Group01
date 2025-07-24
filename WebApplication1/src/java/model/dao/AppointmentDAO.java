@@ -395,145 +395,98 @@ public class AppointmentDAO {
 
     // Tạo mới một lịch hẹn (thêm kiểm tra slot hợp lệ)
     public boolean createAppointment(int patientId, int doctorId, int serviceId, int slotId, int roomId) throws SQLException {
-        if (patientId <= 0 || doctorId <= 0 || serviceId <= 0 || slotId <= 0 || roomId <= 0) {
-            throw new IllegalArgumentException("Invalid input: All IDs must be positive");
-        }
+    if (patientId <= 0 || doctorId <= 0 || serviceId <= 0 || slotId <= 0 || roomId <= 0) {
+        throw new IllegalArgumentException("Invalid input: All IDs must be positive");
+    }
 
-        // Kiểm tra slot đã đủ 5 lịch hẹn chưa
-        int appointmentCount = countAppointmentsBySlotId(slotId);
-        if (appointmentCount >= 5) {
-            System.err.println("Slot " + slotId + " is full (reached 5 appointments) at " + LocalDateTime.now() + " +07");
+    // Kiểm tra slot đã đủ 5 lịch hẹn chưa
+    int appointmentCount = countAppointmentsBySlotId(slotId);
+    if (appointmentCount >= 5) {
+        System.err.println("Slot " + slotId + " is full (reached 5 appointments) at " + LocalDateTime.now() + " +07");
+        return false;
+    }
+
+    String getSlotTimeSql = "SELECT se.SlotDate, se.StartTime, se.EndTime, se.Status, r.RoomName, u.FullName as DoctorName "
+            + "FROM ScheduleEmployee se "
+            + "JOIN Rooms r ON se.RoomID = r.RoomID "
+            + "JOIN Users u ON se.UserID = u.UserID "
+            + "WHERE se.SlotID = ? AND se.UserID = ? AND se.RoomID = ? "
+            + "AND se.Status = 'Available' AND r.Status = 'Available' AND u.Status = 'Active'";
+
+    Timestamp appointmentTime = null;
+    try (Connection conn = dbContext.getConnection(); PreparedStatement getSlotStmt = conn.prepareStatement(getSlotTimeSql)) {
+
+        getSlotStmt.setInt(1, slotId);
+        getSlotStmt.setInt(2, doctorId);
+        getSlotStmt.setInt(3, roomId);
+
+        try (ResultSet rs = getSlotStmt.executeQuery()) {
+            if (!rs.next()) {
+                System.err.println("❌ Invalid or unavailable schedule slot for slotId: " + slotId
+                        + ", doctorId: " + doctorId + ", roomId: " + roomId
+                        + " at " + LocalDateTime.now() + " +07");
+                return false;
+            }
+
+            LocalDateTime slotTime = rs.getDate("SlotDate").toLocalDate()
+                    .atTime(rs.getTime("StartTime").toLocalTime());
+            appointmentTime = Timestamp.valueOf(slotTime);
+
+            System.out.println("✅ Valid slot found - Doctor: " + rs.getString("DoctorName")
+                    + ", Room: " + rs.getString("RoomName")
+                    + ", Time: " + slotTime);
+        }
+    }
+
+    // Kiểm tra dịch vụ có tồn tại và active trong phòng
+    String checkServiceSql = "SELECT s.ServiceName "
+            + "FROM RoomServices rs "
+            + "JOIN Services s ON rs.ServiceID = s.ServiceID "
+            + "JOIN Rooms r ON rs.RoomID = r.RoomID "
+            + "WHERE rs.RoomID = ? AND rs.ServiceID = ? "
+            + "AND r.Status = 'Available' AND s.Status = 'Active'";
+
+    try (Connection conn = dbContext.getConnection(); PreparedStatement checkServiceStmt = conn.prepareStatement(checkServiceSql)) {
+
+        checkServiceStmt.setInt(1, roomId);
+        checkServiceStmt.setInt(2, serviceId);
+
+        try (ResultSet rs = checkServiceStmt.executeQuery()) {
+            if (!rs.next()) {
+                System.err.println("❌ Service " + serviceId + " is not available in room " + roomId
++ " at " + LocalDateTime.now() + " +07");
+                return false;
+            }
+            System.out.println("✅ Service available: " + rs.getString("ServiceName"));
+        }
+    }
+
+    // ❌ Không dùng transaction, chỉ insert vào Appointments
+    String insertSql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, SlotID, RoomID, AppointmentTime, Status, CreatedBy, CreatedAt, UpdatedAt) "
+            + "VALUES (?, ?, ?, ?, ?, ?, 'Approved', ?, ?, ?)";
+
+    try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
+        pstmt.setInt(1, patientId);
+        pstmt.setInt(2, doctorId);
+        pstmt.setInt(3, serviceId);
+        pstmt.setInt(4, slotId);
+        pstmt.setInt(5, roomId);
+        pstmt.setTimestamp(6, appointmentTime);
+        pstmt.setInt(7, patientId);
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        pstmt.setTimestamp(8, now);
+        pstmt.setTimestamp(9, now);
+
+        int rowsAffected = pstmt.executeUpdate();
+        if (rowsAffected == 0) {
+            System.err.println("❌ Failed to insert appointment for slotId: " + slotId);
             return false;
         }
 
-        String getSlotTimeSql = "SELECT se.SlotDate, se.StartTime, se.EndTime, se.Status, r.RoomName, u.FullName as DoctorName "
-                + "FROM ScheduleEmployee se "
-                + "JOIN Rooms r ON se.RoomID = r.RoomID "
-                + "JOIN Users u ON se.UserID = u.UserID "
-                + "WHERE se.SlotID = ? AND se.UserID = ? AND se.RoomID = ? "
-                + "AND se.Status = 'Available' AND r.Status = 'Available' AND u.Status = 'Active'";
-
-        Timestamp appointmentTime = null;
-        try (Connection conn = dbContext.getConnection(); PreparedStatement getSlotStmt = conn.prepareStatement(getSlotTimeSql)) {
-
-            getSlotStmt.setInt(1, slotId);
-            getSlotStmt.setInt(2, doctorId);
-            getSlotStmt.setInt(3, roomId);
-
-            try (ResultSet rs = getSlotStmt.executeQuery()) {
-                if (!rs.next()) {
-                    System.err.println("❌ Invalid or unavailable schedule slot for slotId: " + slotId
-                            + ", doctorId: " + doctorId + ", roomId: " + roomId
-                            + " at " + LocalDateTime.now() + " +07");
-                    return false;
-                }
-
-                LocalDateTime slotTime = rs.getDate("SlotDate").toLocalDate()
-                        .atTime(rs.getTime("StartTime").toLocalTime());
-                appointmentTime = Timestamp.valueOf(slotTime);
-
-                System.out.println("✅ Valid slot found - Doctor: " + rs.getString("DoctorName")
-                        + ", Room: " + rs.getString("RoomName")
-                        + ", Time: " + slotTime);
-            }
-        }
-
-        // ✅ FIXED: Kiểm tra dịch vụ với JOIN để đảm bảo service available trong room
-        String checkServiceSql = "SELECT s.ServiceName, rs.RoomID "
-                + "FROM RoomServices rs "
-                + "JOIN Services s ON rs.ServiceID = s.ServiceID "
-                + "JOIN Rooms r ON rs.RoomID = r.RoomID "
-                + "WHERE rs.RoomID = ? AND rs.ServiceID = ? "
-                + "AND r.Status = 'Available' AND s.Status = 'Active'";
-
-        try (Connection conn = dbContext.getConnection(); PreparedStatement checkServiceStmt = conn.prepareStatement(checkServiceSql)) {
-
-            checkServiceStmt.setInt(1, roomId);
-            checkServiceStmt.setInt(2, serviceId);
-
-            try (ResultSet rs = checkServiceStmt.executeQuery()) {
-                if (!rs.next()) {
-                    System.err.println("❌ Service " + serviceId + " is not available in room " + roomId
-                            + " at " + LocalDateTime.now() + " +07");
-                    return false;
-                }
-                System.out.println("✅ Service available: " + rs.getString("ServiceName"));
-            }
-        }
-
-        // ✅ IMPROVED: Sử dụng transaction để đảm bảo data consistency
-        Connection conn = null;
-        try {
-            conn = dbContext.getConnection();
-            conn.setAutoCommit(false);  // Bắt đầu transaction
-
-            // Chèn appointment
-            String insertSql = "INSERT INTO Appointments (PatientID, DoctorID, ServiceID, SlotID, RoomID, AppointmentTime, Status, CreatedBy, CreatedAt, UpdatedAt) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, 'Approved', ?, ?, ?)";
-
-            try (PreparedStatement pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                pstmt.setInt(1, patientId);
-                pstmt.setInt(2, doctorId);
-                pstmt.setInt(3, serviceId);
-                pstmt.setInt(4, slotId);
-                pstmt.setInt(5, roomId);
-                pstmt.setTimestamp(6, appointmentTime);
-                pstmt.setInt(7, patientId);
-                Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-                pstmt.setTimestamp(8, now);
-                pstmt.setTimestamp(9, now);
-
-                int rowsAffected = pstmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    System.err.println("❌ Failed to insert appointment for slotId: " + slotId);
-                    conn.rollback();
-                    return false;
-                }
-            }
-
-            // Cập nhật trạng thái slot
-            String updateSlotSql = "UPDATE ScheduleEmployee SET Status = 'Booked', PatientID = ?, UpdatedAt = GETDATE() "
-                    + "WHERE SlotID = ? AND Status = 'Available' AND UserID = ? AND RoomID = ?";
-
-            try (PreparedStatement updateStmt = conn.prepareStatement(updateSlotSql)) {
-                updateStmt.setInt(1, patientId);
-                updateStmt.setInt(2, slotId);
-                updateStmt.setInt(3, doctorId);
-                updateStmt.setInt(4, roomId);
-
-                int rowsAffected = updateStmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    System.err.println("❌ Failed to update slot status for slotId: " + slotId);
-                    conn.rollback();
-                    return false;
-                }
-            }
-
-            conn.commit();  // Commit transaction
-            System.out.println("✅ Appointment created successfully for slotId: " + slotId);
-            return true;
-
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    System.err.println("❌ Rollback failed: " + rollbackEx.getMessage());
-                }
-            }
-            System.err.println("❌ SQLException in createAppointment: " + e.getMessage());
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);  // Restore auto-commit
-                    conn.close();
-                } catch (SQLException e) {
-                    System.err.println("❌ Failed to close connection: " + e.getMessage());
-                }
-            }
-        }
+        System.out.println("✅ Appointment created successfully for slotId: " + slotId);
+        return true;
     }
+}
 
     // Kiểm tra xem lịch hẹn có tồn tại không
     public boolean appointmentExists(int appointmentId) throws SQLException {
@@ -721,4 +674,56 @@ public class AppointmentDAO {
         }
         return appointments;
     }
+    // Lấy tất cả lịch hẹn trong hệ thống
+// Lấy tất cả lịch hẹn trong hệ thống
+public List<Map<String, Object>> getAllAppointments(int page, int pageSize) throws SQLException {
+    List<Map<String, Object>> appointments = new ArrayList<>();
+    String sql = "SELECT a.AppointmentID, a.AppointmentTime, a.Status, a.CreatedAt, a.UpdatedAt, " +
+                 "u1.FullName AS PatientName, u1.UserID AS PatientID, " +
+                 "u2.FullName AS DoctorName, u2.UserID AS DoctorID, " +
+                 "s.ServiceName, s.ServiceID, " +
+                 "r.RoomName, r.RoomID, " +
+                 "se.SlotID, se.SlotDate, se.StartTime, se.EndTime " +
+                 "FROM Appointments a " +
+                 "LEFT JOIN Users u1 ON a.PatientID = u1.UserID " +
+                 "JOIN Users u2 ON a.DoctorID = u2.UserID " +
+                 "JOIN Services s ON a.ServiceID = s.ServiceID " +
+                 "JOIN Rooms r ON a.RoomID = r.RoomID " +
+                 "JOIN ScheduleEmployee se ON a.SlotID = se.SlotID " +
+                 "ORDER BY a.AppointmentTime DESC " +
+                 "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, (page - 1) * pageSize);
+        pstmt.setInt(2, pageSize);
+
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> appointment = new HashMap<>();
+                appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                appointment.put("patientId", rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                appointment.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                appointment.put("doctorId", rs.getInt("DoctorID"));
+                appointment.put("doctorName", rs.getString("DoctorName"));
+                appointment.put("serviceId", rs.getInt("ServiceID"));
+                appointment.put("serviceName", rs.getString("ServiceName"));
+                appointment.put("roomId", rs.getInt("RoomID"));
+                appointment.put("roomName", rs.getString("RoomName"));
+                appointment.put("slotId", rs.getInt("SlotID"));
+                appointment.put("slotDate", rs.getDate("SlotDate")); // Sử dụng java.sql.Date
+                appointment.put("startTime", rs.getTime("StartTime")); // Sử dụng java.sql.Time
+                appointment.put("endTime", rs.getTime("EndTime")); // Sử dụng java.sql.Time
+                appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime")); // Sử dụng java.sql.Timestamp
+                appointment.put("status", rs.getString("Status"));
+                appointment.put("createdAt", rs.getTimestamp("CreatedAt")); // Sử dụng java.sql.Timestamp
+                appointment.put("updatedAt", rs.getTimestamp("UpdatedAt")); // Sử dụng java.sql.Timestamp
+                appointments.add(appointment);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("SQLException in getAllAppointments at " + LocalDateTime.now() + " +07: " + e.getMessage() + ", SQLState: " + e.getSQLState());
+        throw e;
+    }
+    return appointments;
+}
 }

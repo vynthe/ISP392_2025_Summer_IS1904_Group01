@@ -190,41 +190,7 @@ public class ScheduleDAO {
         }
     }
 
-    // Cập nhật slot
-    public boolean updateScheduleEmployee(ScheduleEmployee slot) throws SQLException, ClassNotFoundException {
-        if (slot == null || slot.getSlotId() <= 0 || slot.getUserId() <= 0 || slot.getRole() == null) {
-            throw new IllegalArgumentException("Invalid schedule employee data.");
-        }
-
-        // Removed IsAbsent and AbsenceReason from UPDATE statement
-        String sql = "UPDATE ScheduleEmployee SET UserID = ?, Role = ?, RoomID = ?, SlotDate = ?, StartTime = ?, EndTime = ?, Status = ?, CreatedBy = ?, UpdatedAt = GETDATE() WHERE SlotID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, slot.getUserId());
-            pstmt.setString(2, slot.getRole());
-            // Handle RoomID: if it's 0, set as NULL in DB. For Receptionist, default to 1 if defaultRoomId is used.
-            if (slot.getRoomId() > 0) {
-                pstmt.setInt(3, slot.getRoomId());
-            } else if (Objects.equals(slot.getRole(), "Receptionist")) { // Assuming default RoomID 1 for Receptionist if no specific room is provided
-                 pstmt.setInt(3, 1);
-            }
-            else {
-                pstmt.setNull(3, java.sql.Types.INTEGER);
-            }
-            pstmt.setDate(4, Date.valueOf(slot.getSlotDate()));
-            pstmt.setTime(5, Time.valueOf(slot.getStartTime()));
-            pstmt.setTime(6, Time.valueOf(slot.getEndTime()));
-            // Removed pstmt.setBoolean(7, slot.isAbsent());
-            // Removed pstmt.setString(8, slot.getAbsenceReason());
-            pstmt.setString(7, slot.getStatus()); // Shifted index
-            pstmt.setInt(8, slot.getCreatedBy()); // Shifted index
-            pstmt.setInt(9, slot.getSlotId()); // Shifted index
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating schedule employee slot: " + e.getMessage());
-            throw e;
-        }
-    }
+   
 
    public List<ScheduleEmployee> getAllScheduleEmployees() throws SQLException {
     List<ScheduleEmployee> slots = new ArrayList<>();
@@ -1129,4 +1095,100 @@ private Map<Integer, Map<String, String>> getAllEmployees() throws SQLException 
     }
     return schedules;
 }
+  
+
+    // New method to update a schedule to a new doctor, checking availability
+    public boolean updateScheduleEmployeeRoom(int slotId, int newUserId, int createdBy) throws SQLException, ClassNotFoundException {
+        // Step 1: Retrieve the existing schedule details to get slotDate, startTime, endTime, and role
+        ScheduleEmployee existingSchedule = getScheduleById(slotId);
+        if (existingSchedule == null) {
+            throw new IllegalArgumentException("Schedule with SlotID " + slotId + " does not exist.");
+        }
+
+        // Step 2: Verify the new user is a doctor
+        String userRoleSql = "SELECT Role FROM Users WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement userRoleStmt = conn.prepareStatement(userRoleSql)) {
+            userRoleStmt.setInt(1, newUserId);
+            try (ResultSet rs = userRoleStmt.executeQuery()) {
+                if (!rs.next()) {
+                    throw new IllegalArgumentException("User with UserID " + newUserId + " is not an active Doctor.");
+                }
+            }
+        }
+
+        // Step 3: Check for scheduling conflicts for the new doctor
+        String conflictSql = "SELECT COUNT(*) FROM ScheduleEmployee WHERE UserID = ? AND SlotDate = ? AND " +
+                            "((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?)) AND Status != 'Cancelled'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement conflictStmt = conn.prepareStatement(conflictSql)) {
+            conflictStmt.setInt(1, newUserId);
+            conflictStmt.setDate(2, java.sql.Date.valueOf(existingSchedule.getSlotDate()));
+            conflictStmt.setTime(3, java.sql.Time.valueOf(existingSchedule.getStartTime()));
+            conflictStmt.setTime(4, java.sql.Time.valueOf(existingSchedule.getStartTime()));
+            conflictStmt.setTime(5, java.sql.Time.valueOf(existingSchedule.getEndTime()));
+            conflictStmt.setTime(6, java.sql.Time.valueOf(existingSchedule.getEndTime()));
+            try (ResultSet rs = conflictStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new IllegalStateException("New doctor (UserID: " + newUserId + ") is already scheduled in another slot at the same time.");
+                }
+            }
+        }
+
+        // Step 4: Check room assignment constraints (max 1 doctor per room per slot)
+        if (existingSchedule.getRoomId() != null) {
+            boolean isRoomAvailable = checkRoomAssignmentConstraints(
+                existingSchedule.getRoomId(),
+                existingSchedule.getSlotDate(),
+                existingSchedule.getStartTime(),
+                existingSchedule.getEndTime(),
+                "Doctor"
+            );
+            if (!isRoomAvailable) {
+                throw new IllegalStateException("Room (RoomID: " + existingSchedule.getRoomId() + ") already has a doctor assigned for this slot.");
+            }
+        }
+
+        // Step 5: Update the schedule with the new doctor
+        String updateSql = "UPDATE ScheduleEmployee SET UserID = ?, Role = 'Doctor', UpdatedAt = GETDATE() WHERE SlotID = ?";
+        String notifySql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) " +
+                          "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                 PreparedStatement notifyStmt = conn.prepareStatement(notifySql)) {
+
+                // Update ScheduleEmployee
+                updateStmt.setInt(1, newUserId);
+                updateStmt.setInt(2, slotId);
+                int rowsAffected = updateStmt.executeUpdate();
+
+                if (rowsAffected == 0) {
+                    conn.rollback();
+                    return false;
+                }
+
+                // Send notification to the new doctor
+                notifyStmt.setInt(1, createdBy);
+                notifyStmt.setString(2, "Admin");
+                notifyStmt.setInt(3, newUserId);
+                notifyStmt.setString(4, "Doctor");
+                notifyStmt.setString(5, "Cập nhật lịch làm việc");
+                notifyStmt.setString(6, "Bạn được phân công lịch làm việc mới vào ngày " +
+                        existingSchedule.getSlotDate() + " từ " + existingSchedule.getStartTime() +
+                        " đến " + existingSchedule.getEndTime() + " tại phòng " +
+                        (existingSchedule.getRoomId() != null ? existingSchedule.getRoomId() : "chưa xác định"));
+                notifyStmt.setBoolean(7, false);
+                notifyStmt.executeUpdate();
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("SQLException in updateScheduleEmployeeRoom: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+                throw e;
+            }
+        }
+    }
 }

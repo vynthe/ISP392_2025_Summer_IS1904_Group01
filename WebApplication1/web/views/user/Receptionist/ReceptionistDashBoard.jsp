@@ -356,7 +356,7 @@
                     </div>
                     <h3 class="card-title">Quản Lý Đặt Lịch</h3>
                     <p class="card-subtitle">Xem và quản lý tất cả các cuộc hẹn và lịch trình đặt lịch</p>
-                    <a href="${pageContext.request.contextPath}/BookingServlet" class="action-btn">
+                    <a href="${pageContext.request.contextPath}/ViewBookingServlet" class="action-btn">
                         <i class="fas fa-calendar-check mr-2"></i>Xem Lịch Đặt
                     </a>
                 </div>
@@ -380,6 +380,16 @@
                     <p class="card-subtitle">Kiểm tra lịch làm việc và tình trạng sẵn sàng của nhân viên</p>
                     <a href="${pageContext.request.contextPath}/ViewScheduleUserServlet" class="action-btn">
                         <i class="fas fa-calendar-week mr-2"></i>Xem Lịch Làm Việc
+                    </a>
+                </div>
+                         <div class="action-card fade-in-up stagger-4">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="card-title">Lịch Làm Việc</h3>
+                    <p class="card-subtitle">Kiểm tra lịch làm việc và tình trạng sẵn sàng của nhân viên</p>
+                    <a href="${pageContext.request.contextPath}/ViewListDoctorNurse" class="action-btn">
+                        <i class="fas fa-calendar-week mr-2"></i>Xem Lịch Làm Việc Bác sĩ / Y Tá
                     </a>
                 </div>
             </div>

@@ -280,6 +280,18 @@ public class UserDAO {
         return users;
     }
 
+     public List<Users> getDoctorNurse() throws SQLException {
+        List<Users> users = new ArrayList<>();
+        String sql = "SELECT UserID, Username, [Password], Email, FullName, Dob, Gender, Phone, [Address], MedicalHistory, Specialization, [Role], [Status], CreatedBy, CreatedAt, UpdatedAt FROM Users WHERE Role IN ('doctor', 'nurse')";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+        }
+        return users;
+    }
     public Users getEmployeeByID(int userID) throws SQLException {
         String sql = "SELECT * FROM Users WHERE userID = ? AND Role IN ('doctor', 'nurse', 'receptionist')";
         try (Connection conn = dbContext.getConnection();

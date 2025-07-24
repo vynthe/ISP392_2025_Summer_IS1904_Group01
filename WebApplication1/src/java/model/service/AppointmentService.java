@@ -169,4 +169,10 @@ public class AppointmentService {
         }
         return appointmentDAO.getAppointmentsByDoctorId(doctorId);
     }
+    public List<Map<String, Object>> getAllAppointments(int page, int pageSize) throws SQLException {
+        if (page < 1 || pageSize < 1) {
+            throw new IllegalArgumentException("Page and pageSize must be positive");
+        }
+        return appointmentDAO.getAllAppointments(page, pageSize);
+    }
 }
