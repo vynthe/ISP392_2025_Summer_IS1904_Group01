@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-green: #4CAF50;  Green for medical theme 
+            --primary-green: #4CAF50; 
             --secondary-green: #66BB6A; /* Light Green */
             --light-green: #C8E6C9; /* Very Light Green */
             --accent-blue: #2196F3; /* Blue for links/buttons */

@@ -582,7 +582,7 @@
                 </h3>
 
                 <div class="actions-grid">
-                    <a href="${pageContext.request.contextPath}/ViewExaminationResultsServlet" class="action-card">
+                    <a href="${pageContext.request.contextPath}/ViewExaminationResults" class="action-card">
                         <div class="action-icon exam">
                             <i class="fas fa-stethoscope"></i>
                         </div>
