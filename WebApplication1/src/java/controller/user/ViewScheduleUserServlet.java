@@ -2,104 +2,94 @@ package controller.user;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import model.entity.ScheduleEmployee;
-import model.entity.Users;
-import model.service.SchedulesService;
+import jakarta.servlet.http.*;
+import model.service.AppointmentService;
+
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 
-@WebServlet(name = "ViewScheduleUserServlet", urlPatterns = {"/ViewScheduleUserServlet"})
-public class ViewScheduleUserServlet extends HttpServlet {
+@WebServlet(name = "ViewScheduleDetail", urlPatterns = {"/ViewScheduleDetail"})
+public class ViewScheduleDetail extends HttpServlet {
 
-    private SchedulesService scheduleService;
-
-    @Override
-    public void init() throws ServletException {
-        scheduleService = new SchedulesService();
-    }
+    private final AppointmentService appointmentService = new AppointmentService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String destinationPage = "/views/common/login.jsp"; // Default page
-        HttpSession session = request.getSession(false);
 
-        // Kiểm tra session để xác thực người dùng
-        Users user = null;
-        String role = null;
-        int userId = 0;
-
-        if (session == null || session.getAttribute("user") == null) {
-            request.setAttribute("error", "Vui lòng đăng nhập để xem lịch làm việc.");
-            request.getRequestDispatcher(destinationPage).forward(request, response);
-            return;
-        }
-
-        // Lấy đối tượng Users từ session
-        user = (Users) session.getAttribute("user");
-        role = user.getRole() != null ? user.getRole().toLowerCase() : null;
-        userId = user.getUserID();
-
-        // Validate role
-        if (role == null || (!"doctor".equals(role) && !"nurse".equals(role) && !"receptionist".equals(role))) {
-            System.out.println("Invalid role detected: " + role);
-            request.setAttribute("error", "Vai trò người dùng không hợp lệ: " + (role != null ? role : "không xác định"));
-            destinationPage = "/views/common/error.jsp";
-            request.getRequestDispatcher(destinationPage).forward(request, response);
-            return;
-        }
-
-        System.out.println("Role: " + role + ", UserID: " + userId); // Debug output
+        String roomIdParam = request.getParameter("roomId");
+        String slotIdParam = request.getParameter("slotId");
 
         try {
-            // Lấy danh sách lịch làm việc của user cụ thể
-            List<ScheduleEmployee> schedules = scheduleService.getAllSchedulesByUserId(userId);
+            if (roomIdParam == null || slotIdParam == null || roomIdParam.isBlank() || slotIdParam.isBlank()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu roomId hoặc slotId trong URL");
+                return;
+            }
 
-            // Kiểm tra nếu không có lịch
-            if (schedules == null || schedules.isEmpty()) {
-                System.out.println("No schedules found for user ID: " + userId);
-                request.setAttribute("error", "Không tìm thấy lịch làm việc cho bạn.");
-                destinationPage = "/views/common/error.jsp";
-            } else {
-                System.out.println("Schedules retrieved: " + schedules.size());
-                request.setAttribute("schedules", schedules);
-                request.setAttribute("scheduleDetails", schedules); // Để tương thích với JSP
+            int roomId = Integer.parseInt(roomIdParam);
+            int slotId = Integer.parseInt(slotIdParam);
 
-                // Xác định trang đích dựa trên vai trò
-                switch (role) {
-                    case "doctor":
-                    case "nurse":
-                        destinationPage = "/views/user/DoctorNurse/ViewScheduleEmployee.jsp";
-                        break;
-                    case "receptionist":
-                        destinationPage = "/views/user/Receptionist/ViewScheduleReceptionist.jsp";
-                        break;
-                    default:
-                        destinationPage = "/views/common/error.jsp";
-                        request.setAttribute("error", "Không xác định được trang hiển thị lịch làm việc.");
-                        break;
+            List<Map<String, Object>> scheduleDetails = appointmentService.getScheduleWithAppointments(roomId, slotId);
+
+            // Enrich: thêm tên bác sĩ, bệnh nhân, dịch vụ nếu có
+            for (Map<String, Object> row : scheduleDetails) {
+
+                // 🧑‍⚕️ Tên bác sĩ
+                Object doctorIdObj = row.get("doctorId");
+                if (doctorIdObj != null) {
+                    int doctorId = parseId(doctorIdObj);
+                    if (doctorId > 0) {
+                        String doctorName = appointmentService.getUserFullNameById(doctorId);
+                        row.put("doctorName", doctorName);
+                    }
+                }
+
+                // 👤 Tên bệnh nhân
+                Object patientIdObj = row.get("patientId");
+                if (patientIdObj != null) {
+                    int patientId = parseId(patientIdObj);
+                    if (patientId > 0) {
+                        String patientName = appointmentService.getUserFullNameById(patientId);
+                        row.put("patientName", patientName);
+                    }
+                }
+
+                // 🧾 Tên dịch vụ
+                Object serviceIdObj = row.get("serviceId");
+                if (serviceIdObj != null) {
+                    int serviceId = parseId(serviceIdObj);
+                    if (serviceId > 0) {
+                        String serviceName = appointmentService.getServiceNameById(serviceId);
+                        row.put("serviceName", serviceName);
+                    }
                 }
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("SQLException: " + e.getMessage());
-            request.setAttribute("error", "Lỗi cơ sở dữ liệu khi tải lịch làm việc: " + e.getMessage());
-            destinationPage = "/views/common/error.jsp";
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Unexpected error: " + e.getMessage());
-            request.setAttribute("error", "Lỗi hệ thống không xác định. Vui lòng thử lại sau.");
-            destinationPage = "/views/common/error.jsp";
-        }
+            request.setAttribute("scheduleDetails", scheduleDetails);
+            request.setAttribute("roomId", roomId);
+            request.setAttribute("slotId", slotId);
 
-        // Chuyển tiếp đến trang JSP tương ứng
-        System.out.println("Forwarding to: " + destinationPage);
-        request.getRequestDispatcher(destinationPage).forward(request, response);
+            request.getRequestDispatcher("/views/user/DoctorNurse/ViewScheduleDetail.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "roomId hoặc slotId không hợp lệ");
+        } catch (SQLException e) {
+            throw new ServletException("Lỗi truy vấn dữ liệu lịch làm việc và lịch hẹn", e);
+        }
+    }
+
+    /**
+     * Hàm tiện ích để parse ID từ Object sang int an toàn
+     */
+    private int parseId(Object obj) {
+        if (obj instanceof Integer) {
+            return (Integer) obj;
+        }
+        try {
+            return Integer.parseInt(obj.toString());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }
