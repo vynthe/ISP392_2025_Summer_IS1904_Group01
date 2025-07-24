@@ -319,12 +319,11 @@ public List<Rooms> searchRoomsByKeywordAndStatus(String keyword, String status) 
         return roomList;
     }
 
-    public void deleteRoom(int roomID) throws SQLException, ClassNotFoundException {
+public void deleteRoom(int roomID) throws SQLException, ClassNotFoundException {
     String checkFutureSchedules = """
         SELECT COUNT(*) FROM ScheduleEmployee
         WHERE RoomID = ?
           AND SlotDate BETWEEN CAST(GETDATE() AS DATE) AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))
-          AND IsAbsent = 0
     """;
 
     String deleteSchedules = "DELETE FROM ScheduleEmployee WHERE RoomID = ?";
@@ -340,7 +339,7 @@ public List<Rooms> searchRoomsByKeywordAndStatus(String keyword, String status) 
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
                     conn.rollback();
-                    throw new SQLException("❌ Không thể xóa phòng ID = " + roomID + " vì có lịch làm việc trong 7 ngày tới.");
+                    throw new SQLException("❌ Không thể xóa phòng vì phòng đã được gán lịch cho bác sĩ và y tá trong tuần tới.");
                 }
             }
         }
