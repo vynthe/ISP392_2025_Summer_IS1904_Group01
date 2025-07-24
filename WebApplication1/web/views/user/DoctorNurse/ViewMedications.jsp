@@ -116,7 +116,7 @@
             }
 
             .add-medication-btn {
-                background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+                background: linear-gradient(135deg, var(--accent-emerald), #059669);
                 color: var(--white);
                 padding: 0.875rem 1.5rem;
                 border: none;
@@ -134,7 +134,23 @@
             .add-medication-btn:hover {
                 transform: translateY(-2px);
                 box-shadow: var(--shadow-lg);
-                background: linear-gradient(135deg, var(--primary-blue-dark), var(--secondary-indigo));
+                background: linear-gradient(135deg, #059669, #047857);
+            }
+
+            .home-btn {
+                background: linear-gradient(to right, #1e90ff, #63b3ed);
+                color: white;
+                padding: 8px 20px;
+                border-radius: 12px;
+                text-decoration: none;
+                font-weight: bold;
+                margin-right: 20px;
+                transition: all 0.2s ease;
+            }
+
+            .home-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-md);
             }
 
             /* Stats Cards */
@@ -376,7 +392,7 @@
                 background: var(--neutral-50);
                 border-top: 1px solid var(--neutral-200);
                 display: flex;
-                justify-content: between;
+                justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 1rem;
@@ -609,8 +625,7 @@
                 <div class="header-content">
                     <div class="title-group">
                         <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" 
-                           style="background: linear-gradient(to right, #1e90ff, #63b3ed); color: white;
-                           padding: 8px 20px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-right: 20px;">
+                           class="home-btn">
                             Trang chủ
                         </a>
                         <div style="margin-left: 1rem;">
@@ -619,8 +634,11 @@
                         </div>
                     </div>
 
-
-
+                    <!-- Add Medication Button -->
+                    <a href="${pageContext.request.contextPath}/AddMedicationServlet" class="add-medication-btn">
+                        <i class="fas fa-plus"></i>
+                        Thêm thuốc mới
+                    </a>
                 </div>
             </div>
 
@@ -765,7 +783,6 @@
                                                             <i class="fas fa-eye"></i>
                                                             Chi tiết
                                                         </a>
-
                                                     </div>
                                                 </td>
                                             </tr>
@@ -800,7 +817,7 @@
 
                                             <div class="card-field">
                                                 <span class="field-label">Dạng bào chế:</span>
-                                                <span class="dosage-form">
+                                                <span class="field-value">
                                                     <c:choose>
                                                         <c:when test="${medication.dosageForm == 'Tablet'}">Viên nén</c:when>
                                                         <c:when test="${medication.dosageForm == 'Capsule'}">Viên nang</c:when>
@@ -821,97 +838,68 @@
                                             </div>
                                         </div>
 
-
+                                        <div class="card-actions">
+                                            <div class="action-buttons">
+                                                <a href="${pageContext.request.contextPath}/ViewMedicationDetailsServlet?id=${medication.medicationID}" 
+                                                   class="action-btn btn-view">
+                                                    <i class="fas fa-eye"></i>
+                                                    Chi tiết
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </c:forEach>
                             </div>
                         </c:otherwise>
                     </c:choose>
                 </div>
+
+                <!-- Pagination Section -->
+                <c:if test="${not empty medications}">
+                    <div class="pagination-section">
+                        <div class="pagination-info">
+                            Hiển thị ${(currentPage - 1) * 10 + 1} đến ${currentPage * 10 > totalRecords ? totalRecords : currentPage * 10} của ${totalRecords} thuốc
+                        </div>
+                        <div class="pagination-controls">
+                            <c:if test="${currentPage > 1}">
+                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage - 1}&nameKeyword=${param.nameKeyword}&dosageFormKeyword=${param.dosageFormKeyword}" 
+                                   class="page-btn">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </c:if>
+                            <c:if test="${currentPage <= 1}">
+                                <span class="page-btn disabled">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            </c:if>
+
+                            <c:forEach begin="1" end="${totalPages}" var="i">
+                                <c:choose>
+                                    <c:when test="${i == currentPage}">
+                                        <span class="page-btn active">${i}</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${i}&nameKeyword=${param.nameKeyword}&dosageFormKeyword=${param.dosageFormKeyword}" 
+                                           class="page-btn">${i}</a>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+
+                            <c:if test="${currentPage < totalPages}">
+                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage + 1}&nameKeyword=${param.nameKeyword}&dosageFormKeyword=${param.dosageFormKeyword}" 
+                                   class="page-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </c:if>
+                            <c:if test="${currentPage >= totalPages}">
+                                <span class="page-btn disabled">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </c:if>
+                        </div>
+                    </div>
+                </c:if>
             </div>
-
-            <!-- Pagination Section -->
-            <c:if test="${not empty medications and totalPages > 1}">
-                <div class="pagination-section">
-                    <div class="pagination-info">
-                        Hiển thị <strong>${(currentPage - 1) * 10 + 1}</strong> - 
-                        <strong>${currentPage * 10 > totalRecords ? totalRecords : currentPage * 10}</strong> 
-                        trong tổng số <strong>${totalRecords}</strong> thuốc
-                    </div>
-
-                    <div class="pagination-controls">
-                        <!-- First & Previous -->
-                        <c:choose>
-                            <c:when test="${currentPage > 1}">
-                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=1" class="page-btn">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage - 1}" class="page-btn">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="page-btn disabled">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </span>
-                                <span class="page-btn disabled">
-                                    <i class="fas fa-angle-left"></i>
-                                </span>
-                            </c:otherwise>
-                        </c:choose>
-
-                        <!-- Page Numbers -->
-                        <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
-                        <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
-
-                        <c:if test="${startPage > 1}">
-                            <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=1" class="page-btn">1</a>
-                            <c:if test="${startPage > 2}">
-                                <span class="page-dots">...</span>
-                            </c:if>
-                        </c:if>
-
-                        <c:forEach var="i" begin="${startPage}" end="${endPage}">
-                            <c:choose>
-                                <c:when test="${i == currentPage}">
-                                    <span class="page-btn active">${i}</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${i}" class="page-btn">${i}</a>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:forEach>
-
-                        <c:if test="${endPage < totalPages}">
-                            <c:if test="${endPage < totalPages - 1}">
-                                <span class="page-dots">...</span>
-                            </c:if>
-                            <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${totalPages}" class="page-btn">${totalPages}</a>
-                        </c:if>
-
-                        <!-- Next & Last -->
-                        <c:choose>
-                            <c:when test="${currentPage < totalPages}">
-                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${currentPage + 1}" class="page-btn">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                                <a href="${pageContext.request.contextPath}/ViewMedicationsServlet?page=${totalPages}" class="page-btn">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="page-btn disabled">
-                                    <i class="fas fa-angle-right"></i>
-                                </span>
-                                <span class="page-btn disabled">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </span>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </c:if>
         </div>
-
     </body>
 </html>
