@@ -877,5 +877,7 @@
             setInterval(updateNotifications, 30000);
             updateNotifications(); // Initial call
         </script>
+        <div style="height: 400px;"></div>
+<jsp:include page="/assets/footer.jsp" />
     </body>
 </html>
