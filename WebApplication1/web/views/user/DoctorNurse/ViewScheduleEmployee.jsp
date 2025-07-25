@@ -543,7 +543,7 @@
                         if (schedule.roomId && schedule.roomId !== '') {
                             // !!! QUAN TRỌNG: Thay thế "/doctornurse/rooms?roomId=" bằng URL thực tế của bạn
                             // Ví dụ: nếu bạn có Servlet RoomDetailServlet xử lý đường dẫn "/room-details", thì URL có thể là "/room-details?roomId="
-                            roomHtml = 'Phòng: <a href="${pageContext.request.contextPath}/doctornurse/rooms?roomId=' + schedule.roomId + '" class="room-link">' + schedule.roomName + '</a>';
+                            roomHtml = 'Phòng: <a href="${pageContext.request.contextPath}/ViewScheduleDetail?roomId=' + schedule.roomId + (schedule.slotId ? '&slotId=' + schedule.slotId : '') + '" class="room-link">' + schedule.roomName + '</a>';
                         } else {
                             roomHtml = 'Phòng: ' + schedule.roomName;
                         }
