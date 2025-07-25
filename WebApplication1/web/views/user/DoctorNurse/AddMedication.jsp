@@ -1,9 +1,10 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
     <head>
         <title>Thêm Thuốc Mới</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -194,6 +195,12 @@
                 font-size: 1.125rem;
             }
 
+            .form-hint {
+                font-size: 0.75rem;
+                color: var(--neutral-600);
+                margin-top: 0.25rem;
+            }
+
             @media (max-width: 768px) {
                 .main-container {
                     padding: 1.5rem;
@@ -226,7 +233,7 @@
             <!-- Alert Messages -->
             <c:if test="${not empty sessionScope.statusMessage}">
                 <c:choose>
-                    <c:when test="${sessionScope.statusMessage == 'Tạo thành công'}">
+                    <c:when test="${sessionScope.statusMessage == 'Thêm thuốc thành công!'}">
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle alert-icon"></i>
                             ${sessionScope.statusMessage}
@@ -242,23 +249,18 @@
                 <c:remove var="statusMessage" scope="session"/>
             </c:if>
 
-            <c:if test="${not empty errorMessage}">
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-triangle alert-icon"></i>
-                    ${errorMessage}
-                </div>
-            </c:if>
-
             <!-- Form Section -->
             <form action="${pageContext.request.contextPath}/AddMedicationServlet" method="post" class="form-container">
                 <div class="form-group">
                     <label for="name" class="form-label">Tên Thuốc <span style="color: var(--error-red);">*</span></label>
-                    <input type="text" id="name" name="name" class="form-input" required maxlength="255" placeholder="Nhập tên thuốc...">
+                    <input type="text" id="name" name="name" class="form-input" required maxlength="255" placeholder="Nhập tên thuốc (ví dụ: Paracetamol)">
+                    <div class="form-hint">Tối đa 255 ký tự</div>
                 </div>
 
                 <div class="form-group">
                     <label for="dosage" class="form-label">Hàm Lượng <span style="color: var(--error-red);">*</span></label>
-                    <input type="text" id="dosage" name="dosage" class="form-input" required maxlength="100" placeholder="Nhập hàm lượng (ví dụ: 500mg)...">
+                    <input type="text" id="dosage" name="dosage" class="form-input" required maxlength="100" placeholder="Nhập hàm lượng (ví dụ: 500mg)">
+                    <div class="form-hint">Tối đa 100 ký tự</div>
                 </div>
 
                 <div class="form-group">
@@ -274,25 +276,30 @@
                         <option value="Cream">Kem</option>
                         <option value="Ointment">Thuốc mỡ</option>
                     </select>
+                    <div class="form-hint">Chọn một dạng bào chế hợp lệ</div>
                 </div>
 
                 <div class="form-group">
                     <label for="manufacturer" class="form-label">Nhà Sản Xuất <span style="color: var(--error-red);">*</span></label>
-                    <input type="text" id="manufacturer" name="manufacturer" class="form-input" required maxlength="255" placeholder="Nhập nhà sản xuất...">
+                    <input type="text" id="manufacturer" name="manufacturer" class="form-input" required maxlength="255" placeholder="Nhập nhà sản xuất (ví dụ: PharmaCorp)">
+                    <div class="form-hint">Tối đa 255 ký tự</div>
                 </div>
 
                 <div class="form-group">
                     <label for="description" class="form-label">Mô Tả</label>
-                    <textarea id="description" name="description" class="form-textarea" placeholder="Nhập mô tả thuốc..."></textarea>
+                    <textarea id="description" name="description" class="form-textarea" placeholder="Nhập mô tả thuốc (không bắt buộc)"></textarea>
+                    <div class="form-hint">Mô tả chi tiết về thuốc (tùy chọn)</div>
                 </div>
 
                 <div class="form-group">
                     <label for="status" class="form-label">Trạng Thái <span style="color: var(--error-red);">*</span></label>
                     <select id="status" name="status" class="form-select" required>
-                        <option value="Active">Hoạt động</option>
+                        <option value="" disabled>Chọn trạng thái</option>
+                        <option value="Active" selected>Hoạt động</option>
                         <option value="Inactive">Ngừng hoạt động</option>
                         <option value="Out of Stock">Hết hàng</option>
                     </select>
+                    <div class="form-hint">Chọn trạng thái hiện tại của thuốc</div>
                 </div>
 
                 <div class="form-buttons">

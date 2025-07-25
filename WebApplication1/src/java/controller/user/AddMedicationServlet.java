@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import model.entity.Medication;
 import model.service.MedicationService;
 import java.io.IOException;
-import java.sql.*;
+
 @WebServlet("/AddMedicationServlet")
 public class AddMedicationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -95,16 +95,13 @@ public class AddMedicationServlet extends HttpServlet {
             boolean success = medicationService.addMedication(medication);
 
             if (success) {
-                session.setAttribute("statusMessage", "Tạo thành công");
+                session.setAttribute("statusMessage", "Thêm thuốc thành công!");
                 response.sendRedirect(request.getContextPath() + "/ViewMedicationsServlet");
             } else {
                 session.setAttribute("statusMessage", "Lỗi khi thêm thuốc!");
                 response.sendRedirect(request.getContextPath() + "/AddMedicationServlet");
             }
 
-        } catch (SQLException e) {
-            session.setAttribute("statusMessage", "Lỗi cơ sở dữ liệu: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/AddMedicationServlet");
         } catch (Exception e) {
             session.setAttribute("statusMessage", "Đã xảy ra lỗi: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/AddMedicationServlet");

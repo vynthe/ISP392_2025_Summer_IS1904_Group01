@@ -63,24 +63,9 @@ public class MedicationService {
         if (medication.getManufacturer() == null || medication.getManufacturer().trim().isEmpty()) {
             throw new IllegalArgumentException("Manufacturer is required.");
         }
-        if (medication.getProductionDate() == null) {
-            throw new IllegalArgumentException("Production date is required.");
-        }
-        if (medication.getExpirationDate() == null) {
-            throw new IllegalArgumentException("Expiration date is required.");
-        }
-        if (medication.getPrice() < 0) {
-            throw new IllegalArgumentException("Price must be non-negative.");
-        }
-        if (medication.getQuantity() < 0) {
-            throw new IllegalArgumentException("Quantity must be non-negative.");
-        }
         if (medication.getDosageForm() == null || medication.getDosageForm().trim().isEmpty()) {
             throw new IllegalArgumentException("Dosage form is required.");
         }
-
-        // Validate business rules for dates
-        validateDates(medication.getProductionDate(), medication.getExpirationDate());
 
         // Set default values if not provided
         if (medication.getStatus() == null || medication.getStatus().trim().isEmpty()) {
@@ -152,23 +137,7 @@ public class MedicationService {
             throw new IllegalArgumentException("Medication object or ID cannot be null or invalid.");
         }
 
-        // Validate required fields for import
-        if (medication.getProductionDate() == null) {
-            throw new IllegalArgumentException("Production date is required for import.");
-        }
-        if (medication.getExpirationDate() == null) {
-            throw new IllegalArgumentException("Expiration date is required for import.");
-        }
-        if (medication.getPrice() < 0) {
-            throw new IllegalArgumentException("Price must be non-negative.");
-        }
-        if (medication.getQuantity() < 0) {
-            throw new IllegalArgumentException("Quantity must be non-negative.");
-        }
-
-        // Validate business rules for dates
-        validateDates(medication.getProductionDate(), medication.getExpirationDate());
-
+      
         // Verify the medication exists and is active
         Medication existingMedication = getMedicationById(medication.getMedicationID());
         if (existingMedication == null) {

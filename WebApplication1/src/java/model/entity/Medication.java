@@ -10,18 +10,13 @@ public class Medication {
     private String dosage;             // Liều dùng
     private String manufacturer;       // Nhà sản xuất
     private String description;        // Mô tả
-    private LocalDate productionDate;  // Ngày sản xuất
-    private LocalDate expirationDate;  // Hạn dùng
-    private Double price;              // Giá tiền
-    private Integer quantity;          // Số lượng
     private String status;             // Trạng thái
     private String dosageForm;         // Dạng bào chế
 
     // Constructor mặc định với giá trị khởi tạo
     public Medication() {
         this.status = "Active";
-        this.quantity = 0;
-        this.price = 0.0;
+        
     }
 
     // Constructor đầy đủ
@@ -33,10 +28,6 @@ public class Medication {
         this.dosage = dosage;
         this.manufacturer = manufacturer;
         this.description = description;
-        this.productionDate = productionDate;
-        this.expirationDate = expirationDate;
-        this.price = price;
-        this.quantity = quantity;
         this.status = status;
         this.dosageForm = dosageForm;
     }
@@ -82,44 +73,6 @@ public class Medication {
         this.description = description;
     }
 
-    public LocalDate getProductionDate() {
-        return productionDate;
-    }
-
-    public void setProductionDate(LocalDate productionDate) {
-        this.productionDate = productionDate;
-    }
-
-    public LocalDate getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        if (price != null && price < 0) {
-            throw new IllegalArgumentException("Price must be non-negative");
-        }
-        this.price = price;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        if (quantity != null && quantity < 0) {
-            throw new IllegalArgumentException("Quantity must be non-negative");
-        }
-        this.quantity = quantity;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -147,12 +100,7 @@ public class Medication {
         }
     }
 
-    // Validation for dates
-    public void validateDates() {
-        if (productionDate != null && expirationDate != null && !expirationDate.isAfter(productionDate)) {
-            throw new IllegalArgumentException("Expiration date must be after production date");
-        }
-    }
+
 
     @Override
     public String toString() {
@@ -162,10 +110,6 @@ public class Medication {
                 + ", dosage='" + dosage + '\''
                 + ", manufacturer='" + manufacturer + '\''
                 + ", description='" + description + '\''
-                + ", productionDate=" + productionDate
-                + ", expirationDate=" + expirationDate
-                + ", price=" + price
-                + ", quantity=" + quantity
                 + ", status='" + status + '\''
                 + ", dosageForm='" + dosageForm + '\''
                 + '}';
