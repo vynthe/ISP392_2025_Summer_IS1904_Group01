@@ -195,7 +195,7 @@
 
             .header-content {
                 display: flex;
-                justify-content: space-between;
+                justify-content: center;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 1.5rem;
@@ -205,6 +205,7 @@
                 display: flex;
                 align-items: center;
                 gap: 1rem;
+                text-align: center;
             }
 
             .dental-logo {
@@ -413,12 +414,15 @@
 
             .action-buttons {
                 display: flex;
-                gap: 0.5rem;
+                gap: 0.75rem;
+                justify-content: flex-start;
+                align-items: center;
+                flex-wrap: wrap;
             }
 
             .action-btn {
-                padding: 0.5rem 1rem;
-                border-radius: var(--border-radius);
+                padding: 0.65rem 1.25rem;
+                border-radius: 8px;
                 font-size: 0.875rem;
                 font-weight: 500;
                 text-decoration: none;
@@ -426,18 +430,36 @@
                 align-items: center;
                 gap: 0.5rem;
                 transition: var(--transition);
+                min-width: 120px;
+                justify-content: center;
+                border: 1px solid transparent;
+                box-shadow: var(--shadow-sm);
             }
 
             .btn-prescribe {
                 background: var(--success);
                 color: var(--white);
-                border: none;
+                border: 1px solid var(--success);
             }
 
             .btn-prescribe:hover {
                 background: #0d9b6f;
-                transform: translateY(-1px);
-                box-shadow: var(--shadow-sm);
+                border-color: #0d9b6f;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .btn-view {
+                background: var(--primary);
+                color: var(--white);
+                border: 1px solid var(--primary);
+            }
+
+            .btn-view:hover {
+                background: var(--primary-dark);
+                border-color: var(--primary-dark);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
             }
 
             .empty-state {
@@ -756,11 +778,14 @@
 
                 .action-buttons {
                     flex-direction: column;
+                    gap: 0.75rem;
                 }
 
                 .action-btn {
                     width: 100%;
                     justify-content: center;
+                    padding: 0.75rem 1.5rem;
+                    min-width: unset;
                 }
 
                 .pagination-section {
@@ -853,7 +878,7 @@
                     <!-- Search Form -->
                     <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="search-form">
                         <input type="text" name="patientId" placeholder="Tìm theo ID bệnh nhân..." 
-                               value="${patientId}" class="search-input">
+                                class="search-input">
                         <button type="submit" class="search-button">
                             <i class="fas fa-search"></i> Tìm kiếm
                         </button>
@@ -867,7 +892,6 @@
                                     <i class="fas fa-check-circle"></i> ${message}
                                 </div>
                             </c:when>
-                            
                         </c:choose>
                     </c:if>
 
@@ -888,7 +912,7 @@
                                         <thead>
                                             <tr>
                                                 <th>STT</th>
-                                               <th>Mã Lịch Hẹn</th> 
+                                                <th>Mã Lịch Hẹn</th> 
                                                 <th>Tên Bệnh Nhân</th>
                                                 <th>Tên Bác Sĩ</th>
                                                 <th>Kết Quả Khám</th>
@@ -907,13 +931,11 @@
                                                         <div class="action-buttons">
                                                             <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
                                                                class="action-btn btn-prescribe">
-                                                                <i class="fas fa-prescription"></i> Kê Đơn
+                                                                <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
                                                             </a>
-                                                        </div>
-                                                        <div class="action-buttons">
                                                             <a href="${pageContext.request.contextPath}/ViewPrescriptionDetail?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
-                                                               class="action-btn btn-prescribe">
-                                                                <i></i> Xem Chi Tiết
+                                                               class="action-btn btn-view">
+                                                                <i class="fas fa-eye"></i> Xem Chi Tiết
                                                             </a>
                                                         </div>
                                                     </td>
@@ -953,7 +975,11 @@
                                                 <div class="action-buttons">
                                                     <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
                                                        class="action-btn btn-prescribe">
-                                                        <i class="fas fa-prescription"></i> Kê Đơn
+                                                        <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetail?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                       class="action-btn btn-view">
+                                                        <i class="fas fa-eye"></i> Xem Chi Tiết
                                                     </a>
                                                 </div>
                                             </div>
@@ -1043,13 +1069,12 @@
                     </div>
                     <div class="footer-section">
                         <h3>Liên Kết Nhanh</h3>
-                        <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-question-circle"></i> Kết Quả Khám</a></li>
-                            <li><a href="#"><i class="fas fa-book"></i> Danh Sách Thuốc</a></li>
-                            <li><a href="#"><i class="fas fa-headset"></i> Hỗ trợ kỹ thuật</a></li>
-                            <li><a href="#"><i class="fas fa-shield-alt"></i> Lịch Làm Việc</a></li>
-                            <li><a href="#"><i class="fas fa-file-contract"></i> Kê Đơn Thuốc</a></li>
-                            <li><a href="#"><i class="fas fa-file-contract"></i>Quản Lý Phòng</a></li>
+                          <ul class="footer-links">
+                            <li><a href="/ViewExaminationResults"><i class="fas fa-stethoscope"></i> Kết Quả Khám</a></li>
+                            <li><a href="/ViewMedicationsServlet"><i class="fas fa-pills"></i> Danh Sách Thuốc</a></li>
+                            <li><a href="/ViewPatientResults"><i class="fas fa-prescription"></i> Kê Đơn Thuốc</a></li>
+                            <li><a href="/ViewScheduleUserServlet"><i class="fas fa-calendar-check"></i> Lịch Làm Việc</a></li>
+                            <li><a href="/ViewRoomServlet"><i class="fas fa-door-open"></i> Quản Lý Phòng</a></li>
                         </ul>
                     </div>
 
