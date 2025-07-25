@@ -422,12 +422,28 @@ public class UserService {
         return userDAO.UpdateEmployee(user);
     }
 
-    public boolean deleteEmployee(int userID) throws SQLException {
-        if (userID <= 0) {
-            throw new SQLException("ID nhân viên không hợp lệ.");
-        }
-        return userDAO.deleteEmployee(userID);
+public boolean deleteEmployee(int userID) throws Exception {
+    if (userID <= 0) {
+        throw new IllegalArgumentException("User ID không hợp lệ.");
     }
+
+    return userDAO.deleteEmployeeAndSchedules(userID); // nếu bạn dùng hàm này
+}
+
+public boolean deleteEmployeeSafely(int userID) throws Exception {
+    if (userID <= 0) {
+        throw new IllegalArgumentException("UserID không hợp lệ.");
+    }
+
+    if (userDAO.isEmployeeScheduled(userID)) {
+        throw new IllegalStateException("❌ Nhân viên đã được gán lịch cho tuần tới, không thể xóa.");
+    }
+
+    return deleteEmployee(userID);
+}
+
+
+
 
     public boolean UpdatePatient(Users user) throws SQLException {
         if (user == null) {
