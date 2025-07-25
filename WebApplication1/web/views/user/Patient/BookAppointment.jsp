@@ -571,18 +571,6 @@
 
     <body>
         <header class="main-header">
-            <div class="header-top">
-                <div class="header-container">
-                    <div class="header-user">
-                        <c:if test="${not empty currentUser}">
-                            <div class="user-info">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Xin chào, ${fn:escapeXml(currentUser.fullName)}</span>
-                            </div>
-                        </c:if>
-                    </div>
-                </div>
-            </div>
 
             <div class="header-main">
                 <div class="header-container">
