@@ -388,7 +388,6 @@
                 border-color: #475569;
             }
 
-            /* Back Button */
             .back-button-container {
                 text-align: center;
                 margin-top: 3rem;
@@ -413,120 +412,117 @@
             }
 
             /* Footer */
-           .main-footer {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: white;
-    margin-top: auto;
-    width: 100vw; /* Full viewport width */
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-}
+            .main-footer {
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                color: white;
+                margin-top: auto;
+                width: 100vw; /* Full viewport width */
+                position: relative;
+                left: 50%;
+                right: 50%;
+                margin-left: -50vw;
+                margin-right: -50vw;
+            }
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 50px 20px 20px;
-}
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 50px 20px 20px;
+            }
 
-.footer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
-    margin-bottom: 40px;
-}
+            .footer-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 40px;
+                margin-bottom: 40px;
+            }
 
-.footer-section h4 {
-    color: #3498db;
-    margin-bottom: 20px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
+            .footer-section h4 {
+                color: #3498db;
+                margin-bottom: 20px;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 600;
+            }
 
-.footer-section ul {
-    list-style: none;
-}
+            .footer-section ul {
+                list-style: none;
+            }
 
-.footer-section ul li {
-    margin-bottom: 10px;
-}
+            .footer-section ul li {
+                margin-bottom: 10px;
+            }
 
-.footer-section ul li a {
-    color: #bdc3c7;
-    text-decoration: none;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 0;
-}
+            .footer-section ul li a {
+                color: #bdc3c7;
+                text-decoration: none;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 5px 0;
+            }
 
-.footer-section ul li a:hover {
-    color: #3498db;
-    padding-left: 10px;
-}
+            .footer-section ul li a:hover {
+                color: #3498db;
+                padding-left: 10px;
+            }
 
-.footer-section p {
-    color: #bdc3c7;
-    line-height: 1.7;
-    margin-bottom: 12px;
-}
+            .footer-section p {
+                color: #bdc3c7;
+                line-height: 1.7;
+                margin-bottom: 12px;
+            }
 
-.social-links {
-    display: flex;
-    gap: 15px;
-    margin-top: 20px;
-}
+            .social-links {
+                display: flex;
+                gap: 15px;
+                margin-top: 20px;
+            }
 
-.social-links a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    color: white;
-    font-size: 18px;
-    transition: all 0.3s;
-    text-decoration: none;
-}
+            .social-links a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 45px;
+                height: 45px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 50%;
+                color: white;
+                font-size: 18px;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
 
-.social-links a:hover {
-    background: #3498db;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
-}
+            .social-links a:hover {
+                background: #3498db;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+            }
 
-.footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 25px;
-    text-align: center;
-    color: #95a5a6;
-}
+            .footer-bottom {
+                border-top: 1px solid rgba(255,255,255,0.1);
+                padding-top: 25px;
+                text-align: center;
+                color: #95a5a6;
+            }
 
-.footer-bottom p {
-    margin: 8px 0;
-}
+            .footer-bottom p {
+                margin: 8px 0;
+            }
 
-/* Ensure body and html allow full width */
-html, body {
-    overflow-x: hidden; /* Prevent horizontal scroll */
-}
+            html, body {
+                overflow-x: hidden; 
+            }
 
-/* Container adjustments to work with full-width footer */
-.container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 2rem;
-    position: relative; /* Ensure proper stacking context */
-}
-            /* Responsive Design */
+            .container {
+                max-width: 1200px;
+                margin: 2rem auto;
+                padding: 0 2rem;
+                position: relative; 
+            }
             @media (max-width: 1024px) {
                 .container {
                     padding: 0 1rem;
@@ -645,7 +641,6 @@ html, body {
                             <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp"><i class="fas fa-home"></i> Trang chủ</a></li>
                             <li><a href="/ViewMedicalAppointmentServlet"><i class="fas fa-calendar-alt"></i>Chọn Bác Sĩ</a></li>
                             <li><a href="/ViewDetailBookServlet" class="active"><i class="fas fa-calendar-alt"></i>Đặt Lịch Khám</a></li>
-                            <li><a href="/BookAppointmentServlet"><i class="fas fa-calendar-alt"></i>Xác Nhận Đặt Lịch</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -655,7 +650,7 @@ html, body {
         <div class="container">
             <!-- Page Title -->
             <div class="page-title">
-                <h1><i class="fas fa-user-md"></i> Chi Tiết Bác Sĩ</h1>
+                <h1><i class="fas fa-user-md"></i> Đặt Lịch Khám</h1>
                 <p>Thông tin chi tiết và đặt lịch khám bệnh</p>
             </div>
 
@@ -866,87 +861,72 @@ html, body {
                     </c:otherwise>
                 </c:choose>
 
-           
 
-    <footer class="main-footer">
-            <div class="footer-content">
-                <div class="footer-grid">
-                    <div class="footer-section">
-                        <h4><i class="fas fa-hospital"></i> Healthcare System</h4>
-                        <p>Hệ thống chăm sóc sức khỏe hàng đầu Việt Nam, mang đến dịch vụ y tế chất lượng cao với đội ngũ bác sĩ chuyên nghiệp.</p>
-                        <div class="social-links">
-                            <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                            <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+
+                <footer class="main-footer">
+                    <div class="footer-content">
+                        <div class="footer-grid">
+                            <div class="footer-section">
+                                <h4><i class="fas fa-hospital"></i>Về Chúng Tôi</h4>
+                                <p>Chúng tôi là phòng khám nha khoa hàng đầu, cam kết mang lại nụ cười khỏe mạnh và tự tin với công nghệ tiên tiến và đội ngũ chuyên gia giàu kinh nghiệm.</p>
+                          
+                            </div>
+
+
+
+                            <div class="footer-section">
+                                <h4><i class="fas fa-link"></i> Liên Kết Nhanh</h4>
+                                <ul>
+                                    <li><a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Trang chủ</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/doctors"><i class="fas fa-user-md"></i>Chọn Bác sĩ</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/appointments"><i class="fas fa-calendar-alt"></i> Đặt lịch Khám</a></li>
+              
+                                </ul>
+                            </div>
+
+                            <div class="footer-section">
+                                <h4><i class="fas fa-map-marker-alt"></i> Liên Hệ</h4>
+                                <p><i class="fas fa-map-marker-alt"></i>ĐH FPT , HOA LAC</p>
+                                <p><i class="fas fa-phone"></i> (098) 123 4567</p>
+                                <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div class="footer-bottom">
+                            <p>© 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
                         </div>
                     </div>
-
-                    <div class="footer-section">
-                        <h4><i class="fas fa-stethoscope"></i> Dịch Vụ Y Tế</h4>
-                        <ul>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Khám tổng quát</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Tim mạch</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Thần kinh</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Nhi khoa</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Sản phụ khoa</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="footer-section">
-                        <h4><i class="fas fa-link"></i> Liên Kết Nhanh</h4>
-                        <ul>
-                            <li><a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Trang chủ</a></li>
-                            <li><a href="${pageContext.request.contextPath}/doctors"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
-                            <li><a href="${pageContext.request.contextPath}/appointments"><i class="fas fa-calendar-alt"></i> Đặt lịch</a></li>
-                            <li><a href="${pageContext.request.contextPath}/services"><i class="fas fa-stethoscope"></i> Dịch vụ</a></li>
-                            <li><a href="${pageContext.request.contextPath}/contact"><i class="fas fa-phone-alt"></i> Liên hệ</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="footer-section">
-                        <h4><i class="fas fa-map-marker-alt"></i> Liên Hệ</h4>
-                        <p><i class="fas fa-map-marker-alt"></i>ĐH FPT , HOA LAC</p>
-                        <p><i class="fas fa-phone"></i> (098) 123 4567</p>
-                        <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <p>© 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
-                </div>
-            </div>
-        </footer>
+                </footer>
 
 
-            <script>
-                function validateForm(form) {
-                    const slotId = form.slotId.value.trim();
-                    const roomId = form.roomId.value.trim();
-                    console.log("Validating slotId: ", slotId, "roomId: ", roomId);
-                    if (!slotId || isNaN(slotId) || parseInt(slotId) <= 0) {
-                        alert('Vui lòng chọn một khung giờ hợp lệ!');
-                        return false;
-                    }
-                    if (!roomId || isNaN(roomId) || parseInt(roomId) <= 0) {
-                        alert('Vui lòng chọn một phòng hợp lệ!');
-                        return false;
-                    }
-                    return true;
-                }
-
-                document.addEventListener('DOMContentLoaded', function () {
-                    const forms = document.querySelectorAll('form');
-                    forms.forEach(form => {
-                        const slotIdInput = form.querySelector('input[name="slotId"]');
-                        const roomIdInput = form.querySelector('input[name="roomId"]');
-                        if (slotIdInput && roomIdInput) {
-                            const slotId = slotIdInput.value;
-                            const roomId = roomIdInput.value;
-                            console.log("SlotId from form: ", slotId, "RoomId from form: ", roomId);
+                <script>
+                    function validateForm(form) {
+                        const slotId = form.slotId.value.trim();
+                        const roomId = form.roomId.value.trim();
+                        console.log("Validating slotId: ", slotId, "roomId: ", roomId);
+                        if (!slotId || isNaN(slotId) || parseInt(slotId) <= 0) {
+                            alert('Vui lòng chọn một khung giờ hợp lệ!');
+                            return false;
                         }
+                        if (!roomId || isNaN(roomId) || parseInt(roomId) <= 0) {
+                            alert('Vui lòng chọn một phòng hợp lệ!');
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const forms = document.querySelectorAll('form');
+                        forms.forEach(form => {
+                            const slotIdInput = form.querySelector('input[name="slotId"]');
+                            const roomIdInput = form.querySelector('input[name="roomId"]');
+                            if (slotIdInput && roomIdInput) {
+                                const slotId = slotIdInput.value;
+                                const roomId = roomIdInput.value;
+                                console.log("SlotId from form: ", slotId, "RoomId from form: ", roomId);
+                            }
+                        });
                     });
-                });
-            </script>
-        </body>
-    </html>
+                </script>
+                </body>
+                </html>
