@@ -910,6 +910,12 @@
                                                                 <i class="fas fa-prescription"></i> Kê Đơn
                                                             </a>
                                                         </div>
+                                                        <div class="action-buttons">
+                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetail?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                               class="action-btn btn-prescribe">
+                                                                <i></i> Xem Chi Tiết
+                                                            </a>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             </c:forEach>

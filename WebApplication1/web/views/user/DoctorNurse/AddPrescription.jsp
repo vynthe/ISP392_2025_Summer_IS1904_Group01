@@ -714,22 +714,32 @@
         </div>
     </footer>
 
+    <!-- Data từ server để sử dụng trong JavaScript -->
     <script>
+        // Lấy dữ liệu thuốc từ server
+        const medicationsData = [];
+        <c:if test="${not empty medications}">
+            <c:forEach var="med" items="${medications}">
+                medicationsData.push({
+                    id: ${med.medicationID},
+                    name: "${med.name}".replace(/"/g, '&quot;'),
+                    dosage: "${med.dosage}".replace(/"/g, '&quot;')
+                });
+            </c:forEach>
+        </c:if>
+
+        console.log("Medications loaded:", medicationsData);
+
         let medicationCount = 1;
-        const medicationsData = [
-            <c:if test="${not empty medications}">
-                <c:forEach var="med" items="${medications}" varStatus="status">
-                    {id: ${med.medicationID}, name: '${med.name.replace("'", "\\'")}', dosage: '${med.dosage.replace("'", "\\'")}'}${!status.last ? ',' : ''}
-                </c:forEach>
-            </c:if>
-        ];
-        console.log("medicationsData:", medicationsData); // Debugging
 
         function addMedication() {
-            console.log("addMedication called, medicationsData:", medicationsData); // Debugging
+            console.log("Adding new medication, available medications:", medicationsData.length);
+            
             const medicationList = document.getElementById('medicationList');
             const newMedication = document.createElement('div');
             newMedication.className = 'medication-item';
+            newMedication.style.opacity = '0';
+            newMedication.style.transform = 'translateY(20px)';
 
             const formGroup = document.createElement('div');
             formGroup.className = 'form-group';
@@ -737,48 +747,64 @@
             const label = document.createElement('label');
             label.className = 'form-label required';
             label.textContent = 'Tên Thuốc';
+            formGroup.appendChild(label);
 
             const select = document.createElement('select');
             select.name = 'medicationIds';
             select.className = 'form-select';
             select.required = true;
 
+            // Thêm option mặc định
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             defaultOption.textContent = 'Chọn thuốc';
             select.appendChild(defaultOption);
 
-            if (medicationsData.length === 0) {
-                console.log("No medications available for dropdown"); // Debugging
-            } else {
-                medicationsData.forEach(med => {
-                    console.log("Adding option:", med); // Debugging
-                    const option = document.createElement('option');
-                    option.value = med.id;
-                    option.textContent = `${med.name} - ${med.dosage}`;
-                    select.appendChild(option);
-                });
-            }
+            // Thêm các thuốc từ dữ liệu
+            medicationsData.forEach(med => {
+                const option = document.createElement('option');
+                option.value = med.id;
+                option.textContent = med.name + ' - ' + med.dosage;
+                select.appendChild(option);
+                console.log("Added option:", med.name, med.dosage);
+            });
+
+            formGroup.appendChild(select);
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'remove-btn';
-            removeBtn.textContent = '×';
+            removeBtn.innerHTML = '×';
             removeBtn.onclick = function() { removeMedication(this); };
 
-            formGroup.appendChild(label);
-            formGroup.appendChild(select);
             newMedication.appendChild(formGroup);
             newMedication.appendChild(removeBtn);
             medicationList.appendChild(newMedication);
+
+            // Animation hiệu ứng
+            setTimeout(() => {
+                newMedication.style.transition = 'all 0.3s ease';
+                newMedication.style.opacity = '1';
+                newMedication.style.transform = 'translateY(0)';
+            }, 10);
+
             medicationCount++;
+            console.log("New medication item added, total count:", medicationCount);
         }
 
         function removeMedication(button) {
             const medicationItems = document.querySelectorAll('.medication-item');
             if (medicationItems.length > 1) {
-                button.parentElement.remove();
-                medicationCount--;
+                const item = button.parentElement;
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    item.remove();
+                    medicationCount--;
+                    console.log("Medication removed, remaining count:", medicationCount);
+                }, 300);
             } else {
                 alert('Phải có ít nhất một loại thuốc trong đơn.');
             }
@@ -788,6 +814,7 @@
             const medicationIds = document.getElementsByName('medicationIds');
             let hasEmptySelection = false;
             let selectedMeds = [];
+            
             for (let i = 0; i < medicationIds.length; i++) {
                 const value = medicationIds[i].value;
                 if (!value || value.trim() === '') {
@@ -796,33 +823,48 @@
                 }
                 selectedMeds.push(value);
             }
+            
             if (hasEmptySelection) {
                 alert('Vui lòng chọn thuốc cho tất cả các mục.');
                 return false;
             }
+            
+            // Kiểm tra trùng lặp thuốc
             const uniqueMeds = [...new Set(selectedMeds)];
             if (selectedMeds.length !== uniqueMeds.length) {
                 alert('Không được chọn trùng thuốc. Vui lòng chọn các loại thuốc khác nhau.');
                 return false;
             }
+            
             return true;
         }
 
+        // Khởi tạo khi trang được tải
         document.addEventListener('DOMContentLoaded', function () {
+            console.log("DOM loaded, medications available:", medicationsData.length);
+            
             const submitBtn = document.querySelector('.btn-primary');
+            const addBtn = document.querySelector('.add-btn');
+            
+            // Disable submit button nếu không có thuốc
             if (medicationsData.length === 0) {
                 submitBtn.disabled = true;
                 submitBtn.style.opacity = '0.5';
                 submitBtn.style.cursor = 'not-allowed';
-                console.log("Disabling submit button: no medications available"); // Debugging
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.5';
+                addBtn.style.cursor = 'not-allowed';
+                console.log("Buttons disabled: no medications available");
             }
 
+            // Xử lý submit form
             const form = document.querySelector('form');
             form.addEventListener('submit', function() {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo đơn thuốc...';
                 submitBtn.disabled = true;
             });
 
+            // Animation cho stat cards
             const statCards = document.querySelectorAll('.stat-card');
             statCards.forEach(card => {
                 card.addEventListener('mouseenter', () => {
@@ -835,6 +877,7 @@
                 });
             });
 
+            // Animation cho medication items hiện có
             const medicationItems = document.querySelectorAll('.medication-item');
             medicationItems.forEach((item, index) => {
                 item.style.opacity = '0';
