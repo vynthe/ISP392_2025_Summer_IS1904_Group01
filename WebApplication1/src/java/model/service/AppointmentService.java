@@ -115,6 +115,36 @@ public class AppointmentService {
 
         return details;
     }
+    public Map<String, Object> getSlotDetails(int slotId) throws SQLException {
+        if (slotId <= 0) {
+            throw new IllegalArgumentException("ID khung giờ không hợp lệ: " + slotId);
+        }
+
+        Map<String, Object> slotDetails = new HashMap<>();
+        try {
+            Map<String, Object> slotInfo = appointmentDAO.getSlotById(slotId);
+            if (slotInfo == null || slotInfo.isEmpty()) {
+                System.err.println("🔧 DEBUG - AppointmentService.getSlotDetails: Không tìm thấy khung giờ cho slotId = " + slotId + " tại " + LocalDateTime.now() + " +07");
+                slotDetails.put("slotTime", "Không tìm thấy khung giờ");
+                return slotDetails;
+            }
+
+            String startTime = (String) slotInfo.get("startTime");
+            String endTime = (String) slotInfo.get("endTime");
+            if (startTime != null && endTime != null) {
+                String slotTime = startTime + " - " + endTime;
+                slotDetails.put("slotTime", slotTime);
+            } else {
+                slotDetails.put("slotTime", "Khung giờ không xác định");
+            }
+
+            System.out.println("🔧 DEBUG - AppointmentService.getSlotDetails: slotId = " + slotId + ", slotTime = " + slotDetails.get("slotTime") + " tại " + LocalDateTime.now() + " +07");
+        } catch (SQLException e) {
+            System.err.println("SQLException in getSlotDetails (slotId=" + slotId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " tại " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return slotDetails;
+    }
 
     public Map<String, Object> viewDetailBook(int doctorId) throws SQLException {
         if (doctorId <= 0) {

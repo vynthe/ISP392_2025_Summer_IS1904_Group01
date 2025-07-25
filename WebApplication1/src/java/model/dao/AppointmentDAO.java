@@ -1150,4 +1150,37 @@ public class AppointmentDAO {
         }
         return appointments;
     }
+     public Map<String, Object> getSlotById(int slotId) throws SQLException {
+        String sql = "SELECT SlotID, SlotDate, StartTime, EndTime, Status, RoomID, UserID "
+                + "FROM ScheduleEmployee WHERE SlotID = ? AND Status = 'Available'";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, slotId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> slotInfo = new HashMap<>();
+                    slotInfo.put("slotId", rs.getInt("SlotID"));
+                    slotInfo.put("slotDate", rs.getDate("SlotDate").toLocalDate());
+                    slotInfo.put("startTime", rs.getTime("StartTime").toLocalTime().toString());
+                    slotInfo.put("endTime", rs.getTime("EndTime").toLocalTime().toString());
+                    slotInfo.put("status", rs.getString("Status"));
+                    slotInfo.put("roomId", rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null);
+                    slotInfo.put("userId", rs.getInt("UserID"));
+                    System.out.println("✅ getSlotById - Found slot " + slotId + 
+                                     " with date: " + slotInfo.get("slotDate") + 
+                                     ", time: " + slotInfo.get("startTime") + "-" + slotInfo.get("endTime") +
+                                     " at " + LocalDateTime.now() + " +07");
+                    return slotInfo;
+                } else {
+                    System.out.println("❌ getSlotById - No slot found for ID: " + slotId + 
+                              
+                            " at " + LocalDateTime.now() + " +07");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getSlotById for slotId " + slotId + ": " + 
+                              e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return null;
+    }
 }
