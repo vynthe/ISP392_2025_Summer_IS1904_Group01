@@ -494,14 +494,19 @@
 
         <!-- Main Form -->
         <div class="form-container">
-            <nav class="breadcrumb">
-                <i class="fas fa-home"></i>
-                <a href="${pageContext.request.contextPath}/">Trang Chủ</a>
-                <span class="breadcrumb-separator">›</span>
-                <a href="${pageContext.request.contextPath}/employee-management">Quản Lý Nhân Viên</a>
-                <span class="breadcrumb-separator">›</span>
-                <span class="breadcrumb-current">Sửa Nhân Viên</span>
-            </nav>
+                        <div class="header-content">
+                <div class="breadcrumb">
+                    <i class="fas fa-home"></i>
+                    <a href="${pageContext.request.contextPath}//views/admin/dashboard.jsp">Trang Chủ</a>
+                    <span class="separator">></span>
+                    <a href="${pageContext.request.contextPath}/ViewEmployeeServlet">Quản Lý Nhân Viên</a>
+                    <span class="separator">></span>
+                    <span class="current">Sửa Thông Tin Nhân Viên</span>
+                </div>
+                <div class="header-title">
+                    <i class="fas fa-user-plus"></i> Quản Lý Nhân Viên
+                </div>
+            </div>
 
             <div class="form-header">
                 <h1 class="form-title">Sửa Thông Tin Nhân Viên</h1>

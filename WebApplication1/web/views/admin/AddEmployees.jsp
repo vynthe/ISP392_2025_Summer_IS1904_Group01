@@ -355,9 +355,9 @@
             <div class="header-content">
                 <div class="breadcrumb">
                     <i class="fas fa-home"></i>
-                    <a href="${pageContext.request.contextPath}/">Trang Chủ</a>
+                    <a href="${pageContext.request.contextPath}//views/admin/dashboard.jsp">Trang Chủ</a>
                     <span class="separator">></span>
-                    <a href="${pageContext.request.contextPath}/employee-management">Quản Lý Nhân Viên</a>
+                    <a href="${pageContext.request.contextPath}/ViewEmployeeServlet">Quản Lý Nhân Viên</a>
                     <span class="separator">></span>
                     <span class="current">Thêm Nhân Viên</span>
                 </div>
