@@ -596,6 +596,16 @@
                                 <div class="validation-message"></div>
                             </div>
                         </div>
+                                                   <div class="form-group" id="status-wrapper">
+                <label for="status">Trạng thái:</label>
+                <div class="input-box">
+                    <select id="status" name="status" required>
+                        <option value="Active" ${formStatus == 'Active' || (empty formStatus && employee.status == 'Active') ? 'selected' : ''}>Đang hoạt động</option>
+                        <option value="Inactive" ${formStatus == 'Inactive' || (empty formStatus && employee.status == 'Inactive') ? 'selected' : ''}>Ngưng hoạt động</option>
+                    </select>
+                    <i class="fas fa-lock"></i>
+                </div>
+            </div>
                     </div>
 
                     <div class="form-actions">
