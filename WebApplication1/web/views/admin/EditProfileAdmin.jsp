@@ -354,9 +354,9 @@
                 <div class="footer-section">
                     <h4><i class="fas fa-link"></i> Liên Kết Nhanh</h4>
                     <ul>
-                        <li><a href="/views/admin/dashboard.jsp">Trang Chủ</a></li>
-                        <li><a href="/AdminProfileController">Hồ Sơ</a></li>
-                        <li><a href="/EditProfileAdminController">Chỉnh Sửa Hồ Sơ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp">Trang Chủ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/AdminProfileController">Hồ Sơ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/EditProfileAdminController">Chỉnh Sửa Hồ Sơ</a></li>
                  
                     </ul>
                 </div>

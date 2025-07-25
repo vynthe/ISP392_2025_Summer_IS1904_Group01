@@ -173,5 +173,21 @@ public class PrescriptionService {
             throw e;
         }
     }
+    public List<Map<String, Object>> getExaminationResultsByPatientName(String patientName) throws SQLException {
+    if (patientName == null || patientName.trim().isEmpty()) {
+        log.warn("Invalid patient name: " + patientName);
+        throw new IllegalArgumentException("Patient name cannot be null or empty.");
+    }
+
+    try {
+        String trimmedPatientName = patientName.trim();
+        List<Map<String, Object>> results = prescriptionDAO.getExaminationResultsByPatientName(trimmedPatientName);
+        log.info("Retrieved " + results.size() + " examination results for patient name: " + trimmedPatientName);
+        return results;
+    } catch (SQLException e) {
+        log.error("SQLException retrieving examination results for patient name " + patientName + ": " + e.getMessage(), e);
+        throw e;
+    }
+}
     
 }

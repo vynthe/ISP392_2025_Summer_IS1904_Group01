@@ -336,6 +336,27 @@
                 transform: translateY(-2px);
             }
 
+            .clear-button {
+                background: var(--gray-500);
+                color: var(--white);
+                padding: 0.75rem 1.5rem;
+                border-radius: var(--border-radius);
+                border: none;
+                font-weight: 600;
+                font-size: 0.875rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                text-decoration: none;
+            }
+
+            .clear-button:hover {
+                background: var(--gray-600);
+                transform: translateY(-2px);
+            }
+
             .alert {
                 padding: 1rem;
                 border-radius: var(--border-radius);
@@ -877,12 +898,25 @@
                 <div class="content-section">
                     <!-- Search Form -->
                     <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="search-form">
-                        <input type="text" name="patientId" placeholder="Tìm theo ID bệnh nhân..." 
-                                class="search-input">
+                        <input type="text" name="patientName" placeholder="Tìm theo tên bệnh nhân..." 
+                               value="${patientName}" class="search-input">
                         <button type="submit" class="search-button">
                             <i class="fas fa-search"></i> Tìm kiếm
                         </button>
+                        <c:if test="${not empty patientName}">
+                            <a href="${pageContext.request.contextPath}/ViewPatientResultServlet" class="clear-button">
+                                <i class="fas fa-times"></i> Xóa bộ lọc
+                            </a>
+                        </c:if>
                     </form>
+
+                    <!-- Search Result Info -->
+                    <c:if test="${not empty patientName}">
+                        <div class="alert alert-success">
+                            <i class="fas fa-info-circle"></i> 
+                            Đang hiển thị kết quả tìm kiếm cho: "<strong>${patientName}</strong>"
+                        </div>
+                    </c:if>
 
                     <!-- Alert Messages -->
                     <c:if test="${not empty message}">
@@ -892,6 +926,11 @@
                                     <i class="fas fa-check-circle"></i> ${message}
                                 </div>
                             </c:when>
+                            <c:otherwise>
+                                <div class="alert alert-error">
+                                    <i class="fas fa-exclamation-circle"></i> ${message}
+                                </div>
+                            </c:otherwise>
                         </c:choose>
                     </c:if>
 
@@ -901,8 +940,26 @@
                             <c:when test="${empty results}">
                                 <div class="empty-state">
                                     <div class="empty-icon"><i class="fas fa-stethoscope"></i></div>
-                                    <h3 class="empty-title">Chưa có kết quả khám</h3>
-                                    <p class="empty-description">Hãy thêm kết quả khám hoặc toa thuốc đầu tiên</p>
+                                    <h3 class="empty-title">
+                                        <c:choose>
+                                            <c:when test="${not empty patientName}">
+                                                Không tìm thấy kết quả khám cho "${patientName}"
+                                            </c:when>
+                                            <c:otherwise>
+                                                Chưa có kết quả khám
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </h3>
+                                    <p class="empty-description">
+                                        <c:choose>
+                                            <c:when test="${not empty patientName}">
+                                                Vui lòng thử tìm kiếm với từ khóa khác
+                                            </c:when>
+                                            <c:otherwise>
+                                                Hãy thêm kết quả khám hoặc toa thuốc đầu tiên
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </p>
                                 </div>
                             </c:when>
                             <c:otherwise>
@@ -998,13 +1055,16 @@
                             Hiển thị <strong>${(currentPage - 1) * pageSize + 1}</strong> - 
                             <strong>${currentPage * pageSize > totalRecords ? totalRecords : currentPage * pageSize}</strong> 
                             trong tổng số <strong>${totalRecords}</strong> kết quả
+                            <c:if test="${not empty patientName}">
+                                cho "<strong>${patientName}</strong>"
+                            </c:if>
                         </div>
                         <div class="pagination-controls">
                             <c:choose>
                                 <c:when test="${currentPage > 1}">
-                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=1${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=1${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-double-left"></i></a>
-                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage - 1}${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage - 1}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-left"></i></a>
                                 </c:when>
                                 <c:otherwise>
@@ -1016,7 +1076,7 @@
                             <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
                             <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
                             <c:if test="${startPage > 1}">
-                                <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=1${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=1${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                    class="page-btn">1</a>
                                 <c:if test="${startPage > 2}">
                                     <span class="page-btn">...</span>
@@ -1028,7 +1088,7 @@
                                         <span class="page-btn active">${i}</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${i}${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                        <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${i}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                            class="page-btn">${i}</a>
                                     </c:otherwise>
                                 </c:choose>
@@ -1037,15 +1097,15 @@
                                 <c:if test="${endPage < totalPages - 1}">
                                     <span class="page-btn">...</span>
                                 </c:if>
-                                <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                    class="page-btn">${totalPages}</a>
                             </c:if>
 
                             <c:choose>
                                 <c:when test="${currentPage < totalPages}">
-                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage + 1}${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage + 1}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-right"></i></a>
-                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${patientId != null && patientId > 0 ? '&patientId=' += patientId : ''}" 
+                                    <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-double-right"></i></a>
                                 </c:when>
                                 <c:otherwise>

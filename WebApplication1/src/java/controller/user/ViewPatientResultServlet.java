@@ -20,24 +20,16 @@ public class ViewPatientResultServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            String patientIdStr = request.getParameter("patientId");
+            String patientName = request.getParameter("patientName");
             String pageStr = request.getParameter("page");
             
-            System.out.println("DEBUG - patientIdStr: '" + patientIdStr + "'");
+            System.out.println("DEBUG - patientName: '" + patientName + "'");
             System.out.println("DEBUG - pageStr: '" + pageStr + "'");
             
-            Integer patientId = null;
-            if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
-                try {
-                    int parsedId = Integer.parseInt(patientIdStr.trim());
-                    if (parsedId > 0) {
-                        patientId = parsedId;
-                    } else {
-                        System.out.println("DEBUG - Invalid patientId: " + patientIdStr + " (must be positive)");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("DEBUG - Invalid patientId format: " + patientIdStr);
-                }
+            // Xử lý tên bệnh nhân
+            String trimmedPatientName = null;
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                trimmedPatientName = patientName.trim();
             }
             
             int currentPage = 1;
@@ -52,16 +44,17 @@ public class ViewPatientResultServlet extends HttpServlet {
             
             int pageSize = 10;
             
-            System.out.println("DEBUG - Parsed patientId: " + patientId);
+            System.out.println("DEBUG - Trimmed patientName: " + trimmedPatientName);
             System.out.println("DEBUG - currentPage: " + currentPage);
 
             List<Map<String, Object>> results;
             int totalRecords = 0;
             int totalPages = 0;
 
-            if (patientId != null && patientId > 0) {
-                System.out.println("DEBUG - Getting results for patientId: " + patientId);
-                results = prescriptionService.getExaminationResultsByPatientId(patientId);
+            // Tìm kiếm theo tên bệnh nhân hoặc hiển thị tất cả
+            if (trimmedPatientName != null) {
+                System.out.println("DEBUG - Searching by patient name: " + trimmedPatientName);
+                results = prescriptionService.getExaminationResultsByPatientName(trimmedPatientName);
             } else {
                 System.out.println("DEBUG - Getting all examination results");
                 results = prescriptionService.getAllExaminationResults();
@@ -94,9 +87,13 @@ public class ViewPatientResultServlet extends HttpServlet {
                         currentPage = 1;
                         start = 0;
                         end = Math.min(pageSize, totalRecords);
-                        results = patientId != null && patientId > 0
-                                ? prescriptionService.getExaminationResultsByPatientId(patientId).subList(start, end)
-                                : prescriptionService.getAllExaminationResults().subList(start, end);
+                        
+                        // Lấy lại dữ liệu cho trang đầu tiên
+                        if (trimmedPatientName != null) {
+                            results = prescriptionService.getExaminationResultsByPatientName(trimmedPatientName).subList(start, end);
+                        } else {
+                            results = prescriptionService.getAllExaminationResults().subList(start, end);
+                        }
                     }
                 }
                 
@@ -113,7 +110,7 @@ public class ViewPatientResultServlet extends HttpServlet {
             }
 
             request.setAttribute("results", results);
-            request.setAttribute("patientId", patientId != null ? patientId : 0);
+            request.setAttribute("patientName", trimmedPatientName != null ? trimmedPatientName : "");
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("pageSize", pageSize);
             request.setAttribute("totalRecords", totalRecords);
@@ -121,7 +118,7 @@ public class ViewPatientResultServlet extends HttpServlet {
             
             System.out.println("DEBUG - Setting request attributes:");
             System.out.println("  - results size: " + results.size());
-            System.out.println("  - patientId: " + (patientId != null ? patientId : 0));
+            System.out.println("  - patientName: " + (trimmedPatientName != null ? trimmedPatientName : ""));
             System.out.println("  - currentPage: " + currentPage);
             System.out.println("  - totalRecords: " + totalRecords);
             System.out.println("  - totalPages: " + totalPages);
@@ -145,7 +142,7 @@ public class ViewPatientResultServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("message", "Database error: Unable to retrieve examination results.");
             request.setAttribute("results", List.of());
-            request.setAttribute("patientId", 0);
+            request.setAttribute("patientName", "");
             request.setAttribute("currentPage", 1);
             request.setAttribute("totalRecords", 0);
             request.setAttribute("totalPages", 0);
@@ -161,17 +158,10 @@ public class ViewPatientResultServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         System.out.println("DEBUG - POST request received, but this servlet does not handle POST operations at " + java.time.LocalDateTime.now() + " +07");
-        String patientIdStr = request.getParameter("patientId");
+        String patientName = request.getParameter("patientName");
         String redirectUrl = request.getContextPath() + "/ViewPatientResultServlet";
-        if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
-            try {
-                int patientId = Integer.parseInt(patientIdStr.trim());
-                if (patientId > 0) {
-                    redirectUrl += "?patientId=" + patientId;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("DEBUG - Invalid patientId in POST: " + patientIdStr);
-            }
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            redirectUrl += "?patientName=" + java.net.URLEncoder.encode(patientName.trim(), "UTF-8");
         }
         request.setAttribute("message", "This page does not support adding prescriptions. Please use the appropriate form.");
         response.sendRedirect(redirectUrl);

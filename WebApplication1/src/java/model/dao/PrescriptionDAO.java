@@ -463,5 +463,50 @@ public class PrescriptionDAO {
 
         return prescription;
     }
+    public List<Map<String, Object>> getExaminationResultsByPatientName(String patientName) throws SQLException {
+    String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
+                 "d.FullName as doctorName, p.FullName as patientName, " +
+                 "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
+                 "FROM ExaminationResults r " +
+                 "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                 "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                 "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                 "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                 "WHERE p.FullName LIKE ?";
+    
+    System.out.println("DEBUG - SQL Query: " + sql);
+    System.out.println("DEBUG - Patient Name parameter: " + patientName);
+    
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, "%" + patientName + "%");
+        try (ResultSet rs = pstmt.executeQuery()) {
+            List<Map<String, Object>> results = new ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("resultId", rs.getInt("ResultID"));
+                row.put("appointmentId", rs.getInt("AppointmentID"));
+                row.put("doctorId", rs.getInt("DoctorID"));
+                row.put("patientId", rs.getInt("PatientID"));
+                row.put("doctorName", rs.getString("doctorName"));
+                row.put("patientName", rs.getString("patientName"));
+                row.put("nurseName", rs.getString("nurseName"));
+                row.put("serviceName", rs.getString("ServiceName"));
+                row.put("resultName", rs.getString("ResultName"));
+                row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                
+                System.out.println("DEBUG - Row added: " + row);
+                results.add(row);
+            }
+            System.out.println("DEBUG - Total results found: " + results.size());
+            return results;
+        }
+    } catch (SQLException e) {
+        System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
+    }
+}
     
 }
