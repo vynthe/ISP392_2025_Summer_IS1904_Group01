@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.entity.Prescriptions;
+import model.entity.Medication;
 import model.service.PrescriptionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -203,17 +204,44 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc hợp lệ.");
             }
 
-            // Create prescription details with medications
+            // CHANGED: Lấy thông tin chi tiết thuốc từ database thay vì chỉ dùng ID
+            List<Medication> allMedications = prescriptionService.getAllMedications();
             StringBuilder prescriptionDetails = new StringBuilder();
+            
             for (int i = 0; i < medicationIds.size(); i++) {
-                prescriptionDetails.append("MedicationID: ").append(medicationIds.get(i));
-                if (quantities != null && i < quantities.length) {
-                    prescriptionDetails.append(", Quantity: ").append(quantities[i]);
+                int medicationId = medicationIds.get(i);
+                
+                // Tìm thông tin thuốc từ danh sách
+                Medication medication = allMedications.stream()
+                    .filter(med -> med.getMedicationID() == medicationId)
+                    .findFirst()
+                    .orElse(null);
+                
+                if (medication != null) {
+                    prescriptionDetails.append("Name: ").append(medication.getName())
+                                     .append(", Dosage: ").append(medication.getDosage());
+                    
+                    // Thêm số lượng nếu có
+                    if (quantities != null && i < quantities.length && 
+                        quantities[i] != null && !quantities[i].trim().isEmpty()) {
+                        prescriptionDetails.append(", Quantity: ").append(quantities[i].trim());
+                    }
+                    
+                    // Thêm hướng dẫn sử dụng nếu có
+                    if (instructions != null && i < instructions.length && 
+                        instructions[i] != null && !instructions[i].trim().isEmpty()) {
+                        prescriptionDetails.append(", Instructions: ").append(instructions[i].trim());
+                    }
+                    
+                    prescriptionDetails.append("; ");
+                    
+                    log.info("Added medication to prescription: " + medication.getName() + 
+                             " - " + medication.getDosage());
+                } else {
+                    log.warn("Medication with ID " + medicationId + " not found");
+                    prescriptionDetails.append("MedicationID: ").append(medicationId)
+                                     .append(" (Not found); ");
                 }
-                if (instructions != null && i < instructions.length) {
-                    prescriptionDetails.append(", Instructions: ").append(instructions[i].trim());
-                }
-                prescriptionDetails.append("; ");
             }
 
             // Create prescription object

@@ -316,7 +316,7 @@
                 color: var(--error);
             }
 
-            .form-select {
+            .form-select, .form-input, .form-textarea {
                 width: 100%;
                 padding: 0.75rem;
                 border-radius: var(--border-radius);
@@ -325,10 +325,15 @@
                 transition: var(--transition);
             }
 
-            .form-select:focus {
+            .form-select:focus, .form-input:focus, .form-textarea:focus {
                 outline: none;
                 border-color: var(--primary);
                 box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .form-textarea {
+                resize: vertical;
+                min-height: 80px;
             }
 
             .medications-section {
@@ -347,7 +352,7 @@
             .medication-item {
                 border: 1px solid var(--gray-200);
                 border-radius: var(--border-radius);
-                padding: 1rem;
+                padding: 1.5rem;
                 margin-bottom: 1rem;
                 position: relative;
                 background: var(--gray-50);
@@ -359,6 +364,19 @@
                 box-shadow: var(--shadow-md);
             }
 
+            .medication-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .medication-details {
+                display: grid;
+                grid-template-columns: 1fr 150px;
+                gap: 1rem;
+            }
+
             .remove-btn {
                 position: absolute;
                 top: 0.5rem;
@@ -367,10 +385,10 @@
                 color: var(--white);
                 border: none;
                 border-radius: 50%;
-                width: 24px;
-                height: 24px;
+                width: 28px;
+                height: 28px;
                 cursor: pointer;
-                font-size: 0.75rem;
+                font-size: 0.875rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -530,29 +548,25 @@
             /* Mobile Styles */
             @media (max-width: 768px) {
                 .main-wrapper {
-                    flex: 1;
-                    padding: 2rem;
+                    padding: 1rem;
                 }
 
                 .dental-container {
-                    background: var(--white);
-                    border-radius: var(--border-radius-lg);
-                    box-shadow: var(--shadow-lg);
-                    max-width: 1280px;
-                    margin: 0 auto;
-                    overflow: hidden;
-                    animation: fadeIn 0.5s ease-out;
+                    margin: 0;
                 }
-                er-container {
+
+                .header-container {
                     flex-direction: column;
                     gap: 1rem;
                     padding: 1rem;
                     height: auto;
                 }
+                
                 .nav-menu {
                     flex-wrap: wrap;
                     justify-content: center;
                 }
+                
                 .user-menu {
                     justify-content: flex-end;
                     width: 100%;
@@ -562,13 +576,24 @@
                     flex-direction: column;
                     text-align: center;
                 }
+                
                 .form-actions {
                     flex-direction: column;
                 }
+                
                 .footer-sections {
                     grid-template-columns: 1fr;
                 }
+                
                 .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .medication-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .medication-details {
                     grid-template-columns: 1fr;
                 }
             }
@@ -638,6 +663,9 @@
                         <input type="hidden" name="doctorId" value="${param.doctorId != null ? param.doctorId : formDoctorId}">
                         <input type="hidden" name="resultId" value="${param.resultId != null ? param.resultId : formResultId}">
                         <input type="hidden" name="appointmentId" value="${appointmentId != null && appointmentId != 'N/A' && appointmentId != 'null' ? appointmentId : ''}">
+                        <input type="hidden" name="patientName" value="${patientName}">
+                        <input type="hidden" name="doctorName" value="${doctorName}">
+                        <input type="hidden" name="resultName" value="${resultName}">
 
                         <div class="stats-section">
                             <h3 class="section-title"><i class="fas fa-info-circle"></i> Thông Tin Bệnh Nhân</h3>
@@ -674,18 +702,30 @@
                             <h3 class="section-title"><i class="fas fa-capsules"></i> Danh Sách Thuốc</h3>
                             <div id="medicationList">
                                 <div class="medication-item">
+                                    <div class="medication-grid">
+                                        <div class="form-group">
+                                            <label class="form-label required">Tên Thuốc</label>
+                                            <select name="medicationIds" class="form-select" required>
+                                                <option value="">Chọn thuốc</option>
+                                                <c:if test="${not empty medications}">
+                                                    <c:forEach var="med" items="${medications}">
+                                                        <option value="${med.medicationID}" <c:if test="${formMedicationIds != null && formMedicationIds.contains(String.valueOf(med.medicationID))}">selected</c:if>>
+                                                            ${med.name} - ${med.dosage}
+                                                        </option>
+                                                    </c:forEach>
+                                                </c:if>
+                                            </select>
+                                        </div>
+                                        <div class="medication-details">
+                                            <div class="form-group">
+                                                <label class="form-label">Số Lượng</label>
+                                                <input type="text" name="quantities" class="form-input" placeholder="Ví dụ: 1 lọ, 10 viên...">
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="form-group">
-                                        <label class="form-label required">Tên Thuốc</label>
-                                        <select name="medicationIds" class="form-select" required>
-                                            <option value="">Chọn thuốc</option>
-                                            <c:if test="${not empty medications}">
-                                                <c:forEach var="med" items="${medications}">
-                                                    <option value="${med.medicationID}" <c:if test="${formMedicationIds != null && formMedicationIds.contains(String.valueOf(med.medicationID))}">selected</c:if>>
-                                                        ${med.name} - ${med.dosage}
-                                                    </option>
-                                                </c:forEach>
-                                            </c:if>
-                                        </select>
+                                        <label class="form-label">Hướng Dẫn Sử Dụng</label>
+                                        <textarea name="instructions" class="form-textarea" placeholder="Ví dụ: Uống 1 viên sau mỗi bữa ăn, ngày 2 lần..."></textarea>
                                     </div>
                                     <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
                                 </div>
@@ -773,13 +813,18 @@
                 newMedication.style.opacity = '0';
                 newMedication.style.transform = 'translateY(20px)';
 
-                const formGroup = document.createElement('div');
-                formGroup.className = 'form-group';
+                // Create medication grid
+                const medicationGrid = document.createElement('div');
+                medicationGrid.className = 'medication-grid';
 
-                const label = document.createElement('label');
-                label.className = 'form-label required';
-                label.textContent = 'Tên Thuốc';
-                formGroup.appendChild(label);
+                // Create medication selection
+                const medicationFormGroup = document.createElement('div');
+                medicationFormGroup.className = 'form-group';
+
+                const medicationLabel = document.createElement('label');
+                medicationLabel.className = 'form-label required';
+                medicationLabel.textContent = 'Tên Thuốc';
+                medicationFormGroup.appendChild(medicationLabel);
 
                 const select = document.createElement('select');
                 select.name = 'medicationIds';
@@ -798,11 +843,50 @@
                     option.value = med.id;
                     option.textContent = med.name + ' - ' + med.dosage;
                     select.appendChild(option);
-                    console.log("Added option:", med.name, med.dosage);
                 });
 
-                formGroup.appendChild(select);
+                medicationFormGroup.appendChild(select);
+                medicationGrid.appendChild(medicationFormGroup);
 
+                // Create medication details section
+                const medicationDetails = document.createElement('div');
+                medicationDetails.className = 'medication-details';
+
+                // Quantity input
+                const quantityFormGroup = document.createElement('div');
+                quantityFormGroup.className = 'form-group';
+
+                const quantityLabel = document.createElement('label');
+                quantityLabel.className = 'form-label';
+                quantityLabel.textContent = 'Số Lượng';
+                quantityFormGroup.appendChild(quantityLabel);
+
+                const quantityInput = document.createElement('input');
+                quantityInput.type = 'text';
+                quantityInput.name = 'quantities';
+                quantityInput.className = 'form-input';
+                quantityInput.placeholder = 'Ví dụ: 1 lọ, 10 viên...';
+                quantityFormGroup.appendChild(quantityInput);
+
+                medicationDetails.appendChild(quantityFormGroup);
+                medicationGrid.appendChild(medicationDetails);
+
+                // Instructions textarea
+                const instructionsFormGroup = document.createElement('div');
+                instructionsFormGroup.className = 'form-group';
+
+                const instructionsLabel = document.createElement('label');
+                instructionsLabel.className = 'form-label';
+                instructionsLabel.textContent = 'Hướng Dẫn Sử Dụng';
+                instructionsFormGroup.appendChild(instructionsLabel);
+
+                const instructionsTextarea = document.createElement('textarea');
+                instructionsTextarea.name = 'instructions';
+                instructionsTextarea.className = 'form-textarea';
+                instructionsTextarea.placeholder = 'Ví dụ: Uống 1 viên sau mỗi bữa ăn, ngày 2 lần...';
+                instructionsFormGroup.appendChild(instructionsTextarea);
+
+                // Remove button
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'remove-btn';
@@ -811,7 +895,9 @@
                     removeMedication(this);
                 };
 
-                newMedication.appendChild(formGroup);
+                // Assemble the medication item
+                newMedication.appendChild(medicationGrid);
+                newMedication.appendChild(instructionsFormGroup);
                 newMedication.appendChild(removeBtn);
                 medicationList.appendChild(newMedication);
 

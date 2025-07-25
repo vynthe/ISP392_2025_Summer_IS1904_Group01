@@ -1,12 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách bác sĩ - Phòng khám PDC</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -15,72 +17,120 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
-            color: #333;
+            color: #334155;
             line-height: 1.6;
             min-height: 100vh;
         }
 
         /* Header */
-        .header {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border-bottom: 1px solid #e1e8ed;
-            padding: 1rem 0;
+        .main-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             position: sticky;
             top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+            z-index: 1000;
+        }
+
+        .header-top {
+            background: rgba(0,0,0,0.1);
+            padding: 10px 0;
+            font-size: 14px;
         }
 
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+        .header-contact {
+            display: flex;
+            gap: 25px;
+        }
+
+        .header-contact span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .header-contact span:hover {
+            opacity: 1;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .user-info:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .header-main {
+            padding: 20px 0;
+        }
+
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2563eb;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: bold;
             text-decoration: none;
-        }
-
-        .nav {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: #6b7280;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover {
-            color: #2563eb;
-        }
-
-        .btn-primary {
-            background: #2563eb;
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background 0.2s;
         }
 
-        .btn-primary:hover {
-            background: #1d4ed8;
+        .logo i {
+            font-size: 32px;
+            color: #ecf0f1;
+        }
+
+        .main-nav {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+        }
+
+        .main-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .main-nav a:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .main-nav a.active {
+            background: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
         }
 
         /* Main Content */
@@ -275,65 +325,128 @@
         }
 
         /* Footer */
-        .footer {
-            background: #111827;
-            color: #9ca3af;
-            padding: 3rem 1rem 1rem;
-            margin-top: 4rem;
+        .main-footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            margin-top: auto;
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
         }
 
-        .footer-container {
+        .footer-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 50px 20px 20px;
         }
 
         .footer-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 40px;
+            margin-bottom: 40px;
         }
 
-        .footer-section h3 {
-            color: white;
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .footer-section p, .footer-section li {
-            margin-bottom: 0.5rem;
+        .footer-section h4 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 18px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
+            font-weight: 600;
         }
 
-        .footer-section a {
-            color: #9ca3af;
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul li a {
+            color: #bdc3c7;
             text-decoration: none;
-            transition: color 0.2s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
         }
 
-        .footer-section a:hover {
-            color: #2563eb;
+        .footer-section ul li a:hover {
+            color: #3498db;
+            padding-left: 10px;
+        }
+
+        .footer-section p {
+            color: #bdc3c7;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            background: #3498db;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
         }
 
         .footer-bottom {
-            border-top: 1px solid #374151;
-            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 25px;
             text-align: center;
-            font-size: 0.875rem;
+            color: #95a5a6;
+        }
+
+        .footer-bottom p {
+            margin: 8px 0;
+        }
+
+        html, body {
+            overflow-x: hidden;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .header-container {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 20px;
+                padding: 0 15px;
             }
 
-            .nav {
-                gap: 1rem;
+            .main-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .main-nav a {
+                padding: 10px 14px;
+                font-size: 14px;
             }
 
             .main {
@@ -350,23 +463,42 @@
 
             .footer-grid {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 30px;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 20px;
+            }
+
+            .logo i {
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-container">
-            <a href="#" class="logo">
-                <i class="fas fa-tooth"></i>
-                Phòng Khám Nha Khoa PDC
-            </a>
-            <nav class="nav">
-                <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="nav-link">Trang chủ</a>
-                <a href="/ViewMedicalAppointmentServlet" class="btn-primary">Chọn Bác Sĩ</a>
-            </nav>
+    <header class="main-header">
+
+        <div class="header-main">
+            <div class="header-container">
+                <a href="${pageContext.request.contextPath}/" class="logo">
+                    <i class="fas fa-hospital"></i>
+                    <span>Phòng Khám PDC</span>
+                </a>
+                <nav>
+                    <ul class="main-nav">
+                        <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp"><i class="fas fa-home"></i> Trang chủ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ViewMedicalAppointmentServlet" class="active"><i class="fas fa-user-md"></i> Chọn Bác Sĩ</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
 
@@ -392,7 +524,6 @@
             </div>
         </c:if>
 
-        <!-- Stats -->
         <!-- Search -->
         <div class="search-container">
             <div class="search-box">
@@ -449,23 +580,33 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
+    <footer class="main-footer">
+        <div class="footer-content">
             <div class="footer-grid">
                 <div class="footer-section">
-                    <h3>Liên hệ</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> DH FPT, Hòa Lạc, Hà Nội</p>
-                    <p><i class="fas fa-phone"></i> (098) 123-4567</p>
-                    <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
+                    <h4><i class="fas fa-hospital"></i> Về Chúng Tôi</h4>
+                    <p>Chúng tôi là phòng khám nha khoa hàng đầu, cam kết mang lại nụ cười khỏe mạnh và tự tin với công nghệ tiên tiến và đội ngũ chuyên gia giàu kinh nghiệm.</p>
                 </div>
 
                 <div class="footer-section">
-                    <h3>Về chúng tôi</h3>
-                    <p>Phòng khám nha khoa PDC cam kết mang đến dịch vụ chăm sóc răng miệng chất lượng cao với đội ngũ bác sĩ giàu kinh nghiệm.</p>
+                    <h4><i class="fas fa-link"></i> Liên Kết Nhanh</h4>
+                    <ul>
+                        <li><a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Trang chủ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ViewMedicalAppointmentServlet"><i class="fas fa-user-md"></i> Chọn Bác sĩ</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ViewDetailBookServlet"><i class="fas fa-calendar-alt"></i> Đặt lịch Khám</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4><i class="fas fa-map-marker-alt"></i> Liên Hệ</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> ĐH FPT, HOA LAC</p>
+                    <p><i class="fas fa-phone"></i> (098) 123 4567</p>
+                    <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
                 </div>
             </div>
+
             <div class="footer-bottom">
-                <p>&copy; 2025 Phòng Khám Nha Khoa PDC. Tất cả quyền được bảo lưu.</p>
+                <p>© 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
             </div>
         </div>
     </footer>
