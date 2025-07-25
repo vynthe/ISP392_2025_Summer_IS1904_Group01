@@ -365,7 +365,7 @@
             </a>
             <nav class="nav">
                 <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="nav-link">Trang chủ</a>
-                <a href="/BookAppointmentGuestServlet" class="btn-primary">Đặt lịch khám</a>
+                <a href="/ViewMedicalAppointmentServlet" class="btn-primary">Chọn Bác Sĩ</a>
             </nav>
         </div>
     </header>
