@@ -581,9 +581,9 @@
                     <nav>
                         <ul class="main-nav">
                             <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp"><i class="fas fa-home"></i> Trang chủ</a></li>
-                            <li><a href="/ViewMedicalAppointmentServlet"><i class="fas fa-calendar-alt"></i>Chọn Bác Sĩ</a></li>
-                            <li><a href="/ViewDetailBookServlet"><i class="fas fa-calendar-alt"></i>Đặt Lịch Khám</a></li>
-                            <li><a href="/BookAppointmentServlet" class="active"><i class="fas fa-calendar-alt"></i>Xác Nhận Đặt Lịch</a></li>
+                            <li><a href="${pageContext.request.contextPath}/ViewMedicalAppointmentServlet"><i class="fas fa-calendar-alt"></i>Chọn Bác Sĩ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/ViewDetailBookServlet"><i class="fas fa-calendar-alt"></i>Đặt Lịch Khám</a></li>
+                            <li><a href="${pageContext.request.contextPath}/BookAppointmentServlet" class="active"><i class="fas fa-calendar-alt"></i>Xác Nhận Đặt Lịch</a></li>
                         </ul>
                     </nav>
                 </div>
