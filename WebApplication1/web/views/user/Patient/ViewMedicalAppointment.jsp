@@ -393,13 +393,6 @@
         </c:if>
 
         <!-- Stats -->
-        <c:if test="${not empty doctors}">
-            <div class="stats">
-                <div class="stats-number">${doctors.size()}</div>
-                <p>Bác sĩ có sẵn</p>
-            </div>
-        </c:if>
-
         <!-- Search -->
         <div class="search-container">
             <div class="search-box">

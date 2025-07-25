@@ -32,7 +32,6 @@ public class BookAppointmentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // ✅ Handle GET request to load initial data
         handleInitialLoad(request, response);
     }
 
@@ -42,7 +41,6 @@ public class BookAppointmentServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        // ✅ Validate session
         HttpSession session = request.getSession(false);
         Users currentUser = validateSession(session);
         if (currentUser == null) {
@@ -51,14 +49,12 @@ public class BookAppointmentServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Validate user role
         if (!"patient".equalsIgnoreCase(currentUser.getRole())) {
             LOGGER.warning("Unauthorized role: " + currentUser.getRole() + " at " + LocalDateTime.now() + " +07");
             setErrorAndForward(request, response, "Bạn không có quyền đặt lịch. Chỉ dành cho bệnh nhân.");
             return;
         }
 
-        // ✅ Get and validate parameters
         AppointmentParams params = extractAndValidateParams(request);
         if (!params.isValid()) {
             LOGGER.warning("Invalid parameters: " + params.getErrorMessage() + " at " + LocalDateTime.now() + " +07");
@@ -66,7 +62,6 @@ public class BookAppointmentServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Verify patient ID matches session
         if (params.patientId != currentUser.getUserID()) {
             LOGGER.warning("PatientId " + params.patientId + " does not match session user ID "
                     + currentUser.getUserID() + " at " + LocalDateTime.now() + " +07");
@@ -77,17 +72,28 @@ public class BookAppointmentServlet extends HttpServlet {
         LOGGER.info("Processing appointment: " + params.toString() + " at " + LocalDateTime.now() + " +07");
 
         try {
-            // ✅ Pre-validation checks
-            if (!performPreValidation(params, request, response)) {
-                return; // Error already set and forwarded
+            // Fetch and cache slot details before booking
+            Map<String, Object> slotDetails = appointmentService.getSlotDetails(params.slotId);
+            if (slotDetails == null || slotDetails.get("slotTime") == null || slotDetails.get("roomName") == null || slotDetails.get("roomId") == null ||
+                slotDetails.get("slotTime").equals("Không tìm thấy khung giờ") || slotDetails.get("roomName").equals("Chưa có phòng")) {
+                LOGGER.warning("Invalid slot details for slotId: " + params.slotId + 
+                               ", slotTime: " + (slotDetails != null ? slotDetails.get("slotTime") : null) + 
+                               ", roomName: " + (slotDetails != null ? slotDetails.get("roomName") : null) + 
+                               ", roomId: " + (slotDetails != null ? slotDetails.get("roomId") : null) +
+                               " at " + LocalDateTime.now() + " +07");
+                setErrorAndForward(request, response, "Khung giờ hoặc phòng không hợp lệ. Vui lòng chọn lại.");
+                return;
             }
 
-            // ✅ Create appointment
+            if (!performPreValidation(params, request, response)) {
+                return;
+            }
+
             boolean success = appointmentService.createAppointment(
                     params.patientId, params.doctorId, params.serviceId, params.slotId, params.roomId);
 
             if (success) {
-                handleSuccessfulBooking(request, response, params, currentUser);
+                handleSuccessfulBooking(request, response, params, currentUser, slotDetails);
             } else {
                 LOGGER.warning("Appointment creation failed for " + params.toString() + " at " + LocalDateTime.now() + " +07");
                 setErrorAndForward(request, response, "Đặt lịch thất bại. Có thể slot đã được đặt hoặc thông tin không hợp lệ.");
@@ -110,13 +116,11 @@ public class BookAppointmentServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
 
-        // ✅ Kiểm tra đăng nhập
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/LoginServlet?error=session_expired");
             return;
         }
 
-        // ✅ Lấy user từ session và kiểm tra role
         Users user = (Users) session.getAttribute("user");
         if (user == null || !"patient".equals(user.getRole())) {
             LOGGER.warning("⚠️ WARNING: User not found or role is not patient");
@@ -124,7 +128,6 @@ public class BookAppointmentServlet extends HttpServlet {
             return;
         }
 
-        // ✅ DEBUG: In tất cả parameters
         LOGGER.info("🔍 === DEBUG ALL REQUEST PARAMETERS ===");
         LOGGER.info("Request URL: " + request.getRequestURL());
         LOGGER.info("Query String: " + request.getQueryString());
@@ -138,10 +141,9 @@ public class BookAppointmentServlet extends HttpServlet {
         }
         LOGGER.info("=====================================");
 
-        // ✅ Lấy patientId và patientName từ user
         int patientIdInt = user.getUserID();
         String patientId = String.valueOf(patientIdInt);
-        String patientName = user.getFullName(); // Giả định Users có phương thức getFullName()
+        String patientName = user.getFullName();
         if (patientId == null || patientId.isEmpty()) {
             LOGGER.severe("❌ ERROR: patientId is null or empty");
             response.sendRedirect(request.getContextPath() + "/LoginServlet?error=invalid_user");
@@ -152,58 +154,59 @@ public class BookAppointmentServlet extends HttpServlet {
         LOGGER.info("✅ Found patientId (userID): " + patientId + ", patientName: " + patientName);
 
         try {
-            // ✅ Extract parameters với logging chi tiết
             String doctorIdParam = request.getParameter("doctorId");
             String appointmentDate = request.getParameter("appointmentDate");
             String slotIdParam = request.getParameter("slotId");
-            
+            String roomIdParam = request.getParameter("roomId");
+
             LOGGER.info("🔍 EXTRACTED PARAMETERS:");
             LOGGER.info("  doctorIdParam: [" + doctorIdParam + "]");
             LOGGER.info("  appointmentDate: [" + appointmentDate + "]");
             LOGGER.info("  slotIdParam: [" + slotIdParam + "]");
+            LOGGER.info("  roomIdParam: [" + roomIdParam + "]");
 
-            // ✅ Validate doctorId
             if (doctorIdParam == null || doctorIdParam.trim().isEmpty()) {
                 LOGGER.severe("❌ ERROR: doctorIdParam is null or empty");
                 setErrorAndForward(request, response, "Vui lòng cung cấp ID bác sĩ hợp lệ");
                 return;
             }
 
-            int doctorId;
-            try {
-                doctorId = Integer.parseInt(doctorIdParam.trim());
-                if (doctorId <= 0) {
-                    throw new NumberFormatException("Doctor ID must be positive");
-                }
-                LOGGER.info("✅ Parsed doctorId: " + doctorId);
-            } catch (NumberFormatException e) {
-                LOGGER.severe("❌ ERROR: Invalid doctorId: " + doctorIdParam);
-                setErrorAndForward(request, response, "ID bác sĩ không hợp lệ: " + doctorIdParam);
-                return;
+            int doctorId = Integer.parseInt(doctorIdParam.trim());
+            if (doctorId <= 0) {
+                throw new NumberFormatException("Doctor ID must be positive");
             }
+            LOGGER.info("✅ Parsed doctorId: " + doctorId);
 
-            // ✅ Process slotId với logging chi tiết, aligned with ViewDetailBookServlet
             Integer slotId = null;
             String slotTime = null;
+            String roomName = null;
+            Integer roomId = null;
             LOGGER.info("🔍 PROCESSING SLOTID:");
             LOGGER.info("  slotIdParam raw: [" + slotIdParam + "]");
-            LOGGER.info("  slotIdParam == null: " + (slotIdParam == null));
-            LOGGER.info("  slotIdParam.isEmpty(): " + (slotIdParam != null ? slotIdParam.isEmpty() : "N/A"));
-            LOGGER.info("  slotIdParam.trim().isEmpty(): " + (slotIdParam != null ? slotIdParam.trim().isEmpty() : "N/A"));
-            
             if (slotIdParam != null && !slotIdParam.trim().isEmpty()) {
                 try {
                     slotId = Integer.parseInt(slotIdParam.trim());
                     if (slotId <= 0) {
-                        LOGGER.severe("❌ ERROR: SlotId must be positive, got: " + slotId);
                         throw new NumberFormatException("Slot ID must be positive");
                     }
-                    // ✅ Lấy thông tin khung giờ từ AppointmentService
                     Map<String, Object> slotDetails = appointmentService.getSlotDetails(slotId);
-                    slotTime = slotDetails != null ? (String) slotDetails.get("slotTime") : null;
+                    slotTime = slotDetails != null ? (String) slotDetails.get("slotTime") : "Không tìm thấy khung giờ";
+                    roomName = slotDetails != null ? (String) slotDetails.get("roomName") : "Chưa có phòng";
+                    roomId = slotDetails != null ? (Integer) slotDetails.get("roomId") : null;
+                    if (slotTime == null || roomName == null || roomId == null) {
+                        LOGGER.warning("⚠️ Slot details incomplete for slotId: " + slotId + 
+                                       ", slotTime: " + slotTime + 
+                                       ", roomName: " + roomName + 
+                                       ", roomId: " + roomId);
+                    }
                     request.setAttribute("slotId", slotId);
-                    request.setAttribute("slotTime", slotTime != null ? slotTime : "Chưa chọn");
-                    LOGGER.info("✅ SUCCESS: Parsed and set slotId: " + slotId + ", slotTime: " + slotTime);
+                    request.setAttribute("slotTime", slotTime != null ? slotTime : "Không tìm thấy khung giờ");
+                    request.setAttribute("roomName", roomName != null ? roomName : "Chưa có phòng");
+                    request.setAttribute("roomId", roomId != null ? String.valueOf(roomId) : "");
+                    LOGGER.info("✅ SUCCESS: Parsed and set slotId: " + slotId + 
+                                ", slotTime: " + slotTime + 
+                                ", roomName: " + roomName + 
+                                ", roomId: " + roomId);
                 } catch (NumberFormatException e) {
                     LOGGER.severe("❌ ERROR: Invalid slotId parameter: " + slotIdParam + ", error: " + e.getMessage());
                     setErrorAndForward(request, response, "ID slot không hợp lệ: " + slotIdParam);
@@ -215,12 +218,34 @@ public class BookAppointmentServlet extends HttpServlet {
                 }
             } else {
                 LOGGER.warning("⚠️ WARNING: No slotId parameter provided or empty");
-                LOGGER.warning("  Setting slotId and slotTime to null in request attributes");
-                request.setAttribute("slotId", null);
-                request.setAttribute("slotTime", "Chưa chọn");
+                request.setAttribute("slotId", "");
+                request.setAttribute("slotTime", "Không tìm thấy khung giờ");
+                request.setAttribute("roomName", "Chưa có phòng");
+                request.setAttribute("roomId", "");
             }
 
-            // ✅ Validate ngày hẹn
+            if (roomIdParam != null && !roomIdParam.trim().isEmpty()) {
+                try {
+                    roomId = Integer.parseInt(roomIdParam.trim());
+                    if (roomId <= 0) {
+                        throw new NumberFormatException("Room ID must be positive");
+                    }
+                    Map<String, Object> slotDetails = appointmentService.getSlotDetails(slotId);
+                    roomName = slotDetails != null ? (String) slotDetails.get("roomName") : "Chưa có phòng";
+                    request.setAttribute("roomId", String.valueOf(roomId));
+                    request.setAttribute("roomName", roomName);
+                    LOGGER.info("✅ SUCCESS: Parsed and set roomId: " + roomId + ", roomName: " + roomName);
+                } catch (NumberFormatException e) {
+                    LOGGER.severe("❌ ERROR: Invalid roomId parameter: " + roomIdParam);
+                    request.setAttribute("roomId", "");
+                    request.setAttribute("roomName", "Chưa có phòng");
+                } catch (SQLException e) {
+                    LOGGER.severe("❌ ERROR: Failed to fetch room details for roomId: " + roomIdParam);
+                    request.setAttribute("roomId", "");
+                    request.setAttribute("roomName", "Chưa có phòng");
+                }
+            }
+
             LocalDate parsedDate = null;
             if (appointmentDate != null && !appointmentDate.trim().isEmpty()) {
                 try {
@@ -238,32 +263,18 @@ public class BookAppointmentServlet extends HttpServlet {
                 LOGGER.info("✅ Using default date: " + parsedDate);
             }
 
-            // ✅ Load doctor details
             Map<String, Object> doctorDetails = appointmentService.viewDetailBook(doctorId);
-            
             if (doctorDetails == null || doctorDetails.isEmpty()) {
                 LOGGER.severe("❌ ERROR: No doctor details found for doctorId: " + doctorId);
                 setErrorAndForward(request, response, "Không tìm thấy thông tin bác sĩ với ID: " + doctorId);
                 return;
             }
 
-            // ✅ Get additional details
-            String doctorName = (String) doctorDetails.get("doctorName");
-            String roomName = (String) doctorDetails.get("roomName");
-            String roomID = (doctorDetails.get("roomID") != null) ? doctorDetails.get("roomID").toString() : null;
-            
-            // Set attributes for JSP
             request.setAttribute("doctorDetails", doctorDetails);
             request.setAttribute("doctorId", doctorId);
-            request.setAttribute("doctorName", doctorName != null ? doctorName : "Không xác định");
+            request.setAttribute("doctorName", doctorDetails.get("doctorName") != null ? doctorDetails.get("doctorName") : "Không xác định");
             request.setAttribute("currentDate", parsedDate);
-            request.setAttribute("roomName", roomName != null ? roomName : "Chưa có phòng");
-            if (roomID != null && !roomID.equals("null")) {
-                request.setAttribute("roomId", roomID);
-                LOGGER.info("✅ Set roomId: " + roomID + ", roomName: " + roomName);
-            }
-            
-            // ✅ Final debug info
+
             LOGGER.info("🔧 === FINAL REQUEST ATTRIBUTES ===");
             LOGGER.info("  doctorId: " + request.getAttribute("doctorId"));
             LOGGER.info("  doctorName: " + request.getAttribute("doctorName"));
@@ -273,12 +284,10 @@ public class BookAppointmentServlet extends HttpServlet {
             LOGGER.info("  slotTime: " + request.getAttribute("slotTime"));
             LOGGER.info("  roomId: " + request.getAttribute("roomId"));
             LOGGER.info("  roomName: " + request.getAttribute("roomName"));
-            LOGGER.info("  appointmentDate: " + request.getAttribute("appointmentDate"));
             LOGGER.info("=====================================");
-            
-            // Forward to JSP
+
             request.getRequestDispatcher("/views/user/Patient/BookAppointment.jsp").forward(request, response);
-            
+
         } catch (SQLException e) {
             LOGGER.severe("SQLException in BookAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
             setErrorAndForward(request, response, "Lỗi hệ thống: Không thể tải thông tin bác sĩ. Vui lòng thử lại sau.");
@@ -300,7 +309,6 @@ public class BookAppointmentServlet extends HttpServlet {
         AppointmentParams params = new AppointmentParams();
 
         try {
-            // ✅ Extract parameters
             String doctorIdStr = request.getParameter("doctorId");
             String slotIdStr = request.getParameter("slotId");
             String roomIdStr = request.getParameter("roomId");
@@ -310,13 +318,11 @@ public class BookAppointmentServlet extends HttpServlet {
             LOGGER.info("Received parameters: doctorId=" + doctorIdStr + ", slotId=" + slotIdStr
                     + ", roomId=" + roomIdStr + ", patientId=" + patientIdStr + ", serviceId=" + serviceIdStr);
 
-            // ✅ Check for null/empty parameters
             if (isInvalidParameter(doctorIdStr, slotIdStr, roomIdStr, patientIdStr, serviceIdStr)) {
                 params.setError("Vui lòng cung cấp đầy đủ thông tin (Slot ID và Room ID đang trống).");
                 return params;
             }
 
-            // ✅ Parse and validate IDs
             params.doctorId = parseAndValidateId(doctorIdStr, "Mã bác sĩ");
             params.slotId = parseAndValidateId(slotIdStr, "Mã slot");
             params.roomId = parseAndValidateId(roomIdStr, "Mã phòng");
@@ -337,7 +343,6 @@ public class BookAppointmentServlet extends HttpServlet {
     private boolean performPreValidation(AppointmentParams params, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         try {
-            // ✅ Check if slot is fully booked
             if (appointmentService.isSlotFullyBooked(params.slotId)) {
                 LOGGER.warning("Slot " + params.slotId + " is fully booked at " + LocalDateTime.now() + " +07");
                 setErrorAndForward(request, response,
@@ -355,37 +360,69 @@ public class BookAppointmentServlet extends HttpServlet {
     }
 
     private void handleSuccessfulBooking(HttpServletRequest request, HttpServletResponse response,
-            AppointmentParams params, Users currentUser)
+            AppointmentParams params, Users currentUser, Map<String, Object> slotDetails)
             throws ServletException, IOException {
         try {
-            // ✅ Set success message
             request.setAttribute("success", "🎉 Đặt lịch hẹn thành công!");
 
-            // ✅ Load updated doctor details
+            // Fetch doctor details
             Map<String, Object> doctorDetails = appointmentService.viewDetailBook(params.doctorId);
             request.setAttribute("doctorDetails", doctorDetails);
             request.setAttribute("doctorName", doctorDetails.get("doctorName") != null ? doctorDetails.get("doctorName") : "Không xác định");
-            request.setAttribute("roomName", doctorDetails.get("roomName") != null ? doctorDetails.get("roomName") : "Chưa có phòng");
+            LOGGER.info("✅ Set doctorName: " + request.getAttribute("doctorName"));
 
-            // ✅ Load slot details
-            Map<String, Object> slotDetails = appointmentService.getSlotDetails(params.slotId);
-            String slotTime = slotDetails != null ? (String) slotDetails.get("slotTime") : "Chưa chọn";
+            // Use cached slot details
+            String slotTime = (String) slotDetails.get("slotTime");
+            String roomName = (String) slotDetails.get("roomName");
+            Integer roomId = (Integer) slotDetails.get("roomId");
+
+            // Validate slot details
+            if (slotTime == null || roomName == null || roomId == null) {
+                LOGGER.warning("⚠️ Cached slot details incomplete for slotId: " + params.slotId + 
+                               ", slotTime: " + slotTime + 
+                               ", roomName: " + roomName + 
+                               ", roomId: " + roomId);
+                slotTime = "Không tìm thấy khung giờ";
+                roomName = "Chưa có phòng";
+                roomId = 0;
+            }
+
             request.setAttribute("slotTime", slotTime);
+            request.setAttribute("roomName", roomName);
+            request.setAttribute("roomId", roomId != null ? String.valueOf(roomId) : "");
+            request.setAttribute("slotId", params.slotId);
+            LOGGER.info("✅ Set slotTime: " + slotTime + ", roomName: " + roomName + ", roomId: " + roomId);
 
-            // ✅ Set patient name
+            // Set patient details
             request.setAttribute("patientName", currentUser.getFullName() != null ? currentUser.getFullName() : "Không xác định");
+            LOGGER.info("✅ Set patientName: " + request.getAttribute("patientName"));
 
-            // ✅ Set current booking info
+            // Set service details
+            request.setAttribute("serviceIdTemp", params.serviceId);
+            LOGGER.info("✅ Set serviceIdTemp: " + params.serviceId);
+
+            // Set other attributes
             setAppointmentAttributes(request, params);
-
-            // ✅ Add user info
             request.setAttribute("currentUser", currentUser);
 
             LOGGER.info("✅ Appointment created successfully for " + params.toString());
+            LOGGER.info("🔧 === FINAL REQUEST ATTRIBUTES AFTER BOOKING ===");
+            LOGGER.info("  doctorId: " + request.getAttribute("doctorId"));
+            LOGGER.info("  doctorName: " + request.getAttribute("doctorName"));
+            LOGGER.info("  patientId: " + request.getAttribute("patientId"));
+            LOGGER.info("  patientName: " + request.getAttribute("patientName"));
+            LOGGER.info("  slotId: " + request.getAttribute("slotId"));
+            LOGGER.info("  slotTime: " + request.getAttribute("slotTime"));
+            LOGGER.info("  roomId: " + request.getAttribute("roomId"));
+            LOGGER.info("  roomName: " + request.getAttribute("roomName"));
+            LOGGER.info("  serviceIdTemp: " + request.getAttribute("serviceIdTemp"));
+            LOGGER.info("=====================================");
 
-            // ✅ Forward back to booking page to show success
             request.getRequestDispatcher("/views/user/Patient/BookAppointment.jsp").forward(request, response);
 
+        } catch (SQLException e) {
+            LOGGER.severe("Error handling successful booking: SQLException - " + e.getMessage());
+            setErrorAndForward(request, response, "Đặt lịch thành công nhưng không thể tải lại trang: Lỗi cơ sở dữ liệu.");
         } catch (Exception e) {
             LOGGER.severe("Error handling successful booking: " + e.getMessage());
             setErrorAndForward(request, response, "Đặt lịch thành công nhưng không thể tải lại trang.");
@@ -413,7 +450,6 @@ public class BookAppointmentServlet extends HttpServlet {
             String errorMessage) throws ServletException, IOException {
         request.setAttribute("error", "❌ " + errorMessage);
 
-        // ✅ Try to reload doctor details if doctorId is available
         try {
             String doctorIdParam = request.getParameter("doctorId");
             if (doctorIdParam != null && !doctorIdParam.trim().isEmpty()) {
@@ -422,53 +458,59 @@ public class BookAppointmentServlet extends HttpServlet {
                 request.setAttribute("doctorDetails", doctorDetails);
                 request.setAttribute("doctorId", doctorId);
                 request.setAttribute("doctorName", doctorDetails.get("doctorName") != null ? doctorDetails.get("doctorName") : "Không xác định");
-                request.setAttribute("roomName", doctorDetails.get("roomName") != null ? doctorDetails.get("roomName") : "Chưa có phòng");
             }
 
-            // ✅ Preserve slotId and slotTime if available
             String slotIdParam = request.getParameter("slotId");
+            String roomIdParam = request.getParameter("roomId");
             if (slotIdParam != null && !slotIdParam.trim().isEmpty()) {
                 try {
                     Integer slotId = Integer.parseInt(slotIdParam);
                     if (slotId > 0) {
                         request.setAttribute("slotId", slotId);
                         Map<String, Object> slotDetails = appointmentService.getSlotDetails(slotId);
-                        String slotTime = slotDetails != null ? (String) slotDetails.get("slotTime") : "Chưa chọn";
+                        String slotTime = slotDetails != null ? (String) slotDetails.get("slotTime") : "Không tìm thấy khung giờ";
+                        String roomName = slotDetails != null ? (String) slotDetails.get("roomName") : "Chưa có phòng";
+                        Integer roomId = slotDetails != null ? (Integer) slotDetails.get("roomId") : null;
                         request.setAttribute("slotTime", slotTime);
-                        LOGGER.info("✅ Preserved slotId on error: " + slotId + ", slotTime: " + slotTime);
+                        request.setAttribute("roomName", roomName);
+                        request.setAttribute("roomId", roomId != null ? String.valueOf(roomId) : "");
+                        LOGGER.info("✅ Preserved slotId on error: " + slotId + ", slotTime: " + slotTime + ", roomName: " + roomName + ", roomId: " + roomId);
                     }
                 } catch (NumberFormatException | SQLException e) {
                     Integer existingSlotId = (Integer) request.getAttribute("slotId");
-                    request.setAttribute("slotId", existingSlotId != null ? existingSlotId : null);
-                    request.setAttribute("slotTime", "Chưa chọn");
+                    request.setAttribute("slotId", existingSlotId != null ? existingSlotId : "");
+                    request.setAttribute("slotTime", "Không tìm thấy khung giờ");
+                    request.setAttribute("roomName", "Chưa có phòng");
+                    request.setAttribute("roomId", "");
                     LOGGER.warning("❌ Invalid slotId on error, using existing or set to null: " + existingSlotId);
                 }
             } else {
                 Integer existingSlotId = (Integer) request.getAttribute("slotId");
-                request.setAttribute("slotId", existingSlotId != null ? existingSlotId : null);
-                request.setAttribute("slotTime", "Chưa chọn");
+                request.setAttribute("slotId", existingSlotId != null ? existingSlotId : "");
+                request.setAttribute("slotTime", "Không tìm thấy khung giờ");
+                request.setAttribute("roomName", "Chưa có phòng");
+                request.setAttribute("roomId", "");
                 LOGGER.info("❌ No slotId in request, using existing or set to null: " + existingSlotId);
             }
 
-            // ✅ Preserve roomId and roomName if available
-            String roomIdParam = request.getParameter("roomId");
             if (roomIdParam != null && !roomIdParam.trim().isEmpty()) {
                 try {
                     Integer roomId = Integer.parseInt(roomIdParam);
                     if (roomId > 0) {
-                        request.setAttribute("roomId", roomId);
-                        Map<String, Object> doctorDetails = appointmentService.viewDetailBook(Integer.parseInt(request.getParameter("doctorId")));
-                        String roomName = doctorDetails.get("roomName") != null ? (String) doctorDetails.get("roomName") : "Chưa có phòng";
+                        request.setAttribute("roomId", String.valueOf(roomId));
+                        Map<String, Object> slotDetails = appointmentService.getSlotDetails(Integer.parseInt(slotIdParam));
+                        String roomName = slotDetails != null ? (String) slotDetails.get("roomName") : "Chưa có phòng";
                         request.setAttribute("roomName", roomName);
+                        LOGGER.info("✅ Preserved roomId on error: " + roomId + ", roomName: " + roomName);
                     }
                 } catch (NumberFormatException | SQLException e) {
                     Integer existingRoomId = (Integer) request.getAttribute("roomId");
-                    request.setAttribute("roomId", existingRoomId != null ? existingRoomId : null);
+                    request.setAttribute("roomId", existingRoomId != null ? String.valueOf(existingRoomId) : "");
                     request.setAttribute("roomName", "Chưa có phòng");
+                    LOGGER.warning("❌ Invalid roomId on error, using existing or set to null: " + existingRoomId);
                 }
             }
 
-            // ✅ Preserve patientName
             Users user = (Users) request.getSession().getAttribute("user");
             if (user != null) {
                 request.setAttribute("patientName", user.getFullName() != null ? user.getFullName() : "Không xác định");
@@ -484,7 +526,7 @@ public class BookAppointmentServlet extends HttpServlet {
     private void setAppointmentAttributes(HttpServletRequest request, AppointmentParams params) {
         request.setAttribute("doctorId", params.doctorId);
         request.setAttribute("slotId", params.slotId);
-        request.setAttribute("roomId", params.roomId);
+        request.setAttribute("roomId", params.roomId != 0 ? String.valueOf(params.roomId) : "");
         request.setAttribute("patientId", params.patientId);
         request.setAttribute("serviceIdTemp", params.serviceId);
     }

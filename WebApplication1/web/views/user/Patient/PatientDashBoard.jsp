@@ -667,10 +667,6 @@
                             <i class="fas fa-calendar-plus"></i>
                             Đặt lịch khám
                         </a>
-                        <a href="${pageContext.request.contextPath}/UpdateAppointments" class="cta-button">
-                            <i class="fas fa-calendar-alt"></i>
-                            Sửa lịch khám
-                        </a>
                         <a href="${pageContext.request.contextPath}/ViewAppointmentPatient" class="cta-button">
                             <i class="fas fa-calendar-check"></i>
                             Xem lịch khám

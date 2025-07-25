@@ -8,25 +8,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Chi Tiết Bác Sĩ</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            :root {
-                --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-                --glass-bg: rgba(255, 255, 255, 0.1);
-                --glass-border: rgba(255, 255, 255, 0.2);
-                --text-primary: #1a1a2e;
-                --text-secondary: #6b7280;
-                --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
-                --shadow-medium: 0 20px 60px rgba(0, 0, 0, 0.15);
-                --shadow-strong: 0 30px 80px rgba(0, 0, 0, 0.2);
-                --border-radius: 20px;
-                --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            }
-
             * {
                 margin: 0;
                 padding: 0;
@@ -35,285 +19,252 @@
 
             body {
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                background: var(--primary-gradient);
-                min-height: 100vh;
-                color: var(--text-primary);
-                line-height: 1.7;
-                overflow-x: hidden;
+                background-color: #f8fafc;
+                color: #334155;
+                line-height: 1.6;
             }
 
-            body::before {
-                content: '';
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: 
-                    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.2) 0%, transparent 50%);
-                z-index: -1;
-                animation: backgroundShift 20s ease-in-out infinite;
-            }
-
-            @keyframes backgroundShift {
-                0%, 100% { transform: scale(1) rotate(0deg); }
-                50% { transform: scale(1.1) rotate(0.5deg); }
-            }
-
-            /* Enhanced Header */
-            .header {
-                background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(30px);
-                box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
-                border-bottom: 1px solid var(--glass-border);
+            /* Header */
+            .main-header {
+                background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+                color: white;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
                 position: sticky;
                 top: 0;
                 z-index: 1000;
-                transition: var(--transition);
+            }
+
+            .header-top {
+                background: rgba(0,0,0,0.1);
+                padding: 10px 0;
+                font-size: 14px;
             }
 
             .header-container {
                 max-width: 1200px;
                 margin: 0 auto;
-                padding: 1.5rem 2rem;
-            }
-
-            .nav-menu {
+                padding: 0 20px;
                 display: flex;
-                gap: 1rem;
+                justify-content: space-between;
                 align-items: center;
-                justify-content: center;
             }
 
-            .nav-link {
+            .header-contact {
+                display: flex;
+                gap: 25px;
+            }
+
+            .header-contact span {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                opacity: 0.9;
+                transition: opacity 0.3s;
+            }
+
+            .header-contact span:hover {
+                opacity: 1;
+            }
+
+            .header-user {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(255,255,255,0.1);
+                padding: 6px 12px;
+                border-radius: 20px;
+                transition: background 0.3s;
+            }
+
+            .user-info:hover {
+                background: rgba(255,255,255,0.2);
+            }
+
+            .header-main {
+                padding: 20px 0;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 24px;
+                font-weight: bold;
                 text-decoration: none;
-                color: rgba(255, 255, 255, 0.9);
-                padding: 1rem 2rem;
-                border-radius: 50px;
-                transition: var(--transition);
-                font-weight: 500;
-                font-size: 0.95rem;
+                color: white;
+            }
+
+            .logo i {
+                font-size: 32px;
+                color: #ecf0f1;
+            }
+
+            .main-nav {
+                display: flex;
+                list-style: none;
+                gap: 5px;
+            }
+
+            .main-nav a {
+                color: white;
+                text-decoration: none;
+                padding: 12px 18px;
+                border-radius: 8px;
+                transition: all 0.3s ease;
                 display: flex;
                 align-items: center;
-                gap: 0.7rem;
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
+                gap: 8px;
+                font-weight: 500;
             }
 
-            .nav-link:hover {
-                background: rgba(255, 255, 255, 0.2);
+            .main-nav a:hover {
+                background: rgba(255,255,255,0.15);
                 transform: translateY(-2px);
-                box-shadow: var(--shadow-soft);
-                color: white;
             }
 
-            .nav-link.active {
-                background: rgba(255, 255, 255, 0.25);
-                color: white;
-                box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
-                transform: translateY(-1px);
+            .main-nav a.active {
+                background: #e74c3c;
+                box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
             }
 
             /* Container */
             .container {
-                max-width: 1400px;
-                margin: 3rem auto;
+                max-width: 1200px;
+                margin: 2rem auto;
                 padding: 0 2rem;
             }
 
-            /* Enhanced Alert Messages */
+            /* Alert Messages */
             .alert-container {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
                 margin-bottom: 2rem;
             }
 
             .alert {
-                padding: 1.5rem 2rem;
-                border-radius: var(--border-radius);
+                padding: 1rem 1.5rem;
+                margin-bottom: 1rem;
+                border-left: 4px solid;
+                background: #ffffff;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 display: flex;
                 align-items: center;
-                gap: 1rem;
-                font-weight: 500;
-                box-shadow: var(--shadow-soft);
-                animation: slideInDown 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                position: relative;
-                overflow: hidden;
-            }
-
-            .alert::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                opacity: 0.1;
-                background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-                transform: translateX(-100%);
-                animation: shimmer 2s infinite;
-            }
-
-            @keyframes shimmer {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
+                gap: 0.75rem;
             }
 
             .alert-error {
-                background: var(--warning-gradient);
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-left-color: #dc2626;
+                background: #fef2f2;
+                color: #991b1b;
             }
 
             .alert-success {
-                background: var(--success-gradient);
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-left-color: #059669;
+                background: #f0fdf4;
+                color: #065f46;
             }
 
-            .alert-icon {
-                font-size: 1.2rem;
-                opacity: 0.9;
-            }
-
-            /* Enhanced Two-Column Layout */
-            .details-section {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 4rem;
-                align-items: start;
-                margin-top: 2rem;
-            }
-
-            .left-column, .right-column {
-                display: flex;
-                flex-direction: column;
-                gap: 2.5rem;
-                height: fit-content;
-            }
-
-            .left-column {
-                position: sticky;
-                top: 120px;
-            }
-
-            .column-header {
+            /* Page Title */
+            .page-title {
+                margin-bottom: 2rem;
                 text-align: center;
-                margin-bottom: 1.5rem;
-                padding: 1rem;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 15px;
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.2);
             }
 
-            .column-title {
-                color: white;
-                font-size: 1.3rem;
+            .page-title h1 {
+                font-size: 2rem;
                 font-weight: 700;
-                margin: 0;
+                color: #0f172a;
+                margin-bottom: 0.5rem;
+            }
+
+            .page-title p {
+                color: #64748b;
+                font-size: 1rem;
+            }
+
+            /* Layout */
+            .details-section {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.8rem;
+                flex-wrap: wrap;
+                gap: 2rem;
+                margin-primer: 2rem;
             }
 
-            .column-subtitle {
-                color: rgba(255, 255, 255, 0.7);
-                font-size: 0.9rem;
-                margin-top: 0.5rem;
-                font-weight: 400;
-            }
-
-            /* Enhanced Cards */
-            .card {
-                background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(30px);
-                padding: 2.5rem;
-                border-radius: var(--border-radius);
-                box-shadow: var(--shadow-medium);
-                border: 1px solid var(--glass-border);
-                transition: var(--transition);
-                animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                position: relative;
-                overflow: hidden;
-            }
-
-            .card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
+            .info-service-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 2rem;
                 width: 100%;
-                height: 2px;
-                background: var(--primary-gradient);
             }
 
-            .card:hover {
-                transform: translateY(-8px);
-                box-shadow: var(--shadow-strong);
-                background: rgba(255, 255, 255, 0.2);
+            .info-card, .services-card {
+                flex: 1;
+                min-width: 300px;
+                max-width: 580px;
+            }
+
+            .schedule-card {
+                width: 100%;
+                max-width: 1200px; /* Matches the container max-width */
+            }
+
+            /* Cards */
+            .card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             }
 
             .card-header {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                margin-bottom: 2rem;
-                padding-bottom: 1rem;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 1.5rem;
+                border-bottom: 1px solid #e2e8f0;
+                background: #f8fafc;
             }
 
             .card-title {
-                color: white;
-                font-size: 1.5rem;
-                font-weight: 700;
-                margin: 0;
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
             }
 
             .card-icon {
-                width: 50px;
-                height: 50px;
-                background: var(--primary-gradient);
-                border-radius: 15px;
+                width: 40px;
+                height: 40px;
+                background: #1e40af;
+                color: white;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: white;
-                font-size: 1.2rem;
-                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                font-size: 1rem;
             }
 
-            /* Enhanced Detail Items */
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            /* Detail Items */
             .detail-item {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 1.2rem 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                transition: var(--transition);
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #f1f5f9;
             }
 
             .detail-item:last-child {
                 border-bottom: none;
             }
 
-            .detail-item:hover {
-                background: rgba(255, 255, 255, 0.1);
-                margin: 0 -1.5rem;
-                padding: 1.2rem 1.5rem;
-                border-radius: 12px;
-                transform: translateX(5px);
-            }
-
             .detail-label {
                 font-weight: 500;
-                color: rgba(255, 255, 255, 0.8);
-                flex: 1;
+                color: #475569;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
@@ -321,190 +272,124 @@
 
             .detail-value {
                 font-weight: 600;
-                color: white;
-                flex: 2;
-                text-align: right;
-                font-size: 1.05rem;
+                color: #0f172a;
             }
 
-            /* Enhanced Services List */
-            .services-list {
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
+            /* Tables */
+            .services-table,
+            .schedule-table {
+                width: 100%;
+                border-collapse: collapse;
             }
 
-            .service-item {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 1.5rem;
-                border-radius: 15px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                transition: var(--transition);
-                position: relative;
-                overflow: hidden;
+            .services-table th,
+            .services-table td,
+            .schedule-table th,
+            .schedule-table td {
+                padding: 0.75rem 1rem;
+                text-align: left;
+                border-bottom: 1px solid #e2e8f0;
+                vertical-align: middle;
             }
 
-            .service-item::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 4px;
-                height: 100%;
-                background: var(--success-gradient);
-            }
-
-            .service-item:hover {
-                background: rgba(255, 255, 255, 0.15);
-                transform: translateX(8px);
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            }
-
-            .service-name {
-                color: white;
-                font-weight: 500;
-                display: flex;
-                align-items: center;
-                gap: 0.8rem;
-            }
-
-            .service-price {
-                color: rgba(255, 255, 255, 0.9);
+            .services-table th,
+            .schedule-table th {
+                background: #f8fafc;
                 font-weight: 600;
-                background: rgba(255, 255, 255, 0.1);
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                font-size: 0.9rem;
+                color: #374151;
+                font-size: 0.875rem;
             }
 
-            /* Enhanced Schedule */
-            .schedule-list {
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                gap: 1.5rem;
+            .services-table td,
+            .schedule-table td {
+                color: #475569;
             }
 
-            .schedule-item {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 2rem;
-                border-radius: var(--border-radius);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                transition: var(--transition);
-                position: relative;
-            }
-
-            .schedule-item:hover {
-                transform: translateY(-3px);
-                box-shadow: var(--shadow-medium);
-                background: rgba(255, 255, 255, 0.15);
-            }
-
-            .schedule-info {
-                flex: 1;
-                color: white;
-            }
-
-            .schedule-date {
-                font-size: 1.1rem;
+            .price-cell {
                 font-weight: 600;
-                margin-bottom: 0.5rem;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
+                color: #059669;
             }
 
-            .schedule-time {
-                color: rgba(255, 255, 255, 0.8);
-                font-size: 0.95rem;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                margin-bottom: 0.8rem;
-            }
-
-            /* Status Badges */
+            /* Status Badge */
             .status-badge {
-                display: inline-block;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                padding: 0.25rem 0.75rem;
+                font-size: 0.75rem;
+                font-weight: 500;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.025em;
             }
 
             .status-available {
-                background: var(--success-gradient);
-                color: white;
-                box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+                background: #dcfce7;
+                color: #166534;
+                border: 1px solid #bbf7d0;
             }
 
             .status-unavailable {
-                background: var(--warning-gradient);
-                color: white;
-                box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+                background: #fef2f2;
+                color: #991b1b;
+                border: 1px solid #fecaca;
             }
 
-            /* Enhanced Booking Button */
-            .book-btn {
-                background: var(--success-gradient);
-                color: white;
-                border: none;
-                padding: 1rem 2rem;
-                border-radius: 25px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 0.95rem;
-                display: flex;
+            .status-past {
+                background: #f3f4f6;
+                color: #6b7280;
+                border: 1px solid #d1d5db;
+            }
+
+            /* Buttons */
+            .btn {
+                display: inline-flex;
                 align-items: center;
-                gap: 0.8rem;
-                transition: var(--transition);
-                box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
-                position: relative;
-                overflow: hidden;
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                border: 1px solid;
+                background: #ffffff;
+                color: #374151;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
             }
 
-            .book-btn:disabled {
-                background: var(--warning-gradient);
+            .btn:hover {
+                background: #f9fafb;
+            }
+
+            .btn-primary {
+                background: #1e40af;
+                color: white;
+                border-color: #1e40af;
+            }
+
+            .btn-primary:hover {
+                background: #1d4ed8;
+                border-color: #1d4ed8;
+            }
+
+            .btn-primary:disabled {
+                background: #9ca3af;
+                border-color: #9ca3af;
                 cursor: not-allowed;
-                opacity: 0.7;
             }
 
-            .book-btn::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-                transition: var(--transition);
+            .btn-secondary {
+                background: #64748b;
+                color: white;
+                border-color: #64748b;
             }
 
-            .book-btn:hover::before {
-                left: 100%;
-            }
-
-            .book-btn:hover:not(:disabled) {
-                transform: translateY(-3px);
-                box-shadow: 0 12px 35px rgba(79, 172, 254, 0.5);
-            }
-
-            .book-btn:active:not(:disabled) {
-                transform: translateY(-1px);
+            .btn-secondary:hover {
+                background: #475569;
+                border-color: #475569;
             }
 
             /* Back Button */
             .back-button-container {
-                grid-column: 1 / -1;
                 text-align: center;
                 margin-top: 3rem;
             }
@@ -512,249 +397,285 @@
             .back-button {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.8rem;
-                background: rgba(255, 255, 255, 0.15);
+                gap: 0.75rem;
+                padding: 1rem 2rem;
+                background: #64748b;
                 color: white;
                 text-decoration: none;
-                padding: 1.2rem 2.5rem;
-                border-radius: 50px;
-                font-weight: 600;
-                transition: var(--transition);
-                box-shadow: var(--shadow-soft);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
+                font-weight: 500;
+                border: 1px solid #64748b;
+                transition: all 0.2s ease;
             }
 
             .back-button:hover {
-                transform: translateY(-3px);
-                box-shadow: var(--shadow-medium);
-                background: rgba(255, 255, 255, 0.2);
+                background: #475569;
+                border-color: #475569;
             }
 
-            /* Enhanced Footer */
-            .footer {
-                background: rgba(0, 0, 0, 0.1);
-                backdrop-filter: blur(30px);
-                margin-top: 6rem;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
+            /* Footer */
+           .main-footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    margin-top: auto;
+    width: 100vw; /* Full viewport width */
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
 
-            .footer-container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 4rem 2rem 2rem;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 3rem;
-            }
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 20px 20px;
+}
 
-            .footer-section h4 {
-                color: white;
-                margin-bottom: 1.5rem;
-                font-weight: 700;
-                font-size: 1.2rem;
-                display: flex;
-                align-items: center;
-                gap: 0.8rem;
-            }
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
 
-            .footer-section p,
-            .footer-section ul {
-                color: rgba(255, 255, 255, 0.8);
-                line-height: 1.8;
-            }
+.footer-section h4 {
+    color: #3498db;
+    margin-bottom: 20px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
 
-            .footer-section ul {
-                list-style: none;
-            }
+.footer-section ul {
+    list-style: none;
+}
 
-            .footer-section ul li {
-                margin-bottom: 0.8rem;
-                display: flex;
-                align-items: center;
-                gap: 0.8rem;
-                transition: var(--transition);
-            }
+.footer-section ul li {
+    margin-bottom: 10px;
+}
 
-            .footer-section ul li:hover {
-                transform: translateX(5px);
-                color: white;
-            }
+.footer-section ul li a {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+}
 
-            .footer-section ul li a {
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                transition: var(--transition);
-            }
+.footer-section ul li a:hover {
+    color: #3498db;
+    padding-left: 10px;
+}
 
-            .footer-section ul li a:hover {
-                color: white;
-            }
+.footer-section p {
+    color: #bdc3c7;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
 
-            /* Animations */
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(40px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
 
-            @keyframes slideInDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(-40px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    transition: all 0.3s;
+    text-decoration: none;
+}
 
-            /* Loading Animation */
-            .loading {
-                display: inline-block;
-                width: 24px;
-                height: 24px;
-                border: 3px solid rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                border-top-color: #fff;
-                animation: spin 1s ease-in-out infinite;
-            }
+.social-links a:hover {
+    background: #3498db;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+}
 
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 25px;
+    text-align: center;
+    color: #95a5a6;
+}
 
+.footer-bottom p {
+    margin: 8px 0;
+}
+
+/* Ensure body and html allow full width */
+html, body {
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Container adjustments to work with full-width footer */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    position: relative; /* Ensure proper stacking context */
+}
             /* Responsive Design */
             @media (max-width: 1024px) {
-                .details-section {
-                    grid-template-columns: 1fr;
-                    gap: 2rem;
-                }
-
                 .container {
-                    padding: 0 1.5rem;
+                    padding: 0 1rem;
                 }
 
-                .card {
-                    padding: 2rem;
+                .info-service-container {
+                    flex-direction: column;
+                }
+
+                .info-card, .services-card {
+                    max-width: 100%;
+                }
+
+                .schedule-card {
+                    max-width: 100%;
                 }
             }
 
             @media (max-width: 768px) {
                 .header-container {
-                    padding: 1rem;
-                }
-
-                .nav-menu {
                     flex-direction: column;
-                    gap: 0.8rem;
-                    padding: 1rem 0;
+                    gap: 20px;
+                    padding: 0 15px;
                 }
 
-                .nav-link {
-                    padding: 0.8rem 1.5rem;
-                    font-size: 0.9rem;
+                .main-nav {
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 8px;
+                }
+
+                .main-nav a {
+                    padding: 10px 14px;
+                    font-size: 14px;
                 }
 
                 .container {
-                    margin: 2rem auto;
-                    padding: 0 1rem;
+                    margin: 1rem auto;
                 }
 
-                .card {
-                    padding: 1.5rem;
+                .card-header,
+                .card-body {
+                    padding: 1rem;
                 }
 
-                .card-title {
-                    font-size: 1.3rem;
+                .services-table,
+                .schedule-table {
+                    font-size: 0.875rem;
                 }
 
-                .detail-item {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 0.8rem;
-                    padding: 1rem 0;
+                .services-table th,
+                .services-table td,
+                .schedule-table th,
+                .schedule-table td {
+                    padding: 0.75rem 0.5rem;
                 }
 
-                .detail-value {
-                    text-align: left;
-                }
-
-                .schedule-item {
-                    flex-direction: column;
-                    gap: 1.5rem;
-                    text-align: center;
-                    padding: 1.5rem;
-                }
-
-                .footer-container {
+                .footer-grid {
                     grid-template-columns: 1fr;
-                    text-align: center;
-                    padding: 3rem 1rem 2rem;
+                    gap: 30px;
                 }
 
-                .service-item {
-                    flex-direction: column;
-                    gap: 1rem;
-                    text-align: center;
+                .social-links {
+                    justify-content: center;
                 }
             }
 
             @media (max-width: 480px) {
-                .card {
-                    padding: 1.2rem;
+                .page-title h1 {
+                    font-size: 1.5rem;
                 }
 
-                .book-btn {
-                    width: 100%;
-                    justify-content: center;
-                    padding: 1rem;
+                .services-table,
+                .schedule-table {
+                    font-size: 0.8rem;
                 }
 
-                .back-button {
-                    padding: 1rem 2rem;
-                    font-size: 0.9rem;
+                .btn {
+                    padding: 0.5rem 0.75rem;
+                    font-size: 0.8rem;
+                }
+
+                .logo {
+                    font-size: 20px;
+                }
+
+                .logo i {
+                    font-size: 28px;
                 }
             }
         </style>
     </head>
     <body>
-        <header class="header">
-            <div class="header-container">
-                <nav class="nav-menu">
-                    <a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp" class="nav-link">
-                        <i class="fas fa-home"></i> Trang Chủ
+        <header class="main-header">
+            <div class="header-top">
+                <div class="header-container">
+                    <div class="header-user">
+                        <c:if test="${not empty currentUser}">
+                            <div class="user-info">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Xin chào, ${fn:escapeXml(currentUser.fullName)}</span>
+                            </div>
+                        </c:if>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-main">
+                <div class="header-container">
+                    <a href="${pageContext.request.contextPath}/" class="logo">
+                        <i class="fas fa-hospital"></i>
+                        <span>Phòng Khám PDC</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" class="nav-link active">
-                        <i class="fas fa-calendar-check"></i> Đặt Lịch Khám
-                    </a>
-                </nav>
+                    <nav>
+                        <ul class="main-nav">
+                            <li><a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp"><i class="fas fa-home"></i> Trang chủ</a></li>
+                            <li><a href="/ViewMedicalAppointmentServlet"><i class="fas fa-calendar-alt"></i>Chọn Bác Sĩ</a></li>
+                            <li><a href="/ViewDetailBookServlet" class="active"><i class="fas fa-calendar-alt"></i>Đặt Lịch Khám</a></li>
+                            <li><a href="/BookAppointmentServlet"><i class="fas fa-calendar-alt"></i>Xác Nhận Đặt Lịch</a></li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </header>
 
         <div class="container">
+            <!-- Page Title -->
+            <div class="page-title">
+                <h1><i class="fas fa-user-md"></i> Chi Tiết Bác Sĩ</h1>
+                <p>Thông tin chi tiết và đặt lịch khám bệnh</p>
+            </div>
+
             <!-- Alert Messages -->
             <div class="alert-container">
                 <c:if test="${not empty error}">
                     <div class="alert alert-error">
-                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                        <i class="fas fa-exclamation-triangle"></i>
                         <span>${fn:escapeXml(error)}</span>
                     </div>
                 </c:if>
                 <c:if test="${not empty success}">
                     <div class="alert alert-success">
-                        <i class="fas fa-check-circle alert-icon"></i>
+                        <i class="fas fa-check-circle"></i>
                         <span>${fn:escapeXml(success)}</span>
                     </div>
                 </c:if>
                 <c:if test="${empty patientId}">
                     <div class="alert alert-error">
-                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                        <i class="fas fa-exclamation-triangle"></i>
                         <span>Lỗi: Không tìm thấy ID bệnh nhân. Vui lòng đăng nhập lại.</span>
                     </div>
                 </c:if>
@@ -764,281 +685,268 @@
                 <c:choose>
                     <c:when test="${empty doctorDetails}">
                         <div class="alert alert-error" style="grid-column: 1 / -1;">
-                            <i class="fas fa-user-md-slash alert-icon"></i>
+                            <i class="fas fa-user-md-slash"></i>
                             <span>Không tìm thấy thông tin bác sĩ.</span>
                         </div>
                     </c:when>
                     <c:otherwise>
-                        <!-- Left Column - Doctor Info & Services -->
-                        <div class="left-column">
-                            <div class="column-header">
-                                <h3 class="column-title">
-                                    <i class="fas fa-user-md"></i>
-                                    Thông Tin Bác Sĩ
-                                </h3>
-                                <p class="column-subtitle">Chi tiết về bác sĩ và dịch vụ khám</p>
-                            </div>
-
-                            <!-- Doctor Basic Info Card -->
-                            <div class="card">
+                        <!-- Doctor Info and Services Container -->
+                        <div class="info-service-container">
+                            <!-- Doctor Info Table -->
+                            <div class="card info-card">
                                 <div class="card-header">
                                     <div class="card-icon">
-                                        <i class="fas fa-id-card"></i>
+                                        <i class="fas fa-user-md"></i>
                                     </div>
-                                    <h2 class="card-title">Hồ Sơ Bác Sĩ</h2>
+                                    <h2 class="card-title">Thông Tin Bác Sĩ</h2>
                                 </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        <i class="fas fa-user"></i> Họ và Tên
-                                    </span>
-                                    <span class="detail-value">${fn:escapeXml(doctorDetails.doctorName)}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        <i class="fas fa-stethoscope"></i> Chuyên Khoa
-                                    </span>
-                                    <span class="detail-value">${fn:escapeXml(doctorDetails.specialization)}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        <i class="fas fa-door-open"></i> Phòng Khám
-                                    </span>
-                                    <span class="detail-value">${fn:escapeXml(doctorDetails.roomName)}</span>
+                                <div class="card-body">
+                                    <table class="services-table">
+                                        <thead>
+                                            <tr>
+                                                <th><i class="fas fa-info-circle"></i> Thông Tin</th>
+                                                <th><i class="fas fa-clipboard"></i> Chi Tiết</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><i class="fas fa-user"></i> Họ và Tên</td>
+                                                <td class="detail-value">${fn:escapeXml(doctorDetails.doctorName)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-stethoscope"></i> Chuyên Khoa</td>
+                                                <td class="detail-value">${fn:escapeXml(doctorDetails.specialization)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
-                            <!-- Services Card -->
-                            <div class="card">
+                            <!-- Services Table -->
+                            <div class="card services-card">
                                 <div class="card-header">
                                     <div class="card-icon">
-                                        <i class="fas fa-concierge-bell"></i>
+                                        <i class="fas fa-tooth"></i>
                                     </div>
                                     <h2 class="card-title">Dịch Vụ Khám Bệnh</h2>
                                 </div>
-                                <ul class="services-list">
+                                <div class="card-body">
                                     <c:choose>
                                         <c:when test="${not empty doctorDetails.services and fn:length(doctorDetails.services) > 0 and doctorDetails.services[0].serviceName != 'N/A'}">
-                                            <c:forEach var="service" items="${doctorDetails.services}">
-                                                <li class="service-item">
-                                                    <div class="service-name">
-                                                        <i class="fas fa-medical-kit"></i>
-                                                        ${fn:escapeXml(service.serviceName)}
-                                                    </div>
-                                                    <div class="service-price">
-                                                        <i class="fas fa-money-bill-wave"></i>
-                                                        <fmt:formatNumber value="${service.price}" pattern="#,##0"/> VND
-                                                    </div>
-                                                </li>
-                                            </c:forEach>
+                                            <table class="services-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th><i class="fas fa-medical-kit"></i> Tên Dịch Vụ</th>
+                                                        <th><i class="fas fa-money-bill-wave"></i> Giá Tiền</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <c:forEach var="service" items="${doctorDetails.services}">
+                                                        <tr>
+                                                            <td>${fn:escapeXml(service.serviceName)}</td>
+                                                            <td class="price-cell">
+                                                                <fmt:formatNumber value="${service.price}" pattern="#,##0"/> VND
+                                                            </td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </tbody>
+                                            </table>
                                         </c:when>
                                         <c:otherwise>
-                                            <li class="service-item">
-                                                <div class="service-name">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    Đang cập nhật thông tin dịch vụ
-                                                </div>
-                                            </li>
+                                            <p style="text-align: center; color: #64748b; padding: 2rem;">
+                                                <i class="fas fa-info-circle"></i>
+                                                Đang cập nhật thông tin dịch vụ
+                                            </p>
                                         </c:otherwise>
                                     </c:choose>
-                                </ul>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Right Column - Schedule & Booking -->
-                        <div class="right-column">
-                            <div class="column-header">
-                                <h3 class="column-title">
-                                    <i class="fas fa-calendar-check"></i>
-                                    Đặt Lịch Khám
-                                </h3>
-                                <p class="column-subtitle">Chọn thời gian phù hợp để đặt lịch</p>
-                            </div>
-
-                            <!-- Schedule Card -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <div class="card-icon">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                    <h2 class="card-title">Lịch Khám Có Sẵn</h2>
+                        <!-- Schedule Table -->
+                        <div class="card schedule-card">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <ul class="schedule-list">
-                                    <jsp:useBean id="now" class="java.util.Date" />
-                                    <c:choose>
-                                        <c:when test="${not empty doctorDetails.schedules and fn:length(doctorDetails.schedules) > 0}">
-                                            <c:set var="hasAvailableSlots" value="false" />
-                                            <c:forEach var="schedule" items="${doctorDetails.schedules}">
-                                                <fmt:parseDate value="${schedule.slotDate}" pattern="yyyy-MM-dd" var="scheduleDateObj" />
-                                                <c:if test="${schedule.status == 'Available' and scheduleDateObj >= now}">
-                                                    <c:set var="hasAvailableSlots" value="true" />
-                                                </c:if>
-                                                <li class="schedule-item">
-                                                    <div class="schedule-info">
-                                                        <fmt:parseDate value="${schedule.slotDate}" pattern="yyyy-MM-dd" var="parsedDate" />
-                                                        <fmt:formatDate value="${parsedDate}" pattern="EEEE, dd/MM/yyyy" var="formattedDate" />
-                                                        <div class="schedule-date">
-                                                            <i class="fas fa-calendar-day"></i>
-                                                            ${fn:escapeXml(formattedDate)}
-                                                        </div>
-                                                        <div class="schedule-time">
-                                                            <i class="fas fa-clock"></i>
-                                                            ${fn:escapeXml(schedule.startTime)} - ${fn:escapeXml(schedule.endTime)}
-                                                        </div>
-                                                        <c:choose>
-                                                            <c:when test="${schedule.status == 'Available'}">
-                                                                <c:choose>
-                                                                    <c:when test="${scheduleDateObj >= now}">
+                                <h2 class="card-title">Lịch Khám Có Sẵn</h2>
+                            </div>
+                            <div class="card-body">
+                                <jsp:useBean id="now" class="java.util.Date" />
+                                <c:choose>
+                                    <c:when test="${not empty doctorDetails.schedules and fn:length(doctorDetails.schedules) > 0}">
+                                        <!-- Filter available schedules -->
+                                        <c:set var="hasAvailableSlots" value="false" />
+                                        <c:forEach var="schedule" items="${doctorDetails.schedules}">
+                                            <fmt:parseDate value="${schedule.slotDate}" pattern="yyyy-MM-dd" var="scheduleDateObj" />
+                                            <c:if test="${schedule.status == 'Available' and scheduleDateObj >= now}">
+                                                <c:set var="hasAvailableSlots" value="true" />
+                                            </c:if>
+                                        </c:forEach>
+
+                                        <c:choose>
+                                            <c:when test="${hasAvailableSlots}">
+                                                <table class="schedule-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th><i class="fas fa-calendar-day"></i> Ngày Khám</th>
+                                                            <th><i class="fas fa-clock"></i> Giờ Khám</th>
+                                                            <th><i class="fas fa-door-open"></i> Phòng</th>
+                                                            <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
+                                                            <th><i class="fas fa-calendar-check"></i> Hành Động</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <c:forEach var="schedule" items="${doctorDetails.schedules}">
+                                                            <fmt:parseDate value="${schedule.slotDate}" pattern="yyyy-MM-dd" var="scheduleDateObj" />
+                                                            <c:if test="${schedule.status == 'Available' and scheduleDateObj >= now}">
+                                                                <tr>
+                                                                    <td>
+                                                                        <fmt:parseDate value="${schedule.slotDate}" pattern="yyyy-MM-dd" var="parsedDate" />
+                                                                        <fmt:formatDate value="${parsedDate}" pattern="EEEE, dd/MM/yyyy" var="formattedDate" />
+                                                                        ${fn:escapeXml(formattedDate)}
+                                                                    </td>
+                                                                    <td>
+                                                                        ${fn:escapeXml(schedule.startTime)} - ${fn:escapeXml(schedule.endTime)}
+                                                                    </td>
+                                                                    <td>
+                                                                        <c:choose>
+                                                                            <c:when test="${not empty schedule.roomName}">
+                                                                                ${fn:escapeXml(schedule.roomName)}
+                                                                            </c:when>
+                                                                            <c:otherwise>
+                                                                                Phòng không xác định
+                                                                            </c:otherwise>
+                                                                        </c:choose>
+                                                                    </td>
+                                                                    <td>
                                                                         <span class="status-badge status-available">
                                                                             <i class="fas fa-check"></i> Có thể đặt
                                                                         </span>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        <span class="status-badge status-unavailable">
-                                                                            <i class="fas fa-clock"></i> Đã qua
-                                                                        </span>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="status-badge status-unavailable">
-                                                                    <i class="fas fa-times"></i> ${fn:escapeXml(schedule.status)}
-                                                                </span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                    <c:if test="${schedule.status == 'Available' and not empty schedule.slotDate and not empty schedule.startTime and scheduleDateObj >= now}">
-                                                        <form action="${pageContext.request.contextPath}/BookAppointmentServlet" method="post" onsubmit="return validateForm(this);">
-                                                            <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
-                                                            <input type="hidden" name="slotId" value="${fn:escapeXml(schedule.slotId)}">
-                                                            <input type="hidden" name="roomId" value="${fn:escapeXml(doctorDetails.roomId)}">
-                                                            <input type="hidden" name="patientId" value="${fn:escapeXml(patientId)}">
-                                                            <button type="submit" class="book-btn">
-                                                                <i class="fas fa-calendar-check"></i>
-                                                                Đặt Lịch Ngay
-                                                            </button>
-                                                        </form>
-                                                    </c:if>
-                                                </li>
-                                            </c:forEach>
-                                            
-                                            <c:if test="${not hasAvailableSlots}">
-                                                <li class="schedule-item" style="opacity: 0.7;">
-                                                    <div class="schedule-info" style="text-align: center;">
-                                                        <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                                                        <div class="schedule-date">Hiện tại không có lịch trống</div>
-                                                        <div class="schedule-time">Vui lòng quay lại sau hoặc liên hệ trực tiếp</div>
-                                                    </div>
-                                                </li>
-                                            </c:if>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <li class="schedule-item">
-                                                <div class="schedule-info" style="text-align: center;">
+                                                                    </td>
+                                                                    <td>
+                                                                        <c:if test="${not empty schedule.slotDate and not empty schedule.startTime}">
+                                                                            <form action="${pageContext.request.contextPath}/BookAppointmentServlet" method="post" onsubmit="return validateForm(this);" style="display: inline;">
+                                                                                <input type="hidden" name="doctorId" value="${fn:escapeXml(param.doctorId)}">
+                                                                                <input type="hidden" name="slotId" value="${fn:escapeXml(schedule.slotId)}">
+                                                                                <input type="hidden" name="roomId" value="${fn:escapeXml(schedule.roomId)}">
+                                                                                <input type="hidden" name="patientId" value="${fn:escapeXml(patientId)}">
+                                                                                <button type="submit" class="btn btn-primary">
+                                                                                    <i class="fas fa-calendar-check"></i>
+                                                                                    Đặt Lịch
+                                                                                </button>
+                                                                            </form>
+                                                                        </c:if>
+                                                                    </td>
+                                                                </tr>
+                                                            </c:if>
+                                                        </c:forEach>
+                                                    </tbody>
+                                                </table>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div style="text-align: center; padding: 2rem; color: #64748b;">
                                                     <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                                                    <div class="schedule-date">Chưa có lịch làm việc</div>
-                                                    <div class="schedule-time">Bác sĩ chưa thiết lập lịch khám</div>
+                                                    <p><strong>Hiện tại không có lịch trống</strong></p>
+                                                    <p>Vui lòng quay lại sau hoặc liên hệ trực tiếp</p>
                                                 </div>
-                                            </li>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </ul>
-                            </div>
-
-                            <!-- Quick Actions Card -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <div class="card-icon">
-                                        <i class="fas fa-tools"></i>
-                                    </div>
-                                    <h2 class="card-title">Hỗ Trợ Nhanh</h2>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                    <a href="tel:+84981234567" style="
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 0.5rem;
-                                        padding: 1rem;
-                                        background: rgba(255, 255, 255, 0.1);
-                                        color: white;
-                                        text-decoration: none;
-                                        border-radius: 12px;
-                                        transition: var(--transition);
-                                        border: 1px solid rgba(255, 255, 255, 0.2);
-                                    " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
-                                        <i class="fas fa-phone"></i>
-                                        <span>Gọi ngay</span>
-                                    </a>
-                                    <a href="#" style="
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 0.5rem;
-                                        padding: 1rem;
-                                        background: rgba(255, 255, 255, 0.1);
-                                        color: white;
-                                        text-decoration: none;
-                                        border-radius: 12px;
-                                        transition: var(--transition);
-                                        border: 1px solid rgba(255, 255, 255, 0.2);
-                                    " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
-                                        <i class="fas fa-comments"></i>
-                                        <span>Chat</span>
-                                    </a>
-                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div style="text-align: center; padding: 2rem; color: #64748b;">
+                                            <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                            <p><strong>Chưa có lịch làm việc</strong></p>
+                                            <p>Bác sĩ chưa thiết lập lịch khám</p>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </c:otherwise>
                 </c:choose>
 
-                <div class="back-button-container">
-                    <a href="${pageContext.request.contextPath}/BookMedicalAppointmentServlet" class="back-button">
-                        <i class="fas fa-arrow-left"></i> 
-                        Quay Lại Danh Sách Bác Sĩ
-                    </a>
-                </div>
-            </div>
-        </div>
+           
 
-        <footer class="footer">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h4><i class="fas fa-hospital"></i> Về Chúng Tôi</h4>
-                    <p>Chúng tôi cung cấp dịch vụ y tế chất lượng cao với đội ngũ bác sĩ chuyên nghiệp.</p>
+    <footer class="main-footer">
+            <div class="footer-content">
+                <div class="footer-grid">
+                    <div class="footer-section">
+                        <h4><i class="fas fa-hospital"></i> Healthcare System</h4>
+                        <p>Hệ thống chăm sóc sức khỏe hàng đầu Việt Nam, mang đến dịch vụ y tế chất lượng cao với đội ngũ bác sĩ chuyên nghiệp.</p>
+                        <div class="social-links">
+                            <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-stethoscope"></i> Dịch Vụ Y Tế</h4>
+                        <ul>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Khám tổng quát</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Tim mạch</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Thần kinh</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Nhi khoa</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Sản phụ khoa</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-link"></i> Liên Kết Nhanh</h4>
+                        <ul>
+                            <li><a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Trang chủ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/doctors"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/appointments"><i class="fas fa-calendar-alt"></i> Đặt lịch</a></li>
+                            <li><a href="${pageContext.request.contextPath}/services"><i class="fas fa-stethoscope"></i> Dịch vụ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/contact"><i class="fas fa-phone-alt"></i> Liên hệ</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-map-marker-alt"></i> Liên Hệ</h4>
+                        <p><i class="fas fa-map-marker-alt"></i>ĐH FPT , HOA LAC</p>
+                        <p><i class="fas fa-phone"></i> (098) 123 4567</p>
+                        <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4><i class="fas fa-map-marker-alt"></i> Địa Chỉ</h4>
-                    <ul>
-                        <li><i class="fas fa-location-arrow"></i> 123 Đường Y Tế, Quận 1, TP. HCM</li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4><i class="fas fa-phone-alt"></i> Liên Hệ</h4>
-                    <ul>
-                        <li><i class="fas fa-phone"></i> +84 981 234 567</li>
-                        <li><i class="fas fa-envelope"></i> support@healthcare.vn</li>
-                    </ul>
+
+                <div class="footer-bottom">
+                    <p>© 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
                 </div>
             </div>
         </footer>
 
-        <script>
-            function validateForm(form) {
-                const slotId = form.slotId.value.trim();
-                console.log("Validating slotId: ", slotId); // Debug
-                if (!slotId || isNaN(slotId) || parseInt(slotId) <= 0) {
-                    alert('Vui lòng chọn một khung giờ hợp lệ!');
-                    return false;
-                }
-                return true;
-            }
 
-            // Debug slotId values on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                const forms = document.querySelectorAll('form');
-                forms.forEach(form => {
-                    const slotId = form.querySelector('input[name="slotId"]').value;
-                    console.log("SlotId from form: ", slotId); // Debug
+            <script>
+                function validateForm(form) {
+                    const slotId = form.slotId.value.trim();
+                    const roomId = form.roomId.value.trim();
+                    console.log("Validating slotId: ", slotId, "roomId: ", roomId);
+                    if (!slotId || isNaN(slotId) || parseInt(slotId) <= 0) {
+                        alert('Vui lòng chọn một khung giờ hợp lệ!');
+                        return false;
+                    }
+                    if (!roomId || isNaN(roomId) || parseInt(roomId) <= 0) {
+                        alert('Vui lòng chọn một phòng hợp lệ!');
+                        return false;
+                    }
+                    return true;
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const forms = document.querySelectorAll('form');
+                    forms.forEach(form => {
+                        const slotIdInput = form.querySelector('input[name="slotId"]');
+                        const roomIdInput = form.querySelector('input[name="roomId"]');
+                        if (slotIdInput && roomIdInput) {
+                            const slotId = slotIdInput.value;
+                            const roomId = roomIdInput.value;
+                            console.log("SlotId from form: ", slotId, "RoomId from form: ", roomId);
+                        }
+                    });
                 });
-            });
-        </script>
-    </body>
-</html>
+            </script>
+        </body>
+    </html>

@@ -233,42 +233,40 @@ public class AppointmentDAO {
     }
 
     // Lấy lịch trình theo Role và UserID (sửa để dùng ScheduleEmployee)
-    public List<ScheduleEmployee> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
-        List<ScheduleEmployee> schedules = new ArrayList<>();
-        String sql = "SELECT SlotID, UserID, Role, RoomID, SlotDate, StartTime, EndTime, Status, CreatedBy, CreatedAt, UpdatedAt "
-                + "FROM ScheduleEmployee";
-        if (!"admin".equalsIgnoreCase(role)) {
-            sql += " WHERE Role = ? AND UserID = ? AND Status = 'Available'";
-        }
+  public List<ScheduleEmployee> getSchedulesByRoleAndUserId(String role, Integer userId) throws SQLException {
+    List<ScheduleEmployee> schedules = new ArrayList<>();
+    String sql = "SELECT se.SlotID, se.UserID, se.Role, se.RoomID, r.RoomName, se.SlotDate, se.StartTime, se.EndTime, se.Status, se.CreatedBy, se.CreatedAt, se.UpdatedAt " +
+                 "FROM ScheduleEmployee se " +
+                 "JOIN Rooms r ON se.RoomID = r.RoomID " + // Sử dụng JOIN thay vì LEFT JOIN để đảm bảo RoomID hợp lệ
+                 "WHERE se.Role = ? AND se.UserID = ? AND se.Status = 'Available' AND r.Status = 'Available'";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            if (!"admin".equalsIgnoreCase(role)) {
-                stmt.setString(1, role);
-                stmt.setInt(2, userId);
+    try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, role);
+        stmt.setInt(2, userId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                ScheduleEmployee schedule = new ScheduleEmployee();
+                schedule.setSlotId(rs.getInt("SlotID"));
+                schedule.setUserId(rs.getInt("UserID"));
+                schedule.setRole(rs.getString("Role"));
+                schedule.setRoomId(rs.getInt("RoomID")); // Đảm bảo RoomID không null
+                schedule.setRoomName(rs.getString("RoomName")); // Lấy RoomName từ bảng Rooms
+                schedule.setSlotDate(rs.getDate("SlotDate").toLocalDate());
+                schedule.setStartTime(rs.getTime("StartTime").toLocalTime());
+                schedule.setEndTime(rs.getTime("EndTime").toLocalTime());
+                schedule.setStatus(rs.getString("Status"));
+                schedule.setCreatedBy(rs.getInt("CreatedBy"));
+                schedule.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+                schedule.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
+                schedules.add(schedule);
             }
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    ScheduleEmployee schedule = new ScheduleEmployee();
-                    schedule.setSlotId(rs.getInt("SlotID"));
-                    schedule.setUserId(rs.getInt("UserID"));
-                    schedule.setRole(rs.getString("Role"));
-                    schedule.setRoomId(rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null);
-                    schedule.setSlotDate(rs.getDate("SlotDate").toLocalDate());
-                    schedule.setStartTime(rs.getTime("StartTime").toLocalTime());
-                    schedule.setEndTime(rs.getTime("EndTime").toLocalTime());
-                    schedule.setStatus(rs.getString("Status"));
-                    schedule.setCreatedBy(rs.getInt("CreatedBy"));
-                    schedule.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
-                    schedule.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
-                    schedules.add(schedule);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getSchedulesByRoleAndUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
         }
-        return schedules;
+    } catch (SQLException e) {
+        System.err.println("SQLException in getSchedulesByRoleAndUserId: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+        throw e;
     }
+    return schedules;
+}
 
     // Lấy tên người dùng theo UserID
     public String getUserFullNameById(int userId) throws SQLException {
@@ -289,95 +287,67 @@ public class AppointmentDAO {
 
     // Hiển thị chi tiết lịch hẹn (sửa để dùng ScheduleEmployee)
     public Map<String, Object> viewDetailBook(int doctorId) throws SQLException {
-        Map<String, Object> details = new HashMap<>();
+    Map<String, Object> details = new HashMap<>();
 
-        // Lấy thông tin bác sĩ
-        String doctorSql = "SELECT FullName, Specialization FROM Users WHERE UserID = ? AND Role = 'doctor' AND Status = 'Active'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
-            pstmt.setInt(1, doctorId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    details.put("doctorName", rs.getString("FullName"));
-                    details.put("specialization", rs.getString("Specialization"));
-                } else {
-                    details.put("doctorName", "N/A");
-                    details.put("specialization", "N/A");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in viewDetailBook (doctor query, doctorId=" + doctorId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
-            throw e;
-        }
-
-        // Lấy thông tin phòng
-     String roomSql = "SELECT TOP 1 se.RoomID, r.RoomName " +
-                     "FROM ScheduleEmployee se " +
-                     "JOIN Rooms r ON se.RoomID = r.RoomID " +
-                     "WHERE se.UserID = ? AND se.Status = 'Available' " +
-                     "AND r.Status = 'Available' " +
-                     "ORDER BY se.SlotDate ASC, se.StartTime ASC";  // Lấy slot gần nhất
-    
-    int roomId = -1;
-    String roomName = "N/A";
-    
-    try (Connection conn = dbContext.getConnection(); 
-         PreparedStatement pstmt = conn.prepareStatement(roomSql)) {
+    // Lấy thông tin bác sĩ
+    String doctorSql = "SELECT FullName, Specialization FROM Users WHERE UserID = ? AND Role = 'doctor' AND Status = 'Active'";
+    try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(doctorSql)) {
         pstmt.setInt(1, doctorId);
-        // ❌ REMOVE: pstmt.setDate(2, Date.valueOf(currentDate)); 
-        
         try (ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
-                roomId = rs.getInt("RoomID");
-                roomName = rs.getString("RoomName");
+                details.put("doctorName", rs.getString("FullName"));
+                details.put("specialization", rs.getString("Specialization"));
+            } else {
+                details.put("doctorName", "N/A");
+                details.put("specialization", "N/A");
             }
         }
-        } catch (SQLException e) {
-            System.err.println("SQLException in viewDetailBook (room query, doctorId=" + doctorId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
-            throw e;
-        }
-
-        details.put("roomID", roomId == -1 ? "N/A" : roomId);
-        details.put("roomName", roomName);
-
-        // Lấy danh sách dịch vụ
-        List<Map<String, Object>> services = new ArrayList<>();
-        if (roomId != -1) {
-            try {
-                for (Services service : getServicesByRoom(roomId)) {
-                    Map<String, Object> serviceMap = new HashMap<>();
-                    serviceMap.put("serviceID", service.getServiceID());
-                    serviceMap.put("serviceName", service.getServiceName());
-                    serviceMap.put("description", service.getDescription());
-                    serviceMap.put("price", service.getPrice());
-                    services.add(serviceMap);
-                }
-            } catch (SQLException e) {
-                System.err.println("SQLException in getServicesByRoom (roomId=" + roomId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
-                throw e;
-            }
-        }
-        details.put("services", services.isEmpty() ? List.of(Map.of("serviceName", "N/A", "description", "N/A", "price", 0.0)) : services);
-
-        // Lấy danh sách lịch trình
-        List<Map<String, Object>> schedules = new ArrayList<>();
-        try {
-            for (ScheduleEmployee schedule : getSchedulesByRoleAndUserId("Doctor", doctorId)) {
-                Map<String, Object> scheduleMap = new HashMap<>();
-                scheduleMap.put("slotId", schedule.getSlotId()); // Sử dụng "slotId" thay vì "scheduleID"
-                scheduleMap.put("slotDate", schedule.getSlotDate());
-                scheduleMap.put("startTime", schedule.getStartTime());
-                scheduleMap.put("endTime", schedule.getEndTime());
-                scheduleMap.put("status", schedule.getStatus());
-                schedules.add(scheduleMap);
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getSchedulesByRoleAndUserId (doctorId=" + doctorId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
-            throw e;
-        }
-        details.put("schedules", schedules.isEmpty() ? List.of(Map.of("slotId", 0, "slotDate", "N/A", "startTime", "N/A", "endTime", "N/A", "status", "N/A")) : schedules);
-        return details;
+    } catch (SQLException e) {
+        System.err.println("SQLException in viewDetailBook (doctor query, doctorId=" + doctorId + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+        throw e;
     }
 
+    // Loại bỏ phần lấy TOP 1 phòng vì mỗi khung giờ đã có RoomID và RoomName
+    details.put("roomID", "N/A"); // Không cần thiết nữa, để trống hoặc xóa nếu không dùng
+    details.put("roomName", "N/A"); // Không cần thiết nữa, để trống hoặc xóa nếu không dùng
+
+    // Lấy danh sách dịch vụ (dựa trên RoomID của khung giờ đầu tiên nếu cần, hoặc bỏ nếu không dùng)
+    List<Map<String, Object>> services = new ArrayList<>();
+    List<ScheduleEmployee> schedules = getSchedulesByRoleAndUserId("Doctor", doctorId);
+    if (!schedules.isEmpty() && schedules.get(0).getRoomId() != null) {
+        try {
+            for (Services service : getServicesByRoom(schedules.get(0).getRoomId())) {
+                Map<String, Object> serviceMap = new HashMap<>();
+                serviceMap.put("serviceID", service.getServiceID());
+                serviceMap.put("serviceName", service.getServiceName());
+                serviceMap.put("description", service.getDescription());
+                serviceMap.put("price", service.getPrice());
+                services.add(serviceMap);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getServicesByRoom (roomId=" + schedules.get(0).getRoomId() + "): " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+    details.put("services", services.isEmpty() ? List.of(Map.of("serviceName", "N/A", "description", "N/A", "price", 0.0)) : services);
+
+    // Lấy danh sách lịch trình
+    List<Map<String, Object>> scheduleList = new ArrayList<>();
+    for (ScheduleEmployee schedule : schedules) {
+        Map<String, Object> scheduleMap = new HashMap<>();
+        scheduleMap.put("slotId", schedule.getSlotId());
+        scheduleMap.put("slotDate", schedule.getSlotDate());
+        scheduleMap.put("startTime", schedule.getStartTime());
+        scheduleMap.put("endTime", schedule.getEndTime());
+        scheduleMap.put("status", schedule.getStatus());
+        scheduleMap.put("roomId", schedule.getRoomId());
+        scheduleMap.put("roomName", schedule.getRoomName()); // Lấy roomName từ ScheduleEmployee
+        scheduleList.add(scheduleMap);
+    }
+    details.put("schedules", scheduleList.isEmpty() ? List.of(Map.of("slotId", 0, "slotDate", "N/A", "startTime", "N/A", "endTime", "N/A", "status", "N/A", "roomId", "N/A", "roomName", "N/A")) : scheduleList);
+
+    return details;
+}
     // Đếm số lượng lịch hẹn theo SlotID
     public int countAppointmentsBySlotId(int slotId) throws SQLException {
         String sql = "SELECT COUNT(*) AS AppointmentCount FROM Appointments WHERE SlotID = ?";
@@ -1150,37 +1120,41 @@ public class AppointmentDAO {
         }
         return appointments;
     }
-     public Map<String, Object> getSlotById(int slotId) throws SQLException {
-        String sql = "SELECT SlotID, SlotDate, StartTime, EndTime, Status, RoomID, UserID "
-                + "FROM ScheduleEmployee WHERE SlotID = ? AND Status = 'Available'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, slotId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    Map<String, Object> slotInfo = new HashMap<>();
-                    slotInfo.put("slotId", rs.getInt("SlotID"));
-                    slotInfo.put("slotDate", rs.getDate("SlotDate").toLocalDate());
-                    slotInfo.put("startTime", rs.getTime("StartTime").toLocalTime().toString());
-                    slotInfo.put("endTime", rs.getTime("EndTime").toLocalTime().toString());
-                    slotInfo.put("status", rs.getString("Status"));
-                    slotInfo.put("roomId", rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null);
-                    slotInfo.put("userId", rs.getInt("UserID"));
-                    System.out.println("✅ getSlotById - Found slot " + slotId + 
-                                     " with date: " + slotInfo.get("slotDate") + 
-                                     ", time: " + slotInfo.get("startTime") + "-" + slotInfo.get("endTime") +
-                                     " at " + LocalDateTime.now() + " +07");
-                    return slotInfo;
-                } else {
-                    System.out.println("❌ getSlotById - No slot found for ID: " + slotId + 
-                              
-                            " at " + LocalDateTime.now() + " +07");
-                }
+   public Map<String, Object> getSlotById(int slotId) throws SQLException {
+    String sql = "SELECT se.SlotID, se.SlotDate, se.StartTime, se.EndTime, se.Status, se.RoomID, r.RoomName, se.UserID " +
+                 "FROM ScheduleEmployee se " +
+                 "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                 "WHERE se.SlotID = ?";
+    try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, slotId);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                Map<String, Object> slotInfo = new HashMap<>();
+                slotInfo.put("slotId", rs.getInt("SlotID"));
+                slotInfo.put("slotDate", rs.getDate("SlotDate").toLocalDate());
+                slotInfo.put("startTime", rs.getTime("StartTime").toLocalTime().toString());
+                slotInfo.put("endTime", rs.getTime("EndTime").toLocalTime().toString());
+                slotInfo.put("status", rs.getString("Status"));
+                slotInfo.put("roomId", rs.getObject("RoomID") != null ? rs.getInt("RoomID") : null);
+                slotInfo.put("roomName", rs.getString("RoomName") != null ? rs.getString("RoomName") : "N/A");
+                slotInfo.put("userId", rs.getInt("UserID"));
+                System.out.println("✅ getSlotById - Found slot " + slotId + 
+                                 " with date: " + slotInfo.get("slotDate") + 
+                                 ", time: " + slotInfo.get("startTime") + "-" + slotInfo.get("endTime") + 
+                                 ", roomName: " + slotInfo.get("roomName") +
+                                 ", status: " + slotInfo.get("status") +
+                                 " at " + LocalDateTime.now() + " +07");
+                return slotInfo;
+            } else {
+                System.out.println("❌ getSlotById - No slot found for ID: " + slotId + 
+                                 " at " + LocalDateTime.now() + " +07");
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getSlotById for slotId " + slotId + ": " + 
-                              e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
-            throw e;
         }
-        return null;
+    } catch (SQLException e) {
+        System.err.println("SQLException in getSlotById for slotId " + slotId + ": " + 
+                          e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+        throw e;
     }
+    return null;
+}
 }
