@@ -900,11 +900,10 @@
                     <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="search-form">
                         <input type="text" name="patientName" placeholder="Tìm theo tên bệnh nhân..." 
                                value="${patientName}" class="search-input">
-
-                        <input type="text" name="patientId" placeholder="Tìm theo ID bệnh nhân..." 
-                               class="search-input">
+                         
+                    
                         <button type="submit" class="search-button">
-                            <i class="fas fa-search"></i> Tìm kiếm
+                              <i class="fas fa-search"></i> Tìm kiếm
                         </button>
                         <c:if test="${not empty patientName}">
                             <a href="${pageContext.request.contextPath}/ViewPatientResultServlet" class="clear-button">
@@ -913,13 +912,6 @@
                         </c:if>
                     </form>
 
-                    <!-- Search Result Info -->
-                    <c:if test="${not empty patientName}">
-                        <div class="alert alert-success">
-                            <i class="fas fa-info-circle"></i> 
-                            Đang hiển thị kết quả tìm kiếm cho: "<strong>${patientName}</strong>"
-                        </div>
-                    </c:if>
 
                     <!-- Alert Messages -->
                     <c:if test="${not empty message}">
