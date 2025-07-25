@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import model.entity.Users;
@@ -89,38 +91,51 @@ public class UserDAO {
     }
 
     public boolean addUser(Users user, int createdBy) throws SQLException {
-        // Trim all relevant string fields from the Users object before using
-        if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
-        if (user.getGender() != null) user.setGender(user.getGender().trim());
-        if (user.getSpecialization() != null) user.setSpecialization(user.getSpecialization().trim());
-        if (user.getRole() != null) user.setRole(user.getRole().trim());
-        if (user.getStatus() != null) user.setStatus(user.getStatus().trim());
-        if (user.getEmail() != null) user.setEmail(user.getEmail().trim());
-        if (user.getPhone() != null) user.setPhone(user.getPhone().trim());
-        if (user.getAddress() != null) user.setAddress(user.getAddress().trim());
-        if (user.getUsername() != null) user.setUsername(user.getUsername().trim());
-        if (user.getPassword() != null) user.setPassword(user.getPassword().trim());
+    // Trim all relevant string fields
+    if (user.getFullName() != null) user.setFullName(user.getFullName().trim());
+    if (user.getGender() != null) user.setGender(user.getGender().trim());
+    if (user.getSpecialization() != null) user.setSpecialization(user.getSpecialization().trim());
+    if (user.getRole() != null) user.setRole(user.getRole().trim());
+    if (user.getStatus() != null) user.setStatus(user.getStatus().trim());
+    if (user.getEmail() != null) user.setEmail(user.getEmail().trim());
+    if (user.getPhone() != null) user.setPhone(user.getPhone().trim());
+    if (user.getAddress() != null) user.setAddress(user.getAddress().trim());
+    if (user.getUsername() != null) user.setUsername(user.getUsername().trim());
+    if (user.getPassword() != null) user.setPassword(user.getPassword().trim());
 
-
-        String sql = "INSERT INTO Users (fullName, gender, dob, specialization, role, status, email, phone, address, username, password, createdBy, createdAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getFullName());
-            stmt.setString(2, user.getGender());
-            stmt.setDate(3, user.getDob());
-            stmt.setString(4, user.getSpecialization());
-            stmt.setString(5, user.getRole());
-            stmt.setString(6, user.getStatus() != null && !user.getStatus().isEmpty() ? user.getStatus() : "Active"); // Default to Active
-            stmt.setString(7, user.getEmail());
-            stmt.setString(8, user.getPhone());
-            stmt.setString(9, user.getAddress());
-            stmt.setString(10, user.getUsername());
-            stmt.setString(11, user.getPassword()); // Assumed hashed in service layer
-            stmt.setInt(12, createdBy);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+    // ✅ Validate: Tuổi >= 18
+    if (user.getDob() != null) {
+        LocalDate today = LocalDate.now();
+        LocalDate dob = user.getDob().toLocalDate();
+        int age = Period.between(dob, today).getYears();
+        if (age < 18) {
+            throw new IllegalArgumentException("Nhân viên phải từ 18 tuổi trở lên.");
         }
+    } else {
+        throw new IllegalArgumentException("Ngày sinh không được để trống.");
     }
+
+    // Tiếp tục thêm vào CSDL nếu hợp lệ
+    String sql = "INSERT INTO Users (fullName, gender, dob, specialization, role, status, email, phone, address, username, password, createdBy, createdAt) "
+               + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, user.getFullName());
+        stmt.setString(2, user.getGender());
+        stmt.setDate(3, user.getDob());
+        stmt.setString(4, user.getSpecialization());
+        stmt.setString(5, user.getRole());
+        stmt.setString(6, user.getStatus() != null && !user.getStatus().isEmpty() ? user.getStatus() : "Active");
+        stmt.setString(7, user.getEmail());
+        stmt.setString(8, user.getPhone());
+        stmt.setString(9, user.getAddress());
+        stmt.setString(10, user.getUsername());
+        stmt.setString(11, user.getPassword());
+        stmt.setInt(12, createdBy);
+        int rowsAffected = stmt.executeUpdate();
+        return rowsAffected > 0;
+    }
+}
 
     public Users findUserByEmailOrUsername(String emailOrUsername) throws SQLException {
         // Trim input immediately
@@ -360,16 +375,57 @@ public class UserDAO {
             }
         }
     }
+    public boolean deleteEmployeeAndSchedules(int userID) throws SQLException {
+    String deleteScheduleSql = "DELETE FROM ScheduleEmployee WHERE UserID = ?";
+    String deleteUserSql = "DELETE FROM Users WHERE UserID = ? AND Role IN ('Doctor', 'Nurse', 'Receptionist')";
 
-    public boolean deleteEmployee(int userID) throws SQLException {
-        String sql = "DELETE FROM Users WHERE userID = ? AND Role IN ('Doctor', 'Nurse', 'Receptionist')";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, userID);
-            int rowsAffected = stmt.executeUpdate();
+    try (Connection conn = dbContext.getConnection()) {
+        conn.setAutoCommit(false); // Bắt đầu giao dịch
+
+        try (
+            PreparedStatement deleteScheduleStmt = conn.prepareStatement(deleteScheduleSql);
+            PreparedStatement deleteUserStmt = conn.prepareStatement(deleteUserSql)
+        ) {
+            deleteScheduleStmt.setInt(1, userID);
+            deleteScheduleStmt.executeUpdate();
+
+            deleteUserStmt.setInt(1, userID);
+            int rowsAffected = deleteUserStmt.executeUpdate();
+
+            conn.commit(); // Thành công
+
             return rowsAffected > 0;
+        } catch (SQLException e) {
+            conn.rollback(); // Nếu lỗi thì rollback
+            throw e;
+        } finally {
+            conn.setAutoCommit(true); // Trả lại chế độ mặc định
         }
     }
+}
+
+public boolean isEmployeeScheduled(int userID) throws SQLException {
+    String sql = """
+        SELECT COUNT(*) 
+        FROM ScheduleEmployee se
+        JOIN Slots s ON se.SlotID = s.SlotID
+        WHERE se.UserID = ? AND s.SlotDate >= CAST(GETDATE() AS DATE)
+    """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userID);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    }
+    return false;
+}
+
+
+
 
     public boolean UpdatePatient(Users patient) throws SQLException {
         // Trim relevant string fields from the Users object before using
