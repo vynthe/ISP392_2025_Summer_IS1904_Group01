@@ -60,8 +60,8 @@ public class DeleteAppointmentServlet extends HttpServlet {
             
             if (slotIdParam == null || slotIdParam.trim().isEmpty()) {
                 System.err.println("❌ Missing slotId parameter at " + LocalDateTime.now() + " +07");
-                request.setAttribute("errorMessage", "Slot ID is required to delete schedule.");
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.setAttribute("error", "Slot ID is required to delete schedule.");
+                request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
                 return;
             }
             
@@ -74,8 +74,8 @@ public class DeleteAppointmentServlet extends HttpServlet {
                 System.out.println("✅ Valid slotId parsed: " + slotId);
             } catch (NumberFormatException e) {
                 System.err.println("❌ Invalid slotId format: " + slotIdParam + " at " + LocalDateTime.now() + " +07");
-                request.setAttribute("errorMessage", "Invalid Slot ID format: " + slotIdParam);
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.setAttribute("error", "Invalid Slot ID format: " + slotIdParam);
+                request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
                 return;
             }
             
@@ -84,8 +84,8 @@ public class DeleteAppointmentServlet extends HttpServlet {
                 var scheduleToDelete = scheduleService.getScheduleById(slotId);
                 if (scheduleToDelete == null) {
                     System.err.println("❌ Schedule not found for slotId: " + slotId + " at " + LocalDateTime.now() + " +07");
-                    request.setAttribute("errorMessage", "Schedule slot not found with ID: " + slotId);
-                    request.getRequestDispatcher("/error.jsp").forward(request, response);
+                    request.setAttribute("error", "Schedule slot not found with ID: " + slotId);
+                    request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
                     return;
                 }
                 System.out.println("✅ Schedule found for deletion: " + scheduleToDelete.getSlotId() + 
@@ -93,10 +93,12 @@ public class DeleteAppointmentServlet extends HttpServlet {
                                  " - Date: " + scheduleToDelete.getSlotDate());
             } catch (SQLException e) {
                 System.err.println("❌ Error checking schedule existence: " + e.getMessage());
-                request.setAttribute("errorMessage", "Error verifying schedule: " + e.getMessage());
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.setAttribute("error", "Error verifying schedule: " + e.getMessage());
+                request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
                 return;
             }
+            
+
             
             // Call service to delete the schedule
             boolean deleted = scheduleService.deleteScheduleEmployee(slotId);
@@ -106,20 +108,41 @@ public class DeleteAppointmentServlet extends HttpServlet {
                 
                 // ✅ Redirect về trang view schedule với success message
                 response.sendRedirect(request.getContextPath() + 
-                    "/ViewScheduleDoctorNurse?success=Schedule deleted successfully");
+                    "/ViewScheduleDoctorNurse?success=Xóa lịch làm việc thành công");
             } else {
                 System.err.println("❌ Failed to delete schedule slot " + slotId + " at " + LocalDateTime.now() + " +07");
-                request.setAttribute("errorMessage", 
-                    "Failed to delete schedule slot. It may have active appointments or constraints.");
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.setAttribute("error", 
+                    "Không thể xóa lịch làm việc. Vui lòng thử lại sau.");
+                request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
             }
             
-        } catch (SQLException | ClassNotFoundException e) {
-            // Log the exception and set error message
-            System.err.println("❌ Exception in DeleteAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+        } catch (SQLException e) {
+            // ✅ Bắt tất cả lỗi SQL và kiểm tra message cụ thể
+            System.err.println("❌ SQLException in DeleteAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
             e.printStackTrace();
-            request.setAttribute("errorMessage", "An error occurred while deleting the schedule slot: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            
+            String errorMessage;
+            String sqlMessage = e.getMessage().toLowerCase();
+            
+            // Kiểm tra các loại lỗi SQL phổ biến
+            if (sqlMessage.contains("foreign key") || sqlMessage.contains("constraint") || 
+                sqlMessage.contains("references") || sqlMessage.contains("violates") ||
+                sqlMessage.contains("cannot delete") || sqlMessage.contains("integrity")) {
+                errorMessage = "Không thể xóa lịch này vì đã có bệnh nhân đặt lịch hẹn. "  ;
+            } else if (sqlMessage.contains("deadlock")) {
+                errorMessage = "Hệ thống đang bận, vui lòng thử lại sau.";
+            } else {
+                errorMessage = "Có lỗi xảy ra khi xóa lịch làm việc. Vui lòng thử lại sau.";
+            }
+            
+            request.setAttribute("error", errorMessage);
+            request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
+            
+        } catch (ClassNotFoundException e) {
+            System.err.println("❌ ClassNotFoundException in DeleteAppointmentServlet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi hệ thống. Vui lòng liên hệ quản trị viên.");
+            request.getRequestDispatcher("/ViewScheduleDoctorNurse").forward(request, response);
         }
     }
     
