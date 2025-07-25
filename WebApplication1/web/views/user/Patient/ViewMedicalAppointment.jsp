@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách bác sĩ - Hệ thống đặt lịch hẹn</title>
+    <title>Danh sách bác sĩ - Phòng khám PDC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -15,408 +15,470 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
             color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        .container {
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-bottom: 1px solid #e1e8ed;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+        }
+
+        .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2563eb;
+            text-decoration: none;
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            animation: fadeInDown 0.8s ease-out;
+        .nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
         }
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message {
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-radius: 12px;
-            text-align: center;
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
             font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            animation: slideIn 0.5s ease-out;
+            transition: color 0.2s;
         }
 
-        .success {
-            background: linear-gradient(135deg, #a8e6cf, #88d8a3);
-            color: #2d5a3d;
-            border: 1px solid #7bc96f;
+        .nav-link:hover {
+            color: #2563eb;
         }
 
-        .error {
-            background: linear-gradient(135deg, #ffb3ba, #ff9999);
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .btn-primary:hover {
+            background: #1d4ed8;
         }
 
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Stats */
+        .stats {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Search */
         .search-container {
             background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .search-box {
             position: relative;
-            max-width: 500px;
+            max-width: 400px;
             margin: 0 auto;
         }
 
         .search-input {
             width: 100%;
-            padding: 15px 50px 15px 20px;
-            border: 2px solid #e1e8ed;
-            border-radius: 25px;
-            font-size: 16px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
             outline: none;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s;
         }
 
         .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .search-icon {
             position: absolute;
-            right: 20px;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #667eea;
+            color: #9ca3af;
         }
 
+        /* Doctor Grid */
         .doctors-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .doctor-card {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.6s ease-out;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
         }
 
         .doctor-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .doctor-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .doctor-info h3 {
-            color: #2c3e50;
-            font-size: 1.4em;
-            margin-bottom: 15px;
+        .doctor-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.5rem;
         }
 
-        .doctor-detail {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            color: #666;
-            font-size: 0.95em;
-        }
-
-        .doctor-detail i {
-            width: 20px;
-            color: #667eea;
-            margin-right: 10px;
-        }
-
-        .specialization-tag {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 6px 15px;
+        .specialization {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.875rem;
             font-weight: 500;
             display: inline-block;
-            margin: 10px 0;
+            margin-bottom: 1rem;
+        }
+
+        .doctor-info {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .doctor-info i {
+            width: 16px;
+            color: #9ca3af;
         }
 
         .book-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #2563eb;
             color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
             text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: 600;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95em;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            transition: background 0.2s;
         }
 
         .book-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            background: #1d4ed8;
         }
 
+        /* No Data */
         .no-data {
             text-align: center;
-            color: white;
-            font-size: 1.2em;
-            background: rgba(255,255,255,0.1);
-            padding: 60px 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.8s ease-out;
+            padding: 3rem 2rem;
+            color: #6b7280;
         }
 
         .no-data i {
-            font-size: 3em;
-            margin-bottom: 20px;
-            opacity: 0.7;
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .no-data h3 {
+            font-size: 1.25rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
         }
 
-        .footer-info {
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            margin-top: 40px;
-            padding: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: #9ca3af;
+            padding: 3rem 1rem 1rem;
+            margin-top: 4rem;
         }
 
-        .stats-container {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
             color: white;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p, .footer-section li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #2563eb;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1rem;
             text-align: center;
+            font-size: 0.875rem;
         }
 
-        .stats-container h3 {
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-
-        .stats-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
             }
-            
-            .header h1 {
-                font-size: 2em;
+
+            .nav {
+                gap: 1rem;
             }
-            
+
+            .main {
+                padding: 1rem;
+            }
+
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
             .doctors-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
             }
-            
-            .doctor-card {
-                padding: 20px;
-            }
-            
-            .search-input {
-                padding: 12px 45px 12px 15px;
-                font-size: 14px;
-            }
-        }
 
-        /* Loading Animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-user-md"></i> Danh sách bác sĩ</h1>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-tooth"></i>
+                Phòng Khám Nha Khoa PDC
+            </a>
+            <nav class="nav">
+                <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="nav-link">Trang chủ</a>
+                <a href="/BookAppointmentGuestServlet" class="btn-primary">Đặt lịch khám</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>Danh sách bác sĩ</h1>
             <p>Tìm và đặt lịch hẹn với các bác sĩ chuyên khoa</p>
         </div>
-        
-        <!-- Hiển thị thông báo thành công hoặc lỗi -->
+
+        <!-- Messages -->
         <c:if test="${not empty success}">
             <div class="message success">
-                <i class="fas fa-check-circle"></i> ${success}
+                <i class="fas fa-check-circle"></i>
+                ${success}
             </div>
         </c:if>
         <c:if test="${not empty error}">
             <div class="message error">
-                <i class="fas fa-exclamation-triangle"></i> ${error}
+                <i class="fas fa-exclamation-triangle"></i>
+                ${error}
             </div>
         </c:if>
 
-        <!-- Thống kê -->
+        <!-- Stats -->
         <c:if test="${not empty doctors}">
-            <div class="stats-container">
-                <h3><i class="fas fa-chart-bar"></i> Thống kê hệ thống</h3>
+            <div class="stats">
                 <div class="stats-number">${doctors.size()}</div>
                 <p>Bác sĩ có sẵn</p>
             </div>
         </c:if>
 
-        <!-- Tìm kiếm -->
+        <!-- Search -->
         <div class="search-container">
             <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm theo tên bác sĩ hoặc chuyên môn...">
+                <input type="text" class="search-input" id="searchInput" 
+                       placeholder="Tìm kiếm theo tên bác sĩ hoặc chuyên khoa...">
                 <i class="fas fa-search search-icon"></i>
             </div>
         </div>
-        
-        <!-- Hiển thị danh sách bác sĩ -->
+
+        <!-- Doctor List -->
         <c:choose>
             <c:when test="${not empty doctors}">
                 <div class="doctors-grid" id="doctorsGrid">
                     <c:forEach var="doctor" items="${doctors}">
                         <div class="doctor-card" data-name="${doctor.fullName}" data-specialization="${doctor.specialization}">
-                            <div class="doctor-info">
-                                <h3>
-                                    <i class="fas fa-user-md"></i>
-                                    ${doctor.fullName}
-                                </h3>
-                                <div class="specialization-tag">
-                                    <i class="fas fa-stethoscope"></i>
-                                    ${doctor.specialization}
-                                </div>
-                                
-                                <div class="doctor-detail">
-                                    <i class="fas fa-id-card"></i>
-                                    <span>Mã BS: ${doctor.userID}</span>
-                                </div>
-                                
-                                <div class="doctor-detail">
-                                    <i class="fas fa-envelope"></i>
-                                    <span>${doctor.email}</span>
-                                </div>
-                                
-                                <div class="doctor-detail">
-                                    <i class="fas fa-phone"></i>
-                                    <span>${doctor.phone}</span>
-                                </div>
-                                
-                                <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" class="book-btn">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    Đặt lịch hẹn
-                                </a>
+                            <div class="doctor-name">
+                                <i class="fas fa-user-md"></i>
+                                ${doctor.fullName}
                             </div>
+                            
+                            <span class="specialization">${doctor.specialization}</span>
+                            
+                            <div class="doctor-info">
+                                <i class="fas fa-id-card"></i>
+                                <span>Mã BS: ${doctor.userID}</span>
+                            </div>
+                            
+                            <div class="doctor-info">
+                                <i class="fas fa-envelope"></i>
+                                <span>${doctor.email}</span>
+                            </div>
+                            
+                            <div class="doctor-info">
+                                <i class="fas fa-phone"></i>
+                                <span>${doctor.phone}</span>
+                            </div>
+                            
+                            <a href="${pageContext.request.contextPath}/ViewDetailBookServlet?doctorId=${doctor.userID}" class="book-btn">
+                                <i class="fas fa-calendar-plus"></i>
+                                Đặt lịch hẹn
+                            </a>
                         </div>
                     </c:forEach>
                 </div>
             </c:when>
             <c:otherwise>
                 <div class="no-data">
-                    <i class="fas fa-user-md-slash"></i>
-                    <h3>Không có bác sĩ nào được tìm thấy</h3>
-                    <p>Vui lòng thử lại sau hoặc liên hệ với quản trị viên</p>
+                    <i class="fas fa-user-md"></i>
+                    <h3>Không có bác sĩ nào</h3>
+                    <p>Hiện tại chưa có bác sĩ nào trong hệ thống</p>
                 </div>
             </c:otherwise>
         </c:choose>
-        
-        <!-- Thông tin thời gian hiện tại -->
-        <div class="footer-info">
-            <i class="fas fa-clock"></i>
-            Cập nhật lúc: <%= new java.text.SimpleDateFormat("HH:mm:ss dd/MM/yyyy").format(new java.util.Date()) %> (Giờ Việt Nam)
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>Liên hệ</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> DH FPT, Hòa Lạc, Hà Nội</p>
+                    <p><i class="fas fa-phone"></i> (098) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> PhongKhamPDC@gmail.com</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Về chúng tôi</h3>
+                    <p>Phòng khám nha khoa PDC cam kết mang đến dịch vụ chăm sóc răng miệng chất lượng cao với đội ngũ bác sĩ giàu kinh nghiệm.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Phòng Khám Nha Khoa PDC. Tất cả quyền được bảo lưu.</p>
+            </div>
         </div>
-    </div>
+    </footer>
 
     <script>
-        // Tìm kiếm real-time
+        // Search functionality
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const doctorCards = document.querySelectorAll('.doctor-card');
@@ -427,34 +489,11 @@
                 
                 if (name.includes(searchTerm) || specialization.includes(searchTerm)) {
                     card.style.display = 'block';
-                    card.style.animation = 'fadeInUp 0.5s ease-out';
                 } else {
                     card.style.display = 'none';
                 }
             });
         });
-
-        // Animation khi load trang
-        window.addEventListener('load', function() {
-            const cards = document.querySelectorAll('.doctor-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
-        });
-
-        // Hiệu ứng hover cho các button
-        document.querySelectorAll('.book-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.innerHTML = '<i class="fas fa-calendar-check"></i> Đặt ngay';
-            });
-            
-            btn.addEventListener('mouseleave', function() {
-                this.innerHTML = '<i class="fas fa-calendar-plus"></i> Đặt lịch hẹn';
-            });
-        });
-
-        // Smooth scroll animation
-        document.documentElement.style.scrollBehavior = 'smooth';
     </script>
 </body>
 </html>

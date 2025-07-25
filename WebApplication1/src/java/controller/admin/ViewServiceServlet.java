@@ -21,55 +21,52 @@ public class ViewServiceServlet extends HttpServlet {
     public void init() throws ServletException {
         servicesService = new Services_Service();
     }
+@Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    request.setCharacterEncoding("UTF-8");
+    response.setCharacterEncoding("UTF-8");
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        // Đảm bảo xử lý tiếng Việt
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+    String keyword = request.getParameter("keyword");
+    String minPriceStr = request.getParameter("minPrice");
+    String maxPriceStr = request.getParameter("maxPrice");
 
-        String keyword = request.getParameter("keyword");
-        String minPriceStr = request.getParameter("minPrice");
-        String maxPriceStr = request.getParameter("maxPrice");
+    double minPrice = 0;
+    double maxPrice = Double.MAX_VALUE;
 
-        double minPrice = 0;
-        double maxPrice = Double.MAX_VALUE;
-
-        try {
-            if (minPriceStr != null && !minPriceStr.trim().isEmpty()) {
-                minPrice = Double.parseDouble(minPriceStr);
-            }
-            if (maxPriceStr != null && !maxPriceStr.trim().isEmpty()) {
-                maxPrice = Double.parseDouble(maxPriceStr);
-            }
-        } catch (NumberFormatException e) {
-            // Có thể đặt lỗi hoặc mặc định
-            minPrice = 0;
-            maxPrice = Double.MAX_VALUE;
+    try {
+        if (minPriceStr != null && !minPriceStr.trim().isEmpty()) {
+            minPrice = Double.parseDouble(minPriceStr);
         }
-        try {
-            List<Services> services;
-            boolean isSearching = (keyword != null && !keyword.trim().isEmpty())
-                    || minPrice > 0 || maxPrice < Double.MAX_VALUE;
-
-            if (isSearching) {
-                services = servicesService.searchServices(keyword == null ? "" : keyword.trim(), minPrice, maxPrice);
-            } else {
-                services = servicesService.getAllServices();
-            }
-
-            // Truyền dữ liệu sang JSP
-            request.setAttribute("services", services);
-            request.setAttribute("keyword", keyword);
-            request.setAttribute("minPrice", minPriceStr);
-            request.setAttribute("maxPrice", maxPriceStr);
-
-        } catch (SQLException e) {
-            System.err.println("Lỗi SQL khi lấy danh sách dịch vụ: " + e.getMessage());
-            request.setAttribute("error", "Lỗi khi tải danh sách dịch vụ.");
+        if (maxPriceStr != null && !maxPriceStr.trim().isEmpty()) {
+            maxPrice = Double.parseDouble(maxPriceStr);
         }
-
-        request.getRequestDispatcher("/views/admin/ViewServices.jsp").forward(request, response);
+    } catch (NumberFormatException e) {
+        minPrice = 0;
+        maxPrice = Double.MAX_VALUE;
     }
+
+    try {
+        List<Services> services;
+        boolean isSearching = (keyword != null && !keyword.trim().isEmpty())
+                || minPrice > 0 || maxPrice < Double.MAX_VALUE;
+
+        if (isSearching) {
+            services = servicesService.searchServices(keyword == null ? "" : keyword.trim(), minPrice, maxPrice);
+        } else {
+            services = servicesService.getAllServices();
+        }
+
+        request.setAttribute("services", services);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("minPrice", minPriceStr);
+        request.setAttribute("maxPrice", maxPriceStr);
+
+    } catch (SQLException e) {
+        System.err.println("Lỗi SQL khi lấy danh sách dịch vụ: " + e.getMessage());
+        request.setAttribute("error", "Lỗi khi tải danh sách dịch vụ.");
+    }
+
+    request.getRequestDispatcher("/views/admin/ViewServices.jsp").forward(request, response);
+}
 }

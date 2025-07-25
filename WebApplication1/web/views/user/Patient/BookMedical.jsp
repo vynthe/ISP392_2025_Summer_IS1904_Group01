@@ -456,7 +456,7 @@
                     <div class="professional-badge w-12 h-12 rounded-xl flex items-center justify-center">
                         <i class="fas fa-stethoscope text-white text-xl"></i>
                     </div>
-                    <span class="text-2xl font-bold title-gradient">HealthCare</span>
+                    <span class="text-2xl font-bold title-gradient">Phòng Khám Nha Khoa PDC</span>
                 </div>
                 <nav class="flex items-center space-x-6">
                     <a href="${pageContext.request.contextPath}/views/common/HomePage.jsp" class="nav-link hover:underline">Trang Chủ</a>

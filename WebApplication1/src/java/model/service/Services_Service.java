@@ -133,7 +133,7 @@ public class Services_Service {
         return servicesDAO.getServicesByCategory(category);
     }
 
-    public List<Services> searchServices(String keyword, double minPrice, double maxPrice) throws SQLException {
-        return servicesDAO.searchServices(keyword, minPrice, maxPrice);
-    }
+   public List<Services> searchServices(String keyword, double minPrice, double maxPrice) throws SQLException {
+    return servicesDAO.searchServices(keyword, minPrice, maxPrice);
+}
 }
