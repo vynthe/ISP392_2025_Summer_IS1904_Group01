@@ -498,14 +498,14 @@
                     <nav class="breadcrumb" aria-label="Breadcrumb">
                         <i class="fas fa-home" aria-hidden="true"></i>
                         <a href="${pageContext.request.contextPath}/${isAdmin ? 'views/admin/dashboard.jsp' : 'views/user/DoctorNurse/dashboard.jsp'}"
-                           aria-current="page">Dashboard</a>
+                           aria-current="page">Trang Chủ</a>
                         <i class="fas fa-chevron-right" aria-hidden="true"></i>
                         <span aria-current="page">Quản lý Phòng</span>
                     </nav>
                 </div>
                 <a href="${pageContext.request.contextPath}/${isAdmin ? 'views/admin/dashboard.jsp' : 'views/user/DoctorNurse/dashboard.jsp'}"
                    class="btn btn-secondary">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Quay lại Dashboard
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Quay lại Trang Chủ
                 </a>
             </div>
             <!-- Controls Section -->

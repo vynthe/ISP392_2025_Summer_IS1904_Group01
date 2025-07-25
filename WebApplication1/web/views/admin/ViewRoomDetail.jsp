@@ -434,7 +434,7 @@
     <div class="container">
         <div class="breadcrumb">
             <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp">
-                <i class="fas fa-home"></i> Dashboard
+                <i class="fas fa-home"></i> Trang Chủ
             </a>
             <span>></span>
             <a href="${pageContext.request.contextPath}/ViewRoomServlet">Quản lý Phòng</a>
