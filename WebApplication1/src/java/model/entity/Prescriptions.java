@@ -3,6 +3,7 @@ package model.entity;
 import java.time.LocalDateTime;
 
 public class Prescriptions {
+
     private int prescriptionId;
     private int patientId;
     private int doctorId;
@@ -12,10 +13,37 @@ public class Prescriptions {
     private int createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String note;
+
+    public Prescriptions() {
+    }
+
+    public Prescriptions(int prescriptionId, int patientId, int doctorId, int resultId, String prescriptionDetails, String status, int createdBy, LocalDateTime createdAt, LocalDateTime updatedAt, String note) {
+        this.prescriptionId = prescriptionId;
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        this.resultId = resultId;
+        this.prescriptionDetails = prescriptionDetails;
+        this.status = status;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.note = note;
+    }
+    
+    
 
     // Getter and Setter for prescriptionId
     public int getPrescriptionId() {
         return prescriptionId;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public void setPrescriptionId(int prescriptionId) {

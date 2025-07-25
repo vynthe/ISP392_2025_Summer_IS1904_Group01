@@ -153,7 +153,7 @@
         <div class="container-wrapper">
             <div class="container">
                 <div class="d-flex justify-content-start mb-3">
-                    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">Home</a>
+                    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp" class="btn btn-primary">Trang chủ</a>
                 </div>
                 <!-- FORM TÌM KIẾM -->
                 <div class="mb-3">

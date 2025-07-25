@@ -900,6 +900,9 @@
                     <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="search-form">
                         <input type="text" name="patientName" placeholder="Tìm theo tên bệnh nhân..." 
                                value="${patientName}" class="search-input">
+
+                        <input type="text" name="patientId" placeholder="Tìm theo ID bệnh nhân..." 
+                               class="search-input">
                         <button type="submit" class="search-button">
                             <i class="fas fa-search"></i> Tìm kiếm
                         </button>
@@ -990,10 +993,15 @@
                                                                class="action-btn btn-prescribe">
                                                                 <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
                                                             </a>
-                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetail?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
                                                                class="action-btn btn-view">
                                                                 <i class="fas fa-eye"></i> Xem Chi Tiết
                                                             </a>
+                                                            <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?id=${result.prescriptionId}" 
+                                                               class="action-btn btn-view">
+                                                                <i class="fas fa-eye"></i> Sửa
+                                                            </a>
+                                                            
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -1034,9 +1042,13 @@
                                                        class="action-btn btn-prescribe">
                                                         <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
                                                     </a>
-                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetail?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
                                                        class="action-btn btn-view">
                                                         <i class="fas fa-eye"></i> Xem Chi Tiết
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                       class="action-btn btn-view">
+                                                        <i class="fas fa-eye"></i> Sửa
                                                     </a>
                                                 </div>
                                             </div>
@@ -1066,12 +1078,12 @@
                                        class="page-btn"><i class="fas fa-angle-double-left"></i></a>
                                     <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage - 1}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-left"></i></a>
-                                </c:when>
-                                <c:otherwise>
+                                    </c:when>
+                                    <c:otherwise>
                                     <span class="page-btn disabled"><i class="fas fa-angle-double-left"></i></span>
                                     <span class="page-btn disabled"><i class="fas fa-angle-left"></i></span>
-                                </c:otherwise>
-                            </c:choose>
+                                    </c:otherwise>
+                                </c:choose>
 
                             <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
                             <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
@@ -1107,12 +1119,12 @@
                                        class="page-btn"><i class="fas fa-angle-right"></i></a>
                                     <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-double-right"></i></a>
-                                </c:when>
-                                <c:otherwise>
+                                    </c:when>
+                                    <c:otherwise>
                                     <span class="page-btn disabled"><i class="fas fa-angle-right"></i></span>
                                     <span class="page-btn disabled"><i class="fas fa-angle-double-right"></i></span>
-                                </c:otherwise>
-                            </c:choose>
+                                    </c:otherwise>
+                                </c:choose>
                         </div>
                     </div>
                 </c:if>
@@ -1129,7 +1141,7 @@
                     </div>
                     <div class="footer-section">
                         <h3>Liên Kết Nhanh</h3>
-                          <ul class="footer-links">
+                        <ul class="footer-links">
                             <li><a href="/ViewExaminationResults"><i class="fas fa-stethoscope"></i> Kết Quả Khám</a></li>
                             <li><a href="/ViewMedicationsServlet"><i class="fas fa-pills"></i> Danh Sách Thuốc</a></li>
                             <li><a href="/ViewPatientResults"><i class="fas fa-prescription"></i> Kê Đơn Thuốc</a></li>

@@ -4,17 +4,14 @@
  */
 package model.entity;
  import java.sql.Date;
-/**
- *
- * @author exorc
- */
+
 public class Invoices {
     private int invoiceID;
-    private int prescriptionID;
     private int patientID;
     private int doctorID;
     private double totalAmount;
     private String status;
+    private int serviceID;
     private int createdBy;
     private Date createdAt;
     private Date updatedAt;
@@ -22,13 +19,13 @@ public class Invoices {
     public Invoices() {
     }
 
-    public Invoices(int invoiceID, int prescriptionID, int patientID, int doctorID, double totalAmount, String status, int createdBy, Date createdAt, Date updatedAt) {
+    public Invoices(int invoiceID, int patientID, int doctorID, double totalAmount, String status, int serviceID, int createdBy, Date createdAt, Date updatedAt) {
         this.invoiceID = invoiceID;
-        this.prescriptionID = prescriptionID;
         this.patientID = patientID;
         this.doctorID = doctorID;
         this.totalAmount = totalAmount;
         this.status = status;
+        this.serviceID = serviceID;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -40,14 +37,6 @@ public class Invoices {
 
     public void setInvoiceID(int invoiceID) {
         this.invoiceID = invoiceID;
-    }
-
-    public int getPrescriptionID() {
-        return prescriptionID;
-    }
-
-    public void setPrescriptionID(int prescriptionID) {
-        this.prescriptionID = prescriptionID;
     }
 
     public int getPatientID() {
@@ -82,6 +71,14 @@ public class Invoices {
         this.status = status;
     }
 
+    public int getServiceID() {
+        return serviceID;
+    }
+
+    public void setServiceID(int serviceID) {
+        this.serviceID = serviceID;
+    }
+
     public int getCreatedBy() {
         return createdBy;
     }
@@ -106,8 +103,8 @@ public class Invoices {
         this.updatedAt = updatedAt;
     }
 
-    @Override
-    public String toString() {
-        return "Invoices{" + "invoiceID=" + invoiceID + ", prescriptionID=" + prescriptionID + ", patientID=" + patientID + ", doctorID=" + doctorID + ", totalAmount=" + totalAmount + ", status=" + status + ", createdBy=" + createdBy + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
-    }
+  
+    
+
+    
 }

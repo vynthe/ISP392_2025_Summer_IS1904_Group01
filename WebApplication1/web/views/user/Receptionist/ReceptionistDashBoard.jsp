@@ -361,15 +361,16 @@
                     </a>
                 </div>
 
-                <div class="action-card fade-in-up stagger-4">
+               <div class="action-card fade-in-up stagger-4">
                     <div class="card-icon">
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
                     <h3 class="card-title">Quản Lý Hóa Đơn</h3>
                     <p class="card-subtitle">Xử lý thanh toán, hóa đơn và tạo báo cáo tài chính</p>
-                    <button id="invoiceBtn" class="action-btn">
+                    <!-- Đã sửa lại: Đường dẫn nút Xem Hóa Đơn chuyển sang servlet danh sách hóa đơn mới để tránh lỗi 404 -->
+                    <a href="${pageContext.request.contextPath}/ViewInvoiceServlet" class="action-btn">
                         <i class="fas fa-file-invoice mr-2"></i>Xem Hóa Đơn
-                    </button>
+                    </a>
                 </div>
 
                 <div class="action-card fade-in-up stagger-4">

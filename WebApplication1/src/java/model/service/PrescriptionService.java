@@ -190,4 +190,8 @@ public class PrescriptionService {
     }
 }
     
+    public boolean updateNoteForPrescription(int prescriptionId, String note) throws SQLException {
+        if (prescriptionId <= 0) throw new IllegalArgumentException("Prescription ID must be positive");
+        return prescriptionDAO.updateNoteForPrescription(prescriptionId, note);
+    }
 }

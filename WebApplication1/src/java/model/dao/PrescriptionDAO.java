@@ -444,6 +444,17 @@ public class PrescriptionDAO {
         return 0;
     }
 
+    public boolean updateNoteForPrescription(int prescriptionId, String note) throws SQLException {
+        String sql = "UPDATE Prescriptions SET Note = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE PrescriptionID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, note);
+            pstmt.setInt(2, prescriptionId);
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
     private Prescriptions mapResultSetToPrescription(ResultSet rs) throws SQLException {
         Prescriptions prescription = new Prescriptions();
         prescription.setPrescriptionId(rs.getInt("PrescriptionID"));
