@@ -757,7 +757,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2024 Healthcare System. Tất cả quyền được bảo lưu.</p>
+                    <p>&copy; 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
             </div>
         </div>
     </footer>

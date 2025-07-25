@@ -621,7 +621,7 @@
             </div>
             <div class="mt-8 pt-8 border-t border-slate-700 text-center">
                 <p class="text-slate-300 text-sm">
-                    &copy; 2025 HealthCare. All rights reserved.
+                    &copy; 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.
                 </p>
             </div>
         </div>

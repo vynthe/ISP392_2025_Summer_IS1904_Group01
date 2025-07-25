@@ -714,24 +714,7 @@
                 <div class="footer-content">
                     <div class="footer-section">
                         <h3>Về Chúng Tôi</h3>
-                        <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm.</p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Hỗ trợ</h3>
-                        <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Hướng dẫn sử dụng</a></li>
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Câu hỏi thường gặp</a></li>
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Liên hệ hỗ trợ</a></li>
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Chính sách bảo mật</a></li>
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Điều khoản sử dụng</a></li>
-                            <li><a href="#"><i class="fas fa-angle-right"></i> Phản hồi</a></li>
-                        </ul>
+                        <p>Chúng tôi là phòng khám nha khoa hàng đầu, cam kết mang lại nụ cười khỏe mạnh và tự tin với công nghệ tiên tiến và đội ngũ chuyên gia giàu kinh nghiệm.</p>                      
                     </div>
                     <div class="footer-section">
                         <h3>Liên hệ</h3>
@@ -747,14 +730,6 @@
                             <i class="fas fa-envelope"></i>
                             <span>PhongKhamPDC@gmail.com</span>
                         </div>
-                        <div class="contact-info">
-                            <i class="fas fa-clock"></i>
-                            <span>24/7 - Phục vụ không ngừng nghỉ</span>
-                        </div>
-                        <div class="contact-info">
-                            <i class="fas fa-globe"></i>
-                            <span>www.healthcare.vn</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -762,15 +737,8 @@
         <div class="footer-bottom">
             <div class="container">
                 <div class="copyright">
-                    <p>&copy; 2025 HealthCare System. Tất cả quyền được bảo lưu.</p>
+                    <p>&copy; 2025 Nha Khoa PDC. Đạt chuẩn Bộ Y tế. Tất cả quyền được bảo lưu.</p>
                 </div>
-                <nav class="footer-nav">
-                    <a href="#">Trang chủ</a>
-                    <a href="#">Về chúng tôi</a>
-                    <a href="#">Dịch vụ</a>
-                    <a href="#">Liên hệ</a>
-                    <a href="#">Chính sách</a>
-                </nav>
             </div>
         </div>
     </footer>
