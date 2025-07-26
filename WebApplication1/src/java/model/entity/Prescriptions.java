@@ -3,54 +3,53 @@ package model.entity;
 import java.time.LocalDateTime;
 
 public class Prescriptions {
-
     private int prescriptionId;
     private int patientId;
     private int doctorId;
-    private int resultId;
+    private Integer nurseId; // Sử dụng Integer để có thể null
     private String prescriptionDetails;
-    private String status;
-    private int createdBy;
+    private String signature;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String note;
 
-    public Prescriptions() {
-    }
+    // Default constructor
+    public Prescriptions() {}
 
-    public Prescriptions(int prescriptionId, int patientId, int doctorId, int resultId, String prescriptionDetails, String status, int createdBy, LocalDateTime createdAt, LocalDateTime updatedAt, String note) {
+    // Constructor with all fields
+    public Prescriptions(int prescriptionId, int patientId, int doctorId, Integer nurseId, 
+                        String prescriptionDetails, String signature, 
+                        LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.prescriptionId = prescriptionId;
         this.patientId = patientId;
         this.doctorId = doctorId;
-        this.resultId = resultId;
+        this.nurseId = nurseId;
         this.prescriptionDetails = prescriptionDetails;
-        this.status = status;
-        this.createdBy = createdBy;
+        this.signature = signature;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.note = note;
     }
-    
-    
 
-    // Getter and Setter for prescriptionId
+    // Constructor without ID (for new prescriptions)
+    public Prescriptions(int patientId, int doctorId, Integer nurseId, 
+                        String prescriptionDetails, String signature) {
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        this.nurseId = nurseId;
+        this.prescriptionDetails = prescriptionDetails;
+        this.signature = signature;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Getters and Setters
     public int getPrescriptionId() {
         return prescriptionId;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 
     public void setPrescriptionId(int prescriptionId) {
         this.prescriptionId = prescriptionId;
     }
 
-    // Getter and Setter for patientId
     public int getPatientId() {
         return patientId;
     }
@@ -59,7 +58,6 @@ public class Prescriptions {
         this.patientId = patientId;
     }
 
-    // Getter and Setter for doctorId
     public int getDoctorId() {
         return doctorId;
     }
@@ -68,16 +66,14 @@ public class Prescriptions {
         this.doctorId = doctorId;
     }
 
-    // Getter and Setter for resultId
-    public int getResultId() {
-        return resultId;
+    public Integer getNurseId() {
+        return nurseId;
     }
 
-    public void setResultId(int resultId) {
-        this.resultId = resultId;
+    public void setNurseId(Integer nurseId) {
+        this.nurseId = nurseId;
     }
 
-    // Getter and Setter for prescriptionDetails
     public String getPrescriptionDetails() {
         return prescriptionDetails;
     }
@@ -86,25 +82,14 @@ public class Prescriptions {
         this.prescriptionDetails = prescriptionDetails;
     }
 
-    // Getter and Setter for status
-    public String getStatus() {
-        return status;
+    public String getSignature() {
+        return signature;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 
-    // Getter and Setter for createdBy
-    public int getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(int createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    // Getter and Setter for createdAt
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -113,12 +98,38 @@ public class Prescriptions {
         this.createdAt = createdAt;
     }
 
-    // Getter and Setter for updatedAt
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Prescriptions{" +
+                "prescriptionId=" + prescriptionId +
+                ", patientId=" + patientId +
+                ", doctorId=" + doctorId +
+                ", nurseId=" + nurseId +
+                ", prescriptionDetails='" + prescriptionDetails + '\'' +
+                ", signature='" + signature + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Prescriptions that = (Prescriptions) obj;
+        return prescriptionId == that.prescriptionId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(prescriptionId);
     }
 }

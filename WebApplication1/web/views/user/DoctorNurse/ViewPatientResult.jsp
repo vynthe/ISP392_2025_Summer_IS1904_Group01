@@ -433,6 +433,20 @@
                 color: var(--gray-900);
             }
 
+            .diagnosis-cell {
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .notes-cell {
+                max-width: 150px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .action-buttons {
                 display: flex;
                 gap: 0.75rem;
@@ -479,6 +493,19 @@
             .btn-view:hover {
                 background: var(--primary-dark);
                 border-color: var(--primary-dark);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .btn-edit {
+                background: var(--accent);
+                color: var(--white);
+                border: 1px solid var(--accent);
+            }
+
+            .btn-edit:hover {
+                background: #9333ea;
+                border-color: #9333ea;
                 transform: translateY(-2px);
                 box-shadow: var(--shadow-md);
             }
@@ -789,6 +816,10 @@
                     font-weight: 500;
                     color: var(--gray-600);
                     text-align: right;
+                    max-width: 200px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .card-actions {
@@ -900,8 +931,6 @@
                     <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="search-form">
                         <input type="text" name="patientName" placeholder="Tìm theo tên bệnh nhân..." 
                                value="${patientName}" class="search-input">
-                         
-                    
                         <button type="submit" class="search-button">
                               <i class="fas fa-search"></i> Tìm kiếm
                         </button>
@@ -911,7 +940,6 @@
                             </a>
                         </c:if>
                     </form>
-
 
                     <!-- Alert Messages -->
                     <c:if test="${not empty message}">
@@ -967,7 +995,9 @@
                                                 <th>Mã Lịch Hẹn</th> 
                                                 <th>Tên Bệnh Nhân</th>
                                                 <th>Tên Bác Sĩ</th>
-                                                <th>Kết Quả Khám</th>
+                                                <th>Tên Y Tá</th>
+                                                <th>Chẩn Đoán</th>
+                                                <th>Ghi Chú</th>
                                                 <th>Thao Tác</th>
                                             </tr>
                                         </thead>
@@ -978,22 +1008,33 @@
                                                     <td><div class="prescription-details">${result.appointmentId != null ? result.appointmentId : 'N/A'}</div></td>
                                                     <td><div class="prescription-details">${result.patientName}</div></td>
                                                     <td><div class="prescription-details">${result.doctorName}</div></td>
-                                                    <td><div class="prescription-details">${result.resultName}</div></td>
+                                                    <td><div class="prescription-details">${result.nurseName != null ? result.nurseName : 'Chưa có y tá'}</div></td>
+                                                    <td>
+                                                        <div class="prescription-details diagnosis-cell" title="${result.diagnosis}">
+                                                            ${result.diagnosis != null ? result.diagnosis : 'Chưa có chẩn đoán'}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="prescription-details notes-cell" title="${result.notes}">
+                                                            ${result.notes != null ? result.notes : 'Chưa có ghi chú'}
+                                                        </div>
+                                                    </td>
                                                     <td>
                                                         <div class="action-buttons">
-                                                            <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
-                                                               class="action-btn btn-prescribe">
-                                                                <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
-                                                            </a>
-                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                            <c:if test="${not result.hasPrescription}">
+                                                                <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
+                                                                   class="action-btn btn-prescribe">
+                                                                    <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
+                                                                </a>
+                                                            </c:if>
+                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
                                                                class="action-btn btn-view">
                                                                 <i class="fas fa-eye"></i> Xem Chi Tiết
                                                             </a>
-                                                            <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?id=${result.prescriptionId}" 
-                                                               class="action-btn btn-view">
-                                                                <i class="fas fa-eye"></i> Sửa
+                                                            <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?resultId=${result.resultId}&patientId=${result.patientId}&doctorId=${result.doctorId}" 
+                                                               class="action-btn btn-edit">
+                                                                <i class="fas fa-edit"></i> Sửa
                                                             </a>
-                                                            
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -1024,23 +1065,37 @@
                                                     <span class="field-value">${result.doctorName}</span>
                                                 </div>
                                                 <div class="card-field">
-                                                    <span class="field-label">Kết Quả:</span>
-                                                    <span class="field-value">${result.resultName}</span>
+                                                    <span class="field-label">Y tá:</span>
+                                                    <span class="field-value">${result.nurseName != null ? result.nurseName : 'Chưa có y tá'}</span>
+                                                </div>
+                                                <div class="card-field">
+                                                    <span class="field-label">Chẩn đoán:</span>
+                                                    <span class="field-value" title="${result.diagnosis}">
+                                                        ${result.diagnosis != null ? result.diagnosis : 'Chưa có chẩn đoán'}
+                                                    </span>
+                                                </div>
+                                                <div class="card-field">
+                                                    <span class="field-label">Ghi chú:</span>
+                                                    <span class="field-value" title="${result.notes}">
+                                                        ${result.notes != null ? result.notes : 'Chưa có ghi chú'}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div class="card-actions">
                                                 <div class="action-buttons">
-                                                    <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
-                                                       class="action-btn btn-prescribe">
-                                                        <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
-                                                    </a>
-                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
+                                                    <c:if test="${not result.hasPrescription}">
+                                                        <a href="${pageContext.request.contextPath}/AddPrescriptionServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
+                                                           class="action-btn btn-prescribe">
+                                                            <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
+                                                        </a>
+                                                    </c:if>
+                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
                                                        class="action-btn btn-view">
                                                         <i class="fas fa-eye"></i> Xem Chi Tiết
                                                     </a>
-                                                    <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&resultName=${fn:escapeXml(result.resultName)}" 
-                                                       class="action-btn btn-view">
-                                                        <i class="fas fa-eye"></i> Sửa
+                                                    <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?resultId=${result.resultId}&patientId=${result.patientId}&doctorId=${result.doctorId}" 
+                                                       class="action-btn btn-edit">
+                                                        <i class="fas fa-edit"></i> Sửa
                                                     </a>
                                                 </div>
                                             </div>
@@ -1070,12 +1125,12 @@
                                        class="page-btn"><i class="fas fa-angle-double-left"></i></a>
                                     <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${currentPage - 1}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-left"></i></a>
-                                    </c:when>
-                                    <c:otherwise>
+                                </c:when>
+                                <c:otherwise>
                                     <span class="page-btn disabled"><i class="fas fa-angle-double-left"></i></span>
                                     <span class="page-btn disabled"><i class="fas fa-angle-left"></i></span>
-                                    </c:otherwise>
-                                </c:choose>
+                                </c:otherwise>
+                            </c:choose>
 
                             <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
                             <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
@@ -1111,12 +1166,12 @@
                                        class="page-btn"><i class="fas fa-angle-right"></i></a>
                                     <a href="${pageContext.request.contextPath}/ViewPatientResultServlet?page=${totalPages}${not empty patientName ? '&patientName=' : ''}${not empty patientName ? fn:escapeXml(patientName) : ''}" 
                                        class="page-btn"><i class="fas fa-angle-double-right"></i></a>
-                                    </c:when>
-                                    <c:otherwise>
+                                </c:when>
+                                <c:otherwise>
                                     <span class="page-btn disabled"><i class="fas fa-angle-right"></i></span>
                                     <span class="page-btn disabled"><i class="fas fa-angle-double-right"></i></span>
-                                    </c:otherwise>
-                                </c:choose>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                 </c:if>

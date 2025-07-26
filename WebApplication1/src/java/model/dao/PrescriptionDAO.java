@@ -20,67 +20,24 @@ public class PrescriptionDAO {
         this.medicationService = new MedicationService();
     }
 
-    public List<Map<String, Object>> getExaminationResultsByPatientId(int patientId) throws SQLException {
-        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
-                     "d.FullName as doctorName, p.FullName as patientName, " +
-                     "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
-                     "FROM ExaminationResults r " +
-                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
-                     "LEFT JOIN Users p ON r.PatientID = p.UserID " +
-                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
-                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
-                     "WHERE r.PatientID = ?";
-        
-        System.out.println("DEBUG - SQL Query: " + sql);
-        System.out.println("DEBUG - PatientID parameter: " + patientId);
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, patientId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                List<Map<String, Object>> results = new ArrayList<>();
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("resultId", rs.getInt("ResultID"));
-                    row.put("appointmentId", rs.getInt("AppointmentID"));
-                    row.put("doctorId", rs.getInt("DoctorID"));
-                    row.put("patientId", rs.getInt("PatientID"));
-                    row.put("doctorName", rs.getString("doctorName"));
-                    row.put("patientName", rs.getString("patientName"));
-                    row.put("nurseName", rs.getString("nurseName"));
-                    row.put("serviceName", rs.getString("ServiceName"));
-                    row.put("resultName", rs.getString("ResultName"));
-                    row.put("createdAt", rs.getTimestamp("CreatedAt"));
-                    row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
-                    
-                    System.out.println("DEBUG - Row added: " + row);
-                    results.add(row);
-                }
-                System.out.println("DEBUG - Total results found: " + results.size());
-                return results;
-            }
-        } catch (SQLException e) {
-            System.err.println("DEBUG - SQL Exception: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    public List<Map<String, Object>> getAllExaminationResults() throws SQLException {
-        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
-                     "d.FullName as doctorName, p.FullName as patientName, " +
-                     "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
-                     "FROM ExaminationResults r " +
-                     "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
-                     "LEFT JOIN Users p ON r.PatientID = p.UserID " +
-                     "LEFT JOIN Users n ON r.NurseID = n.UserID " +
-                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID";
-        
-        System.out.println("DEBUG - SQL Query for all results: " + sql);
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+  public List<Map<String, Object>> getExaminationResultsByPatientId(int patientId) throws SQLException {
+    String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, r.NurseID, " +
+                 "d.FullName as doctorName, p.FullName as patientName, " +
+                 "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes " +
+                 "FROM ExaminationResults r " +
+                 "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                 "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                 "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                 "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                 "WHERE r.PatientID = ?";
+    
+    System.out.println("DEBUG - SQL Query: " + sql);
+    System.out.println("DEBUG - PatientID parameter: " + patientId);
+    
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, patientId);
+        try (ResultSet rs = pstmt.executeQuery()) {
             List<Map<String, Object>> results = new ArrayList<>();
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
@@ -88,11 +45,21 @@ public class PrescriptionDAO {
                 row.put("appointmentId", rs.getInt("AppointmentID"));
                 row.put("doctorId", rs.getInt("DoctorID"));
                 row.put("patientId", rs.getInt("PatientID"));
+                
+                // Thêm NurseID với null check
+                int nurseId = rs.getInt("NurseID");
+                if (!rs.wasNull()) {
+                    row.put("nurseId", nurseId);
+                } else {
+                    row.put("nurseId", null);
+                }
+                
                 row.put("doctorName", rs.getString("doctorName"));
                 row.put("patientName", rs.getString("patientName"));
                 row.put("nurseName", rs.getString("nurseName"));
                 row.put("serviceName", rs.getString("ServiceName"));
-                row.put("resultName", rs.getString("ResultName"));
+                row.put("diagnosis", rs.getString("Diagnosis"));
+                row.put("notes", rs.getString("Notes"));
                 row.put("createdAt", rs.getTimestamp("CreatedAt"));
                 row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
                 
@@ -101,151 +68,333 @@ public class PrescriptionDAO {
             }
             System.out.println("DEBUG - Total results found: " + results.size());
             return results;
-        } catch (SQLException e) {
-            System.err.println("DEBUG - SQL Exception: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
         }
+    } catch (SQLException e) {
+        System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
+    }
+}
+
+public List<Map<String, Object>> getAllExaminationResults() throws SQLException {
+    String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, r.NurseID, " +
+                 "d.FullName as doctorName, p.FullName as patientName, " +
+                 "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes " +
+                 "FROM ExaminationResults r " +
+                 "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                 "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                 "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                 "LEFT JOIN Services s ON r.ServiceID = s.ServiceID";
+    
+    System.out.println("DEBUG - SQL Query for all results: " + sql);
+    
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        while (rs.next()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("resultId", rs.getInt("ResultID"));
+            row.put("appointmentId", rs.getInt("AppointmentID"));
+            row.put("doctorId", rs.getInt("DoctorID"));
+            row.put("patientId", rs.getInt("PatientID"));
+            
+            // Thêm NurseID với null check
+            int nurseId = rs.getInt("NurseID");
+            if (!rs.wasNull()) {
+                row.put("nurseId", nurseId);
+            } else {
+                row.put("nurseId", null);
+            }
+            
+            row.put("doctorName", rs.getString("doctorName"));
+            row.put("patientName", rs.getString("patientName"));
+            row.put("nurseName", rs.getString("nurseName"));
+            row.put("serviceName", rs.getString("ServiceName"));
+            row.put("diagnosis", rs.getString("Diagnosis"));
+            row.put("notes", rs.getString("Notes"));
+            row.put("createdAt", rs.getTimestamp("CreatedAt"));
+            row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+            
+            System.out.println("DEBUG - Row added: " + row);
+            results.add(row);
+        }
+        System.out.println("DEBUG - Total results found: " + results.size());
+        return results;
+    } catch (SQLException e) {
+        System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
+    }
+}
+
+public List<Map<String, Object>> getExaminationResultsByPatientName(String patientName) throws SQLException {
+    String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, r.NurseID, " +
+                 "d.FullName as doctorName, p.FullName as patientName, " +
+                 "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes " +
+                 "FROM ExaminationResults r " +
+                 "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                 "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                 "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                 "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                 "WHERE p.FullName LIKE ?";
+    
+    System.out.println("DEBUG - SQL Query: " + sql);
+    System.out.println("DEBUG - Patient Name parameter: " + patientName);
+    
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, "%" + patientName + "%");
+        try (ResultSet rs = pstmt.executeQuery()) {
+            List<Map<String, Object>> results = new ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("resultId", rs.getInt("ResultID"));
+                row.put("appointmentId", rs.getInt("AppointmentID"));
+                row.put("doctorId", rs.getInt("DoctorID"));
+                row.put("patientId", rs.getInt("PatientID"));
+                
+                // Thêm NurseID với null check
+                int nurseId = rs.getInt("NurseID");
+                if (!rs.wasNull()) {
+                    row.put("nurseId", nurseId);
+                } else {
+                    row.put("nurseId", null);
+                }
+                
+                row.put("doctorName", rs.getString("doctorName"));
+                row.put("patientName", rs.getString("patientName"));
+                row.put("nurseName", rs.getString("nurseName"));
+                row.put("serviceName", rs.getString("ServiceName"));
+                row.put("diagnosis", rs.getString("Diagnosis"));
+                row.put("notes", rs.getString("Notes"));
+                row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                
+                System.out.println("DEBUG - Row added: " + row);
+                results.add(row);
+            }
+            System.out.println("DEBUG - Total results found: " + results.size());
+            return results;
+        }
+    } catch (SQLException e) {
+        System.err.println("DEBUG - SQL Exception: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
+    }
+}
+// Updated addPrescription method
+public boolean addPrescription(Prescriptions prescription, int resultId, int appointmentId, List<Integer> medicationId, String signature) throws SQLException {
+    if (prescription == null) {
+        throw new IllegalArgumentException("Prescription object cannot be null.");
+    }
+    if (medicationId == null || medicationId.isEmpty()) {
+        throw new IllegalArgumentException("Medication IDs list cannot be null or empty.");
+    }
+    if (appointmentId <= 0) {
+        throw new IllegalArgumentException("Appointment ID must be a positive integer.");
     }
 
-   public boolean addPrescription(Prescriptions prescription, int resultId, int appointmentId, List<Integer> medicationId) throws SQLException {
-        if (prescription == null) {
-            throw new IllegalArgumentException("Prescription object cannot be null.");
-        }
-        if (medicationId == null || medicationId.isEmpty()) {
-            throw new IllegalArgumentException("Medication IDs list cannot be null or empty.");
-        }
-        if (appointmentId <= 0) {
-            throw new IllegalArgumentException("Appointment ID must be a positive integer.");
-        }
+    String sqlPrescription = "INSERT INTO Prescriptions (ResultID, PatientID, AppointmentID, DoctorID, NurseID, PrescriptionDetails, CreatedAt, UpdatedAt, Signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String sqlPrescription = "INSERT INTO Prescriptions (ResultID, PatientID, AppointmentID, DoctorID, PrescriptionDetails, CreatedAt, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    Connection conn = null;
+    PreparedStatement pstmtPrescription = null;
 
-        Connection conn = null;
-        PreparedStatement pstmtPrescription = null;
+    try {
+        conn = dbContext.getConnection();
+        conn.setAutoCommit(false);
 
-        try {
-            conn = dbContext.getConnection();
-            conn.setAutoCommit(false);
+        validateForeignKeys(conn, prescription, resultId, appointmentId);
+        validateMedicationIds(conn, medicationId);
 
-            validateForeignKeys(conn, prescription, resultId, appointmentId);
-            validateMedicationIds(conn, medicationId);
+        // Lấy NurseID từ ExaminationResults
+        Integer nurseId = getNurseIdFromExaminationResult(conn, resultId);
+        System.out.println("DEBUG - NurseID retrieved: " + nurseId);
 
-            // Fetch medication Name and Dosage
-            List<String> medDetails = new ArrayList<>();
-            String sqlMedication = "SELECT Name, Dosage FROM Medications WHERE MedicationID = ?";
-            try (PreparedStatement pstmtMedication = conn.prepareStatement(sqlMedication)) {
-                for (Integer medId : medicationId) {
-                    pstmtMedication.setInt(1, medId);
-                    try (ResultSet rs = pstmtMedication.executeQuery()) {
-                        if (rs.next()) {
-                            String name = rs.getString("Name");
-                            String dosage = rs.getString("Dosage");
-                            medDetails.add("Name: " + name + ", Dosage: " + dosage);
-                        } else {
-                            throw new SQLException("Medication not found for ID: " + medId);
-                        }
+        // Fetch medication Name and Dosage
+        List<String> medDetails = new ArrayList<>();
+        String sqlMedication = "SELECT Name, Dosage FROM Medications WHERE MedicationID = ?";
+        try (PreparedStatement pstmtMedication = conn.prepareStatement(sqlMedication)) {
+            for (Integer medId : medicationId) {
+                pstmtMedication.setInt(1, medId);
+                try (ResultSet rs = pstmtMedication.executeQuery()) {
+                    if (rs.next()) {
+                        String name = rs.getString("Name");
+                        String dosage = rs.getString("Dosage");
+                        medDetails.add("Name: " + name + ", Dosage: " + dosage);
+                    } else {
+                        throw new SQLException("Medication not found for ID: " + medId);
                     }
                 }
             }
+        }
 
-            // Construct PrescriptionDetails if not provided
-            String prescriptionDetails = prescription.getPrescriptionDetails();
-            if (prescriptionDetails == null || prescriptionDetails.trim().isEmpty()) {
-                prescriptionDetails = String.join("; ", medDetails);
-                prescription.setPrescriptionDetails(prescriptionDetails);
+        // Construct PrescriptionDetails if not provided
+        String prescriptionDetails = prescription.getPrescriptionDetails();
+        if (prescriptionDetails == null || prescriptionDetails.trim().isEmpty()) {
+            prescriptionDetails = String.join("; ", medDetails);
+            prescription.setPrescriptionDetails(prescriptionDetails);
+        }
+
+        // Insert into Prescriptions table
+        pstmtPrescription = conn.prepareStatement(sqlPrescription, Statement.RETURN_GENERATED_KEYS);
+        pstmtPrescription.setInt(1, resultId);
+        pstmtPrescription.setInt(2, prescription.getPatientId());
+        pstmtPrescription.setInt(3, appointmentId);
+        pstmtPrescription.setInt(4, prescription.getDoctorId());
+        
+        // Set NurseID (có thể null nếu không có nurse)
+        if (nurseId != null) {
+            pstmtPrescription.setInt(5, nurseId);
+        } else {
+            pstmtPrescription.setNull(5, Types.INTEGER);
+        }
+        
+        pstmtPrescription.setString(6, prescriptionDetails);
+        LocalDateTime now = LocalDateTime.now();
+        pstmtPrescription.setTimestamp(7, Timestamp.valueOf(now));
+        pstmtPrescription.setTimestamp(8, Timestamp.valueOf(now));
+        pstmtPrescription.setString(9, signature);
+
+        int affectedRows = pstmtPrescription.executeUpdate();
+        if (affectedRows == 0) {
+            throw new SQLException("Failed to insert prescription - no rows affected.");
+        }
+
+        int prescriptionId;
+        try (ResultSet generatedKeys = pstmtPrescription.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                prescriptionId = generatedKeys.getInt(1);
+                prescription.setPrescriptionId(prescriptionId);
+            } else {
+                throw new SQLException("Failed to retrieve generated prescription ID.");
             }
+        }
 
-            // Insert into Prescriptions table
-            pstmtPrescription = conn.prepareStatement(sqlPrescription, Statement.RETURN_GENERATED_KEYS);
-            pstmtPrescription.setInt(1, resultId);
-            pstmtPrescription.setInt(2, prescription.getPatientId());
-            pstmtPrescription.setInt(3, appointmentId);
-            pstmtPrescription.setInt(4, prescription.getDoctorId());
-            pstmtPrescription.setString(5, prescriptionDetails);
-            LocalDateTime now = LocalDateTime.now();
-            pstmtPrescription.setTimestamp(6, Timestamp.valueOf(now));
-            pstmtPrescription.setTimestamp(7, Timestamp.valueOf(now));
+        conn.commit();
 
-            int affectedRows = pstmtPrescription.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Failed to insert prescription - no rows affected.");
-            }
+        System.out.println("Prescription added successfully with ID: " + prescriptionId + 
+                         " (NurseID: " + nurseId + ") at " + LocalDateTime.now() + " +07");
+        return true;
 
-            int prescriptionId;
-            try (ResultSet generatedKeys = pstmtPrescription.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    prescriptionId = generatedKeys.getInt(1);
-                    prescription.setPrescriptionId(prescriptionId);
-                } else {
-                    throw new SQLException("Failed to retrieve generated prescription ID.");
-                }
-            }
-
-            conn.commit();
-
-            System.out.println("Prescription added successfully with ID: " + prescriptionId + 
-                             " at " + LocalDateTime.now() + " +07");
-            return true;
-
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                    System.err.println("Transaction rolled back due to error in addPrescription: " + e.getMessage() + 
-                                     " at " + LocalDateTime.now() + " +07");
-                } catch (SQLException rollbackEx) {
-                    System.err.println("Rollback failed: " + rollbackEx.getMessage() + 
-                                     " at " + LocalDateTime.now() + " +07");
-                }
-            }
-            throw new SQLException("Failed to add prescription: " + e.getMessage(), e);
-        } finally {
+    } catch (SQLException e) {
+        if (conn != null) {
             try {
-                if (pstmtPrescription != null) pstmtPrescription.close();
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException closeEx) {
-                System.err.println("Failed to close resources: " + closeEx.getMessage() + 
+                conn.rollback();
+                System.err.println("Transaction rolled back due to error in addPrescription: " + e.getMessage() + 
+                                 " at " + LocalDateTime.now() + " +07");
+            } catch (SQLException rollbackEx) {
+                System.err.println("Rollback failed: " + rollbackEx.getMessage() + 
                                  " at " + LocalDateTime.now() + " +07");
             }
         }
-    }
-    private void validateForeignKeys(Connection conn, Prescriptions prescription, int resultId, int appointmentId) throws SQLException {
-        String checkPatient = "SELECT 1 FROM ExaminationResults WHERE PatientID = ?";
-        String checkDoctor = "SELECT 1 FROM ExaminationResults WHERE DoctorID = ?";
-        String checkResult = "SELECT 1 FROM ExaminationResults WHERE ResultID = ?";
-        String checkAppointment = "SELECT 1 FROM ExaminationResults WHERE AppointmentID = ?";
-
-        try (PreparedStatement pstmtPatient = conn.prepareStatement(checkPatient);
-             PreparedStatement pstmtDoctor = conn.prepareStatement(checkDoctor);
-             PreparedStatement pstmtResult = conn.prepareStatement(checkResult);
-             PreparedStatement pstmtAppointment = conn.prepareStatement(checkAppointment))
-        {
-
-            pstmtPatient.setInt(1, prescription.getPatientId());
-            pstmtDoctor.setInt(1, prescription.getDoctorId());
-            pstmtResult.setInt(1, resultId);
-            pstmtAppointment.setInt(1, appointmentId);
-
-
-            if (!pstmtPatient.executeQuery().next()) {
-                throw new SQLException("Invalid PatientID: " + prescription.getPatientId());
+        throw new SQLException("Failed to add prescription: " + e.getMessage(), e);
+    } finally {
+        try {
+            if (pstmtPrescription != null) pstmtPrescription.close();
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
             }
-            if (!pstmtDoctor.executeQuery().next()) {
-                throw new SQLException("Invalid DoctorID: " + prescription.getDoctorId());
-            }
-            if (!pstmtResult.executeQuery().next()) {
-                throw new SQLException("Invalid ResultID: " + resultId);
-            }
-            if (!pstmtAppointment.executeQuery().next()) {
-                throw new SQLException("Invalid AppointmentID: " + appointmentId);
-            }
-           
+        } catch (SQLException closeEx) {
+            System.err.println("Failed to close resources: " + closeEx.getMessage() + 
+                             " at " + LocalDateTime.now() + " +07");
         }
     }
+}
+
+// Phương thức helper để lấy NurseID từ ExaminationResults
+private Integer getNurseIdFromExaminationResult(Connection conn, int resultId) throws SQLException {
+    String sql = "SELECT NurseID FROM ExaminationResults WHERE ResultID = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, resultId);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                int nurseId = rs.getInt("NurseID");
+                // Kiểm tra nếu giá trị là null trong database
+                if (rs.wasNull()) {
+                    return null;
+                }
+                return nurseId;
+            } else {
+                throw new SQLException("ExaminationResult not found for ResultID: " + resultId);
+            }
+        }
+    }
+}
+
+// Updated validateForeignKeys method để bao gồm NurseID validation
+private void validateForeignKeys(Connection conn, Prescriptions prescription, int resultId, int appointmentId) throws SQLException {
+    String checkPatient = "SELECT 1 FROM ExaminationResults WHERE PatientID = ?";
+    String checkDoctor = "SELECT 1 FROM ExaminationResults WHERE DoctorID = ?";
+    String checkResult = "SELECT 1 FROM ExaminationResults WHERE ResultID = ?";
+    String checkAppointment = "SELECT 1 FROM ExaminationResults WHERE AppointmentID = ?";
+
+    try (PreparedStatement pstmtPatient = conn.prepareStatement(checkPatient);
+         PreparedStatement pstmtDoctor = conn.prepareStatement(checkDoctor);
+         PreparedStatement pstmtResult = conn.prepareStatement(checkResult);
+         PreparedStatement pstmtAppointment = conn.prepareStatement(checkAppointment))
+    {
+        pstmtPatient.setInt(1, prescription.getPatientId());
+        pstmtDoctor.setInt(1, prescription.getDoctorId());
+        pstmtResult.setInt(1, resultId);
+        pstmtAppointment.setInt(1, appointmentId);
+
+        if (!pstmtPatient.executeQuery().next()) {
+            throw new SQLException("Invalid PatientID: " + prescription.getPatientId());
+        }
+        if (!pstmtDoctor.executeQuery().next()) {
+            throw new SQLException("Invalid DoctorID: " + prescription.getDoctorId());
+        }
+        if (!pstmtResult.executeQuery().next()) {
+            throw new SQLException("Invalid ResultID: " + resultId);
+        }
+        if (!pstmtAppointment.executeQuery().next()) {
+            throw new SQLException("Invalid AppointmentID: " + appointmentId);
+        }
+
+        // Validate NurseID if it exists in the ExaminationResult
+        Integer nurseId = getNurseIdFromExaminationResult(conn, resultId);
+        if (nurseId != null) {
+            String checkNurse = "SELECT 1 FROM Users WHERE UserID = ? AND Role = 'Nurse'";
+            try (PreparedStatement pstmtNurse = conn.prepareStatement(checkNurse)) {
+                pstmtNurse.setInt(1, nurseId);
+                if (!pstmtNurse.executeQuery().next()) {
+                    throw new SQLException("Invalid NurseID or user is not a nurse: " + nurseId);
+                }
+            }
+        }
+    }
+}
+
+// Updated mapResultSetToPrescription method để bao gồm NurseID
+private Prescriptions mapResultSetToPrescription(ResultSet rs) throws SQLException {
+    Prescriptions prescription = new Prescriptions();
+    prescription.setPrescriptionId(rs.getInt("PrescriptionID"));
+    prescription.setPatientId(rs.getInt("PatientID"));
+    prescription.setDoctorId(rs.getInt("DoctorID"));
+    
+    // Thêm NurseID
+    int nurseId = rs.getInt("NurseID");
+    if (!rs.wasNull()) {
+        prescription.setNurseId(nurseId);
+    }
+    
+    prescription.setPrescriptionDetails(rs.getString("PrescriptionDetails"));
+    prescription.setSignature(rs.getString("Signature"));
+
+    Timestamp created = rs.getTimestamp("CreatedAt");
+    if (created != null) {
+        prescription.setCreatedAt(created.toLocalDateTime());
+    }
+
+    Timestamp updated = rs.getTimestamp("UpdatedAt");
+    if (updated != null) {
+        prescription.setUpdatedAt(updated.toLocalDateTime());
+    }
+
+    return prescription;
+}
 
     public void validateMedicationIds(Connection conn, List<Integer> medicationIds) throws SQLException {
         String checkMedication = "SELECT 1 FROM Medications WHERE MedicationID = ?";
@@ -298,6 +447,7 @@ public class PrescriptionDAO {
         return prescriptions;
     }
 
+   
     public Prescriptions getPrescriptionById(int prescriptionId) throws SQLException {
         String sql = "SELECT * FROM Prescriptions WHERE PrescriptionID = ?";
 
@@ -454,70 +604,38 @@ public class PrescriptionDAO {
             return affectedRows > 0;
         }
     }
-
-    private Prescriptions mapResultSetToPrescription(ResultSet rs) throws SQLException {
-        Prescriptions prescription = new Prescriptions();
-        prescription.setPrescriptionId(rs.getInt("PrescriptionID"));
-        prescription.setPatientId(rs.getInt("PatientID"));
-        prescription.setDoctorId(rs.getInt("DoctorID"));
-        prescription.setPrescriptionDetails(rs.getString("PrescriptionDetails"));
-
-        Timestamp created = rs.getTimestamp("CreatedAt");
-        if (created != null) {
-            prescription.setCreatedAt(created.toLocalDateTime());
-        }
-
-        Timestamp updated = rs.getTimestamp("UpdatedAt");
-        if (updated != null) {
-            prescription.setUpdatedAt(updated.toLocalDateTime());
-        }
-
-        return prescription;
-    }
-    public List<Map<String, Object>> getExaminationResultsByPatientName(String patientName) throws SQLException {
-    String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, " +
-                 "d.FullName as doctorName, p.FullName as patientName, " +
-                 "n.FullName as nurseName, s.ServiceName, r.CreatedAt, r.UpdatedAt, r.ResultName " +
-                 "FROM ExaminationResults r " +
-                 "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
-                 "LEFT JOIN Users p ON r.PatientID = p.UserID " +
-                 "LEFT JOIN Users n ON r.NurseID = n.UserID " +
-                 "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
-                 "WHERE p.FullName LIKE ?";
-    
-    System.out.println("DEBUG - SQL Query: " + sql);
-    System.out.println("DEBUG - Patient Name parameter: " + patientName);
-    
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setString(1, "%" + patientName + "%");
-        try (ResultSet rs = pstmt.executeQuery()) {
-            List<Map<String, Object>> results = new ArrayList<>();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("resultId", rs.getInt("ResultID"));
-                row.put("appointmentId", rs.getInt("AppointmentID"));
-                row.put("doctorId", rs.getInt("DoctorID"));
-                row.put("patientId", rs.getInt("PatientID"));
-                row.put("doctorName", rs.getString("doctorName"));
-                row.put("patientName", rs.getString("patientName"));
-                row.put("nurseName", rs.getString("nurseName"));
-                row.put("serviceName", rs.getString("ServiceName"));
-                row.put("resultName", rs.getString("ResultName"));
-                row.put("createdAt", rs.getTimestamp("CreatedAt"));
-                row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
-                
-                System.out.println("DEBUG - Row added: " + row);
-                results.add(row);
+ /**
+     * Check if a prescription exists for a given examination result ID
+     * @param resultId The examination result ID to check
+     * @return true if a prescription exists, false otherwise
+     * @throws SQLException if database operation fails
+     */
+    public boolean hasPrescription(int resultId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Prescriptions WHERE ResultID = ?";
+        
+        System.out.println("DEBUG - SQL Query for hasPrescription: " + sql);
+        System.out.println("DEBUG - ResultID parameter: " + resultId);
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, resultId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    boolean exists = rs.getInt(1) > 0;
+                    System.out.println("DEBUG - Prescription exists for ResultID " + resultId + ": " + exists + 
+                                     " at " + LocalDateTime.now() + " +07");
+                    return exists;
+                }
             }
-            System.out.println("DEBUG - Total results found: " + results.size());
-            return results;
+        } catch (SQLException e) {
+            System.err.println("SQLException in hasPrescription for ResultID " + resultId + ": " + 
+                              e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
+            throw e;
         }
-    } catch (SQLException e) {
-        System.err.println("DEBUG - SQL Exception: " + e.getMessage());
-        e.printStackTrace();
-        throw e;
+        return false;
     }
-}
+
+    
     
 }

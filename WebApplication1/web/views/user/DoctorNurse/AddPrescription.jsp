@@ -419,6 +419,37 @@
                 transform: translateY(-2px);
             }
 
+            .signature-section {
+                margin-bottom: 1.5rem;
+                padding: 1.5rem;
+                background: rgba(59, 130, 246, 0.05);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+                border-radius: var(--border-radius);
+                border-left: 4px solid var(--primary);
+            }
+
+            .signature-textarea {
+                min-height: 100px;
+                font-family: 'Courier New', monospace;
+                background: var(--white);
+                border: 2px solid var(--gray-200);
+                transition: var(--transition);
+            }
+
+            .signature-textarea:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .signature-help {
+                font-size: 0.75rem;
+                color: var(--gray-500);
+                margin-top: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
             .form-actions {
                 display: flex;
                 gap: 1rem;
@@ -446,6 +477,16 @@
 
             .btn-primary:hover {
                 background: var(--primary-dark);
+                transform: translateY(-2px);
+            }
+
+            .btn-secondary {
+                background: var(--gray-200);
+                color: var(--gray-700);
+            }
+
+            .btn-secondary:hover {
+                background: var(--gray-300);
                 transform: translateY(-2px);
             }
 
@@ -561,12 +602,12 @@
                     padding: 1rem;
                     height: auto;
                 }
-                
+
                 .nav-menu {
                     flex-wrap: wrap;
                     justify-content: center;
                 }
-                
+
                 .user-menu {
                     justify-content: flex-end;
                     width: 100%;
@@ -576,15 +617,15 @@
                     flex-direction: column;
                     text-align: center;
                 }
-                
+
                 .form-actions {
                     flex-direction: column;
                 }
-                
+
                 .footer-sections {
                     grid-template-columns: 1fr;
                 }
-                
+
                 .stats-grid {
                     grid-template-columns: 1fr;
                 }
@@ -666,6 +707,8 @@
                         <input type="hidden" name="patientName" value="${patientName}">
                         <input type="hidden" name="doctorName" value="${doctorName}">
                         <input type="hidden" name="resultName" value="${resultName}">
+                        <input type="hidden" name="diagnosis" value="${diagnosis}">
+                        <input type="hidden" name="notes" value="${notes}">
 
                         <div class="stats-section">
                             <h3 class="section-title"><i class="fas fa-info-circle"></i> Thông Tin Bệnh Nhân</h3>
@@ -735,9 +778,26 @@
                             </button>
                         </div>
 
+                        <!-- Signature Section -->
+                        <div class="signature-section">
+                            <h3 class="section-title"><i class="fas fa-signature"></i> Chữ Ký Bác Sĩ</h3>
+                            <div class="form-group">
+                                <label class="form-label required">Chữ ký hoặc xác nhận của bác sĩ</label>
+                                <textarea name="signature" id="signature" class="form-textarea signature-textarea" 
+                                          required>${formSignature != null ? formSignature : ''}</textarea>
+                                <div class="signature-help">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Vui lòng nhập chữ ký, tên đầy đủ của bác sĩ hoặc xác nhận để hoàn thiện đơn thuốc</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <input type="hidden" name="save" value="true">
 
                         <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previewPrescription()">
+                                <i class="fas fa-eye"></i> Xem Trước
+                            </button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-check"></i> Tạo Đơn Thuốc
                             </button>
@@ -932,9 +992,11 @@
 
             function validateForm() {
                 const medicationIds = document.getElementsByName('medicationIds');
+                const signature = document.getElementById('signature').value.trim();
                 let hasEmptySelection = false;
                 let selectedMeds = [];
 
+                // Validate medications
                 for (let i = 0; i < medicationIds.length; i++) {
                     const value = medicationIds[i].value;
                     if (!value || value.trim() === '') {
@@ -956,7 +1018,62 @@
                     return false;
                 }
 
+                // Validate signature
+                if (!signature || signature === '') {
+                    alert('Vui lòng nhập chữ ký bác sĩ để hoàn thiện đơn thuốc.');
+                    document.getElementById('signature').focus();
+                    return false;
+                }
+
+                if (signature.length < 5) {
+                    alert('Chữ ký bác sĩ quá ngắn. Vui lòng nhập ít nhất 5 ký tự.');
+                    document.getElementById('signature').focus();
+                    return false;
+                }
+
                 return true;
+            }
+
+            function previewPrescription() {
+                const medicationIds = document.getElementsByName('medicationIds');
+                const quantities = document.getElementsByName('quantities');
+                const instructions = document.getElementsByName('instructions');
+                const signature = document.getElementById('signature').value.trim();
+
+                let previewContent = "=== XEM TRƯỚC ĐỀN THUỐC ===\n\n";
+                previewContent += "Bệnh nhân: ${patientName != null ? patientName : 'Không xác định'}\n";
+                previewContent += "Bác sĩ: ${doctorName != null ? doctorName : 'Không xác định'}\n";
+                previewContent += "Kết quả khám: ${resultName != null ? resultName : 'Không xác định'}\n\n";
+                previewContent += "DANH SÁCH THUỐC:\n";
+
+                let hasValidMedication = false;
+                for (let i = 0; i < medicationIds.length; i++) {
+                    const medId = medicationIds[i].value;
+                    if (medId) {
+                        const selectedMed = medicationsData.find(med => med.id == medId);
+                        if (selectedMed) {
+                            hasValidMedication = true;
+                            previewContent += `${i + 1}. ${selectedMed.name} - ${selectedMed.dosage}\n`;
+                            if (quantities[i] && quantities[i].value.trim()) {
+                                previewContent += `   Số lượng: ${quantities[i].value.trim()}\n`;
+                            }
+                            if (instructions[i] && instructions[i].value.trim()) {
+                                previewContent += `   Cách dùng: ${instructions[i].value.trim()}\n`;
+                            }
+                            previewContent += "\n";
+                        }
+                    }
+                }
+
+                if (!hasValidMedication) {
+                    alert('Vui lòng chọn ít nhất một loại thuốc để xem trước.');
+                    return;
+                }
+
+                previewContent += "CHỮ KÝ BÁC SĨ:\n";
+                previewContent += signature || "(Chưa có chữ ký)";
+
+                alert(previewContent);
             }
 
             // Khởi tạo khi trang được tải
@@ -964,24 +1081,32 @@
                 console.log("DOM loaded, medications available:", medicationsData.length);
 
                 const submitBtn = document.querySelector('.btn-primary');
+                const previewBtn = document.querySelector('.btn-secondary');
                 const addBtn = document.querySelector('.add-btn');
+                const signatureTextarea = document.getElementById('signature');
 
-                // Disable submit button nếu không có thuốc
+                // Disable buttons nếu không có thuốc
                 if (medicationsData.length === 0) {
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.5';
                     submitBtn.style.cursor = 'not-allowed';
+                    previewBtn.disabled = true;
+                    previewBtn.style.opacity = '0.5';
+                    previewBtn.style.cursor = 'not-allowed';
                     addBtn.disabled = true;
                     addBtn.style.opacity = '0.5';
                     addBtn.style.cursor = 'not-allowed';
+                    signatureTextarea.disabled = true;
                     console.log("Buttons disabled: no medications available");
                 }
 
                 // Xử lý submit form
                 const form = document.querySelector('form');
                 form.addEventListener('submit', function () {
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo đơn thuốc...';
-                    submitBtn.disabled = true;
+                    if (validateForm()) {
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo đơn thuốc...';
+                        submitBtn.disabled = true;
+                    }
                 });
 
                 // Animation cho stat cards
@@ -1007,6 +1132,36 @@
                         item.style.opacity = '1';
                         item.style.transform = 'translateY(0)';
                     }, index * 100);
+                });
+
+                // Animation cho signature section
+                const signatureSection = document.querySelector('.signature-section');
+                if (signatureSection) {
+                    signatureSection.style.opacity = '0';
+                    signatureSection.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        signatureSection.style.transition = 'all 0.3s ease';
+                        signatureSection.style.opacity = '1';
+                        signatureSection.style.transform = 'translateY(0)';
+                    }, 200);
+                }
+
+                // Auto-resize signature textarea
+                signatureTextarea.addEventListener('input', function () {
+                    this.style.height = 'auto';
+                    this.style.height = Math.max(100, this.scrollHeight) + 'px';
+                });
+
+                // Signature validation on blur
+                signatureTextarea.addEventListener('blur', function () {
+                    const value = this.value.trim();
+                    if (value && value.length < 5) {
+                        this.style.borderColor = 'var(--error)';
+                        this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                    } else {
+                        this.style.borderColor = 'var(--gray-200)';
+                        this.style.boxShadow = 'none';
+                    }
                 });
             });
         </script>
