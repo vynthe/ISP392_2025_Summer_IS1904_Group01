@@ -18,20 +18,20 @@ import model.entity.Prescriptions;
 import model.service.PrescriptionService;
 
 public class ViewInvoiceServlet extends HttpServlet {
+
     private final InvoiceService invoiceService = new InvoiceService();
     private static final long serialVersionUID = 1L;
 
-  
-     @Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             String patientIdStr = request.getParameter("patientId");
             String pageStr = request.getParameter("page");
-            
+
             System.out.println("DEBUG - patientIdStr: '" + patientIdStr + "'");
             System.out.println("DEBUG - pageStr: '" + pageStr + "'");
-            
+
             Integer patientId = null;
             if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
                 try {
@@ -43,21 +43,35 @@ public class ViewInvoiceServlet extends HttpServlet {
                     System.out.println("DEBUG - Invalid patientId format: " + patientIdStr);
                 }
             }
-            
+
             int currentPage = 1;
             if (pageStr != null && !pageStr.trim().isEmpty()) {
                 try {
                     currentPage = Integer.parseInt(pageStr.trim());
-                    if (currentPage < 1) currentPage = 1;
+                    if (currentPage < 1) {
+                        currentPage = 1;
+                    }
                 } catch (NumberFormatException e) {
                     System.out.println("DEBUG - Invalid page format: " + pageStr);
                 }
             }
-            
+
             int pageSize = 10;
-            
+
             System.out.println("DEBUG - Parsed patientId: " + patientId);
             System.out.println("DEBUG - currentPage: " + currentPage);
+
+            // Lấy message từ URL parameter (nếu có)  
+            String message = request.getParameter("message");
+            if (message != null && !message.trim().isEmpty()) {
+                request.setAttribute("message", message);
+                // Xác định loại message (success/error) dựa trên nội dung
+                if (message.contains("thành công") || message.contains("success")) {
+                    request.setAttribute("added", true);
+                } else {
+                    request.setAttribute("added", false);
+                }
+            }
 
             List<Map<String, Object>> results;
             int totalRecords = 0;
@@ -70,18 +84,18 @@ public class ViewInvoiceServlet extends HttpServlet {
                 System.out.println("DEBUG - Getting all examination results");
                 results = invoiceService.getAllExaminationResults();
             }
-            
+
             System.out.println("DEBUG - Raw results size: " + (results != null ? results.size() : "null"));
-            
+
             if (results != null && !results.isEmpty()) {
                 totalRecords = results.size();
                 totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
                 int start = (currentPage - 1) * pageSize;
                 int end = Math.min(start + pageSize, results.size());
-                
+
                 System.out.println("DEBUG - Pagination: start=" + start + ", end=" + end + ", totalRecords=" + totalRecords);
-                
+
                 if (start < results.size() && start >= 0) {
                     results = results.subList(start, end);
                 } else {
@@ -95,9 +109,9 @@ public class ViewInvoiceServlet extends HttpServlet {
                                 : invoiceService.getAllExaminationResults().subList(start, end);
                     }
                 }
-                
+
                 System.out.println("DEBUG - Final results size after pagination: " + results.size());
-                
+
                 if (!results.isEmpty()) {
                     System.out.println("DEBUG - First result: " + results.get(0));
                 }
@@ -111,7 +125,7 @@ public class ViewInvoiceServlet extends HttpServlet {
             request.setAttribute("pageSize", pageSize);
             request.setAttribute("totalRecords", totalRecords);
             request.setAttribute("totalPages", totalPages);
-            
+
             System.out.println("DEBUG - Setting request attributes:");
             System.out.println("  - results size: " + results.size());
             System.out.println("  - patientId: " + (patientId != null ? patientId : 0));
@@ -120,7 +134,7 @@ public class ViewInvoiceServlet extends HttpServlet {
             System.out.println("  - totalPages: " + totalPages);
 
             request.getRequestDispatcher("/views/user/Receptionist/ViewInvoice.jsp").forward(request, response);
-            
+
         } catch (SQLException e) {
             System.err.println("DEBUG - SQLException: " + e.getMessage());
             e.printStackTrace();
@@ -138,7 +152,7 @@ public class ViewInvoiceServlet extends HttpServlet {
         }
     }
 
-   @Override
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -154,12 +168,12 @@ public class ViewInvoiceServlet extends HttpServlet {
             System.out.println("DEBUG POST - totalAmount: " + totalAmountStr);
             System.out.println("DEBUG POST - serviceId: " + serviceIdStr);
 
-            if (patientIdStr == null || doctorIdStr == null || totalAmountStr == null || serviceIdStr == null ||
-                patientIdStr.trim().isEmpty() || doctorIdStr.trim().isEmpty() || totalAmountStr.trim().isEmpty() || serviceIdStr.trim().isEmpty()) {
-                
+            if (patientIdStr == null || doctorIdStr == null || totalAmountStr == null || serviceIdStr == null
+                    || patientIdStr.trim().isEmpty() || doctorIdStr.trim().isEmpty() || totalAmountStr.trim().isEmpty() || serviceIdStr.trim().isEmpty()) {
+
                 System.out.println("DEBUG POST - Missing required form data");
                 request.setAttribute("message", "Missing required form data.");
-                
+
                 int patientId = 0;
                 try {
                     if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
@@ -168,7 +182,7 @@ public class ViewInvoiceServlet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     System.out.println("DEBUG POST - Invalid patientId: " + patientIdStr);
                 }
-                
+
                 String redirectUrl = request.getContextPath() + "/ViewInvoiceServlet";
                 if (patientId > 0) {
                     redirectUrl += "?patientId=" + patientId;
@@ -184,8 +198,8 @@ public class ViewInvoiceServlet extends HttpServlet {
             // invoiceId cĂ³ thá»ƒ lĂ  null náº¿u lĂ  hĂ³a Ä‘Æ¡n má»›i
             int invoiceId = (invoiceIdStr != null && !invoiceIdStr.trim().isEmpty()) ? Integer.parseInt(invoiceIdStr.trim()) : 0;
 
-            System.out.println("DEBUG POST - Parsed values: patientId=" + patientId + ", doctorId=" + doctorId + 
-                             ", totalAmount=" + totalAmount + ", serviceId=" + serviceId + ", invoiceId=" + invoiceId);
+            System.out.println("DEBUG POST - Parsed values: patientId=" + patientId + ", doctorId=" + doctorId
+                    + ", totalAmount=" + totalAmount + ", serviceId=" + serviceId + ", invoiceId=" + invoiceId);
 
             Invoices invoice = new Invoices();
             invoice.setPatientID(patientId);
@@ -199,9 +213,9 @@ public class ViewInvoiceServlet extends HttpServlet {
 
             boolean added = invoiceService.addInvoice(invoice);
             System.out.println("DEBUG POST - Invoice added: " + added);
-            
-            String message = added ? "Invoice added successfully!" : "Failed to add invoice.";
-            
+
+            String message = added ? "Thêm thành công hóa đơn!" : "Failed to add invoice.";
+
             String redirectUrl = request.getContextPath() + "/ViewInvoiceServlet?patientId=" + patientId + "&message=" + java.net.URLEncoder.encode(message, "UTF-8");
             response.sendRedirect(redirectUrl);
 
