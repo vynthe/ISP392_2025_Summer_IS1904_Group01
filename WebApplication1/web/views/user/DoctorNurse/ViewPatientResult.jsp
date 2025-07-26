@@ -1218,7 +1218,7 @@
 
                 <div class="footer-bottom">
                     <div class="copyright">
-                        © 2024 HealthCare System. Tất cả quyền được bảo lưu.
+                        © 2025 Hệ thống phòng khám PDC. Tất cả quyền được bảo lưu.
                     </div>
                 </div>
             </div>
