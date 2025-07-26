@@ -365,7 +365,11 @@ public List<ScheduleEmployee> getSchedulesByDateRange(LocalDate startDate, Local
 public List<ScheduleEmployee> getSchedulesByUserIdAndRole(int userId, String role) throws SQLException {
         return scheduleDAO.getSchedulesByUserIdAndRole(userId, role);
     }
-
+public boolean updateScheduleForDoctorNurse(int slotId, int userId, LocalDate newSlotDate, 
+            LocalTime newStartTime, LocalTime newEndTime, int updatedBy) 
+            throws SQLException, IllegalArgumentException {
+        return scheduleDAO.updateScheduleForDoctorNurse(slotId, userId, newSlotDate, newStartTime, newEndTime, updatedBy);
+    }
 }
 
 

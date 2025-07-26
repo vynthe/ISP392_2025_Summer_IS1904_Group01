@@ -37,12 +37,174 @@
             padding: 20px 0;
             text-align: center;
             box-shadow: 0 2px 10px var(--shadow-light);
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
 
         .header h1 {
             margin: 0;
             font-size: 2.5em;
+            font-weight: 500;
+        }
+
+        /* Navigation Breadcrumb */
+        .breadcrumb-nav {
+            background-color: var(--text-light);
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .breadcrumb-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            color: var(--text-dark);
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a:hover {
+            background-color: var(--light-blue-purple);
+            color: var(--primary-blue-purple);
+            text-decoration: none;
+        }
+
+        .breadcrumb-separator {
+            color: #999;
+            font-size: 0.9em;
+            margin: 0 5px;
+        }
+
+        .breadcrumb-current {
+            color: var(--primary-blue-purple);
+            font-weight: 600;
+            padding: 5px 10px;
+            background-color: var(--light-blue-purple);
+            border-radius: 4px;
+        }
+
+        /* User Info trong breadcrumb */
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .user-role {
+            background-color: var(--primary-blue-purple);
+            color: var(--text-light);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .user-name {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Navigation Breadcrumb */
+        .breadcrumb-nav {
+            background-color: var(--text-light);
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .breadcrumb-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            color: var(--text-dark);
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a:hover {
+            background-color: var(--light-blue-purple);
+            color: var(--primary-blue-purple);
+            text-decoration: none;
+        }
+
+        .breadcrumb-separator {
+            color: #999;
+            font-size: 0.9em;
+            margin: 0 5px;
+        }
+
+        .breadcrumb-current {
+            color: var(--primary-blue-purple);
+            font-weight: 600;
+            padding: 5px 10px;
+            background-color: var(--light-blue-purple);
+            border-radius: 4px;
+        }
+
+        /* User Info trong breadcrumb */
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .user-role {
+            background-color: var(--primary-blue-purple);
+            color: var(--text-light);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .user-name {
+            color: var(--text-dark);
             font-weight: 500;
         }
 
@@ -208,7 +370,6 @@
             color: #1976d2; /* Darker blue on hover */
         }
 
-
         .appointment-time {
             color: #444;
             font-size: 0.9em;
@@ -279,11 +440,117 @@
             color: #1976d2;
             text-decoration: underline;
         }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .breadcrumb {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .user-info {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .breadcrumb {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .user-info {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Lịch Làm Việc (Lễ Tân)</h1>
+    </div>
+
+    <!-- Navigation Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <div class="breadcrumb">
+                <div class="breadcrumb-item">
+                    <a href="${pageContext.request.contextPath}/views/user/Receptionist/ReceptionistDashBoard.jsp">
+                        🏠 Trang Chủ
+                    </a>
+                </div>
+                <span class="breadcrumb-separator">›</span>
+                <div class="breadcrumb-item">
+                    <a href="${pageContext.request.contextPath}/receptionist/schedule">
+                        📅 Quản Lý Lịch
+                    </a>
+                </div>
+                <span class="breadcrumb-separator">›</span>
+                <div class="breadcrumb-current">
+                    📋 Lịch Làm Việc Theo Tuần
+                </div>
+                
+                <!-- User Info -->
+                <div class="user-info">
+                    <span class="user-name">
+                        <!-- Hiển thị tên người dùng từ session nếu có -->
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user}">
+                                👤 ${sessionScope.user.fullName}
+                            </c:when>
+                            <c:otherwise>
+                                👤 Lễ Tân
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                    <span class="user-role">Lễ Tân</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <div class="breadcrumb">
+                <div class="breadcrumb-item">
+                    <a href="${pageContext.request.contextPath}/views/user/Receptionist/ReceptionistDashBoard.jsp">
+                        🏠 Trang Chủ
+                    </a>
+                </div>
+                <span class="breadcrumb-separator">›</span>
+                <div class="breadcrumb-item">
+                    <a href="${pageContext.request.contextPath}/views/user/Receptionist/ViewScheduleDoctorNurse.jsp">
+                        📅 Quản Lý Doctor/Nurse
+                    </a>
+                </div>
+                <span class="breadcrumb-separator">›</span>
+                <div class="breadcrumb-current">
+                    📋 Lịch Làm Việc Cá Nhân
+                </div>
+                
+                <!-- User Info -->
+                <div class="user-info">
+                    <span class="user-name">
+                        <!-- Hiển thị tên người dùng từ session nếu có -->
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user}">
+                                👤 ${sessionScope.user.fullName}
+                            </c:when>
+                            <c:otherwise>
+                                👤 Lễ Tân
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                    <span class="user-role">Lễ Tân</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -318,7 +585,7 @@
             <tbody>
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 0 (05:00 - 07:00)</div>
+                        <div class="slot-number">Slot 0 </div>
                     </td>
                     <td class="slot-cell" id="slot0-mon"></td>
                     <td class="slot-cell" id="slot0-tue"></td>
@@ -331,7 +598,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 1 (07:00 - 13:00)</div>
+                        <div class="slot-number">Slot 1 </div>
                     </td>
                     <td class="slot-cell" id="slot1-mon"></td>
                     <td class="slot-cell" id="slot1-tue"></td>
@@ -344,7 +611,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 2 (13:00 - 15:00)</div>
+                        <div class="slot-number">Slot 2 </div>
                     </td>
                     <td class="slot-cell" id="slot2-mon"></td>
                     <td class="slot-cell" id="slot2-tue"></td>
@@ -357,7 +624,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 3 (15:00 - 17:00)</div>
+                        <div class="slot-number">Slot 3 </div>
                     </td>
                     <td class="slot-cell" id="slot3-mon"></td>
                     <td class="slot-cell" id="slot3-tue"></td>

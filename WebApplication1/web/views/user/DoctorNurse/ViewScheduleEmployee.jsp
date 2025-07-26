@@ -317,7 +317,7 @@
             <tbody>
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 0 (05:00 - 07:00)</div>
+                        <div class="slot-number">Slot 0 </div>
                     </td>
                     <td class="slot-cell" id="slot0-mon"></td>
                     <td class="slot-cell" id="slot0-tue"></td>
@@ -330,7 +330,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 1 (07:00 - 13:00)</div>
+                        <div class="slot-number">Slot 1 </div>
                     </td>
                     <td class="slot-cell" id="slot1-mon"></td>
                     <td class="slot-cell" id="slot1-tue"></td>
@@ -343,7 +343,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 2 (13:00 - 15:00)</div>
+                        <div class="slot-number">Slot 2 </div>
                     </td>
                     <td class="slot-cell" id="slot2-mon"></td>
                     <td class="slot-cell" id="slot2-tue"></td>
@@ -356,7 +356,7 @@
                 
                 <tr>
                     <td class="slot-cell">
-                        <div class="slot-number">Slot 3 (15:00 - 17:00)</div>
+                        <div class="slot-number">Slot 3 </div>
                     </td>
                     <td class="slot-cell" id="slot3-mon"></td>
                     <td class="slot-cell" id="slot3-tue"></td>
