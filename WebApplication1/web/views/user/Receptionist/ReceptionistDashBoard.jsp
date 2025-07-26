@@ -383,6 +383,16 @@
                         <i class="fas fa-calendar-week mr-2"></i>Xem Lịch Làm Việc
                     </a>
                 </div>
+                        <div class="action-card fade-in-up stagger-4">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="card-title">Lịch Làm Việc</h3>
+                    <p class="card-subtitle">Kiểm tra lịch làm việc và tình trạng sẵn sàng của nhân viên</p>
+                    <a href="${pageContext.request.contextPath}/ViewListDoctorNurse" class="action-btn">
+                        <i class="fas fa-calendar-week mr-2"></i>Xem Lịch Làm Việc
+                    </a>
+                </div>
             </div>
         </div>
 

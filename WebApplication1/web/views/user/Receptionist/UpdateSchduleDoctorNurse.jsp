@@ -133,7 +133,7 @@
                             <td>${schedule.endTime}</td>
                             <td>${schedule.status}</td>
                             <td class="appointment-actions">
-                                <form action="${pageContext.request.contextPath}/UpdateScheduleDoctorNurse" method="post">
+                                <form action="${pageContext.request.contextPath}/UpdateAppointmentSlot" method="post">
                                     <input type="hidden" name="slotId" value="${schedule.slotId}">
                                     <input type="hidden" name="userId" value="${schedule.userId}">
                                     <label for="newSlotDate">New Date:</label>

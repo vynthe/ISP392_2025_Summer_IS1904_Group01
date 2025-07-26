@@ -101,7 +101,7 @@ public class AddScheduleServlet extends HttpServlet {
 
                 int defaultRoomId = 0; // Mặc định không gán phòng
                 if ("Receptionist".equalsIgnoreCase(roleForAutoSchedule)) {
-                    defaultRoomId = 19; // Gán phòng mặc định cho lễ tân
+                    defaultRoomId = 24; // Gán phòng mặc định cho lễ tân
                 }
 
                 try {

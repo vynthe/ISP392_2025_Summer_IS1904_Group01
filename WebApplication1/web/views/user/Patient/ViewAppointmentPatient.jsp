@@ -161,7 +161,7 @@
                                         
                                         <!-- Nút Hủy lịch -->
                                         <c:if test="${appointment.status != 'Cancelled' && appointment.status != 'Rejected' && appointment.status != 'Completed'}">
-                                            <form action="${pageContext.request.contextPath}/cancelAppointment" method="POST" style="display:inline;">
+                                            <form action="${pageContext.request.contextPath}/CancelAppointmentServlet" method="POST" style="display:inline;">
                                                 <input type="hidden" name="appointmentId" value="${appointment.appointmentId}">
                                                 <button type="submit" class="btn btn-cancel" onclick="return confirm('Bạn có chắc muốn hủy lịch hẹn này?');" title="Hủy lịch hẹn">
                                                     <i class="fas fa-times"></i> Hủy

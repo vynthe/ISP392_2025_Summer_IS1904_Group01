@@ -605,6 +605,7 @@
                                     '<form action="${pageContext.request.contextPath}/UpdateAppointmentSlot" method="post">' +
                                     '<input type="hidden" name="action" value="edit">' +
                                     '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' + // ✅ Thay đổi từ index thành slotId
+                                    '<input type="hidden" name="userID" value="' + schedule.userID + '">' +
                                     '<button type="submit">Sửa</button>' +
                                     '</form>' +
                                     '<form action="${pageContext.request.contextPath}/DeleteAppointmentServlet" method="post">' + // ✅ Đảm bảo đúng URL

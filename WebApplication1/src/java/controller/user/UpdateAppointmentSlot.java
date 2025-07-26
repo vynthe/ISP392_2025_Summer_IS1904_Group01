@@ -50,7 +50,7 @@ public class UpdateAppointmentSlot extends HttpServlet {
         try {
             // Get and validate parameters
             int slotId = Integer.parseInt(request.getParameter("slotId"));
-            String userIdParam = request.getParameter("userId");
+            String userIdParam = request.getParameter("userID");
             if (userIdParam == null || userIdParam.trim().isEmpty()) {
                 throw new IllegalArgumentException("User ID is required.");
             }

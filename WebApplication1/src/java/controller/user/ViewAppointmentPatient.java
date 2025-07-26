@@ -54,11 +54,11 @@ public class ViewAppointmentPatient extends HttpServlet {
             request.setAttribute("appointments", appointments);
 
             // Forward to JSP for Patients
-            request.getRequestDispatcher("/views/user/Patient/ViewAppointment.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/user/Patient/ViewAppointmentPatient.jsp").forward(request, response);
 
         } catch (SQLException e) {
             request.setAttribute("errorMessage", "Error retrieving appointments: " + e.getMessage());
-            request.getRequestDispatcher("/views/user/Patient/ViewAppointment.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/user/Patient/ViewAppointmentPatient.jsp").forward(request, response);
         }
     }
 }
