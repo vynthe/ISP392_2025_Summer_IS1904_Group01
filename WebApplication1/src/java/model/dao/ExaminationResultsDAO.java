@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -13,25 +14,50 @@ import java.util.HashMap;
  * @author HTC
  */
 public class ExaminationResultsDAO {
+
     private final DBContext dbContext;
 
     public ExaminationResultsDAO() {
         this.dbContext = DBContext.getInstance();
     }
 
+    public String getDiagnosisByAppointmentId(int appointmentId) throws SQLException {
+        String sql = """
+            SELECT Diagnosis
+            FROM ExaminationResults
+            WHERE AppointmentID = ?
+            """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Diagnosis");
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getDiagnosisDetailsByAppointmentId for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+        return null;
+
+    }
     /**
      * Lấy danh sách lịch hẹn của bác sĩ theo DoctorID, bao gồm thông tin bệnh nhân.
      *
      * @param doctorId ID của bác sĩ
-     * @param page Trang hiện tại (dùng cho phân trang)
+     * @param page     Trang hiện tại (dùng cho phân trang)
      * @param pageSize Số bản ghi trên mỗi trang
      * @return Danh sách các lịch hẹn với thông tin chi tiết
      * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
      */
     public List<Map<String, Object>> getAppointmentsWithPatientByDoctorId(int doctorId, int page, int pageSize) throws SQLException {
         List<Map<String, Object>> appointments = new ArrayList<>();
+
         String sql = """
-            SELECT 
+            SELECT
                 a.AppointmentID,
                 a.AppointmentTime,
                 a.Status,
@@ -59,7 +85,7 @@ public class ExaminationResultsDAO {
             WHERE a.DoctorID = ?
             ORDER BY a.AppointmentTime DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-        """;
+            """;
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -97,6 +123,7 @@ public class ExaminationResultsDAO {
             System.err.println(errorMsg);
             throw e;
         }
+
         return appointments;
     }
 
@@ -112,7 +139,7 @@ public class ExaminationResultsDAO {
             SELECT COUNT(*) AS Total
             FROM Appointments
             WHERE DoctorID = ?
-        """;
+            """;
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -129,7 +156,501 @@ public class ExaminationResultsDAO {
             System.err.println(errorMsg);
             throw e;
         }
+
         return 0;
     }
-   
+
+    /**
+     * Thêm kết quả khám từ lịch hẹn (không bao gồm diagnosis và notes).
+     *
+     * @param appointmentId ID của lịch hẹn
+     * @param nurseId       ID của y tá (có thể null)
+     * @param status        Trạng thái của kết quả khám
+     * @return true nếu thêm thành công, false nếu không
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public boolean addExaminationResultFromAppointment(int appointmentId, Integer nurseId, String status) throws SQLException {
+        if (appointmentId <= 0) {
+            throw new IllegalArgumentException("Appointment ID must be a positive integer.");
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required.");
+        }
+
+        List<String> validStatuses = Arrays.asList("Pending", "Draft", "Completed", "Reviewed", "Cancelled");
+        if (!validStatuses.contains(status.trim())) {
+            throw new IllegalArgumentException("Invalid status. Allowed values are: " + String.join(", ", validStatuses) + ".");
+        }
+
+        // Lấy thông tin từ Appointments
+        Map<String, Object> appointmentData = getAppointmentDetailsById(appointmentId);
+        if (appointmentData.isEmpty()) {
+            throw new SQLException("No appointment found with ID: " + appointmentId);
+        }
+
+        int doctorId = (int) appointmentData.get("doctorId");
+        int patientId = (int) appointmentData.get("patientId");
+        int serviceId = (int) appointmentData.get("serviceId");
+
+        // Nếu nurseId không được cung cấp, có thể lấy từ ScheduleEmployee
+        if (nurseId == null) {
+            nurseId = getNurseIdFromSchedule((int) appointmentData.get("slotId"));
+        }
+
+        String sql = """
+            INSERT INTO ExaminationResults (AppointmentID, DoctorID, PatientID, NurseID, ServiceID, [Status], CreatedAt, UpdatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            pstmt.setInt(2, doctorId);
+            pstmt.setInt(3, patientId);
+            pstmt.setInt(4, nurseId != null ? nurseId : 0); // Sử dụng 0 nếu nurseId null (cần kiểm tra logic thực tế)
+            pstmt.setInt(5, serviceId);
+            pstmt.setString(6, status.trim());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in addExaminationResultFromAppointment for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+    }
+
+    /**
+     * Thêm kết quả khám từ lịch hẹn (bao gồm diagnosis và notes).
+     *
+     * @param appointmentId ID của lịch hẹn
+     * @param nurseId       ID của y tá (có thể null)
+     * @param status        Trạng thái của kết quả khám
+     * @param diagnosis     Chẩn đoán
+     * @param notes         Ghi chú
+     * @return true nếu thêm thành công, false nếu không
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public boolean addExaminationResultFromAppointment(int appointmentId, Integer nurseId, String status, String diagnosis, String notes) throws SQLException {
+        if (appointmentId <= 0) {
+            throw new IllegalArgumentException("Appointment ID must be a positive integer.");
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required.");
+        }
+
+        List<String> validStatuses = Arrays.asList("Pending", "Draft", "Completed", "Reviewed", "Cancelled");
+        if (!validStatuses.contains(status.trim())) {
+            throw new IllegalArgumentException("Invalid status. Allowed values are: " + String.join(", ", validStatuses) + ".");
+        }
+
+        // Lấy thông tin từ Appointments
+        Map<String, Object> appointmentData = getAppointmentDetailsById(appointmentId);
+        if (appointmentData.isEmpty()) {
+            throw new SQLException("No appointment found with ID: " + appointmentId);
+        }
+
+        int doctorId = (int) appointmentData.get("doctorId");
+        int patientId = (int) appointmentData.get("patientId");
+        int serviceId = (int) appointmentData.get("serviceId");
+
+        // Nếu nurseId không được cung cấp, có thể lấy từ ScheduleEmployee
+        if (nurseId == null) {
+            nurseId = getNurseIdFromSchedule((int) appointmentData.get("slotId"));
+        }
+
+        String sql = """
+            INSERT INTO ExaminationResults (AppointmentID, DoctorID, PatientID, NurseID, ServiceID, [Status], Diagnosis, Notes, CreatedAt, UpdatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+            pstmt.setInt(2, doctorId);
+            pstmt.setInt(3, patientId);
+            pstmt.setInt(4, nurseId != null ? nurseId : 0); // Sử dụng 0 nếu nurseId null (cần kiểm tra logic thực tế)
+            pstmt.setInt(5, serviceId);
+            pstmt.setString(6, status.trim());
+            pstmt.setString(7, diagnosis != null ? diagnosis.trim() : null); // Diagnosis
+            pstmt.setString(8, notes != null ? notes.trim() : null); // Notes
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in addExaminationResultFromAppointment for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+    }
+
+    /**
+     * Lấy thông tin chi tiết của một lịch hẹn theo AppointmentID.
+     *
+     * @param appointmentId ID của lịch hẹn
+     * @return Map chứa thông tin chi tiết của lịch hẹn
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public Map<String, Object> getAppointmentDetailsById(int appointmentId) throws SQLException {
+        Map<String, Object> appointment = new HashMap<>();
+
+        String sql = """
+            SELECT
+                a.AppointmentID,
+                a.AppointmentTime,
+                a.Status,
+                a.CreatedAt,
+                a.UpdatedAt,
+                u1.UserID AS PatientID,
+                u1.FullName AS PatientName,
+                u1.Phone AS PatientPhone,
+                u1.Email AS PatientEmail,
+                u2.UserID AS DoctorID,
+                u2.FullName AS DoctorName,
+                s.ServiceName,
+                s.ServiceID,
+                r.RoomName,
+                r.RoomID,
+                se.SlotID,
+                se.SlotDate,
+                se.StartTime,
+                se.EndTime
+            FROM Appointments a
+            LEFT JOIN Users u1 ON a.PatientID = u1.UserID
+            JOIN Users u2 ON a.DoctorID = u2.UserID
+            JOIN Services s ON a.ServiceID = s.ServiceID
+            JOIN Rooms r ON a.RoomID = r.RoomID
+            JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+            WHERE a.AppointmentID = ?
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                    appointment.put("patientId", rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                    appointment.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                    appointment.put("patientPhone", rs.getString("PatientPhone") != null ? rs.getString("PatientPhone") : "N/A");
+                    appointment.put("patientEmail", rs.getString("PatientEmail") != null ? rs.getString("PatientEmail") : "N/A");
+                    appointment.put("doctorId", rs.getInt("DoctorID"));
+                    appointment.put("doctorName", rs.getString("DoctorName"));
+                    appointment.put("serviceId", rs.getInt("ServiceID"));
+                    appointment.put("serviceName", rs.getString("ServiceName"));
+                    appointment.put("roomId", rs.getInt("RoomID"));
+                    appointment.put("roomName", rs.getString("RoomName"));
+                    appointment.put("slotId", rs.getInt("SlotID"));
+                    appointment.put("slotDate", rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null);
+                    appointment.put("startTime", rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null);
+                    appointment.put("endTime", rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null);
+                    appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
+                    appointment.put("status", rs.getString("Status"));
+                    appointment.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    appointment.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                } else {
+                    throw new SQLException("No appointment found with ID: " + appointmentId);
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getAppointmentDetailsById for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+
+        return appointment;
+    }
+
+    /**
+     * Lấy ID của y tá từ ScheduleEmployee dựa trên SlotID.
+     *
+     * @param slotId ID của slot trong ScheduleEmployee
+     * @return NurseID nếu tìm thấy và vai trò là 'Nurse', null nếu không tìm thấy
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    private Integer getNurseIdFromSchedule(int slotId) throws SQLException {
+        String sql = """
+            SELECT UserID
+            FROM ScheduleEmployee
+            WHERE SlotID = ? AND Role = 'Nurse'
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, slotId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getNurseIdFromSchedule for slotId %d at %s +07: %s, SQLState: %s",
+                    slotId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+
+        return null; // Trả về null nếu không tìm thấy y tá
+    }
+
+    /**
+     * Lấy thông tin kết quả khám theo ResultID.
+     *
+     * @param resultId ID của kết quả khám
+     * @return Map chứa thông tin chi tiết kết quả khám
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public Map<String, Object> getExaminationResultById(int resultId) throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+
+        String sql = """
+            SELECT
+                er.ResultID,
+                er.AppointmentID,
+                er.DoctorID,
+                u2.FullName AS DoctorName,
+                er.PatientID,
+                u1.FullName AS PatientName,
+                er.NurseID,
+                u3.FullName AS NurseName,
+                er.ServiceID,
+                s.ServiceName,
+                er.[Status],
+                er.Diagnosis,
+                er.Notes,
+                er.CreatedAt,
+                er.UpdatedAt
+            FROM ExaminationResults er
+            LEFT JOIN Users u1 ON er.PatientID = u1.UserID
+            LEFT JOIN Users u2 ON er.DoctorID = u2.UserID
+            LEFT JOIN Users u3 ON er.NurseID = u3.UserID
+            JOIN Services s ON er.ServiceID = s.ServiceID
+            WHERE er.ResultID = ?
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, resultId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    result.put("resultId", rs.getInt("ResultID"));
+                    result.put("appointmentId", rs.getInt("AppointmentID"));
+                    result.put("doctorId", rs.getInt("DoctorID"));
+                    result.put("doctorName", rs.getString("DoctorName") != null ? rs.getString("DoctorName") : "N/A");
+                    result.put("patientId", rs.getInt("PatientID"));
+                    result.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                    result.put("nurseId", rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
+                    result.put("nurseName", rs.getString("NurseName") != null ? rs.getString("NurseName") : "N/A");
+                    result.put("serviceId", rs.getInt("ServiceID"));
+                    result.put("serviceName", rs.getString("ServiceName"));
+                    result.put("status", rs.getString("Status"));
+                    result.put("diagnosis", rs.getString("Diagnosis") != null ? rs.getString("Diagnosis") : "N/A");
+                    result.put("notes", rs.getString("Notes") != null ? rs.getString("Notes") : "N/A");
+                    result.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    result.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                } else {
+                    throw new SQLException("No examination result found with ID: " + resultId);
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getExaminationResultById for resultId %d at %s +07: %s, SQLState: %s",
+                    resultId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+
+        return result;
+    }
+
+    /**
+     * Lấy ResultID từ AppointmentID.
+     *
+     * @param appointmentId ID của lịch hẹn
+     * @return ResultID nếu tìm thấy, null nếu không tìm thấy
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public Integer getResultIdByAppointmentId(int appointmentId) throws SQLException {
+        String sql = "SELECT ResultID FROM ExaminationResults WHERE AppointmentID = ?";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("ResultID");
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getResultIdByAppointmentId for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+
+        return null;
+    }
+
+    /**
+     * Cập nhật kết quả khám (chỉ cập nhật Diagnosis và Notes, không thay đổi Status).
+     *
+     * @param resultId  ID của kết quả khám
+     * @param diagnosis Chẩn đoán
+     * @param notes     Ghi chú
+     * @return true nếu cập nhật thành công, false nếu không
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public boolean updateExaminationResult(int resultId, String diagnosis, String notes) throws SQLException {
+        if (resultId <= 0) {
+            throw new IllegalArgumentException("Result ID must be a positive integer.");
+        }
+
+        String sql = """
+            UPDATE ExaminationResults
+            SET Diagnosis = ?, Notes = ?, UpdatedAt = GETDATE()
+            WHERE ResultID = ?
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, diagnosis != null ? diagnosis.trim() : null);
+            pstmt.setString(2, notes != null ? notes.trim() : null);
+            pstmt.setInt(3, resultId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in updateExaminationResult for resultId %d at %s +07: %s, SQLState: %s",
+                    resultId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+    }
+
+    /**
+     * Lấy chi tiết chẩn đoán theo AppointmentID, bao gồm thông tin từ bảng ExaminationResults và Appointments.
+     *
+     * @param appointmentId ID của lịch hẹn
+     * @return Map chứa thông tin chi tiết chẩn đoán
+     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
+     */
+    public Map<String, Object> getDiagnosisDetailsByAppointmentId(int appointmentId) throws SQLException {
+        Map<String, Object> diagnosisDetails = new HashMap<>();
+
+        String sql = """
+            SELECT
+                er.ResultID,
+                er.AppointmentID,
+                er.DoctorID,
+                u2.FullName AS DoctorName,
+                er.PatientID,
+                u1.FullName AS PatientName,
+                u1.Phone AS PatientPhone,
+                u1.Email AS PatientEmail,
+                u1.Gender AS PatientGender,
+                er.NurseID,
+                u3.FullName AS NurseName,
+                er.ServiceID,
+                s.ServiceName,
+                s.Price AS ServicePrice,
+                er.[Status],
+                er.Diagnosis,
+                er.Notes,
+                er.CreatedAt AS ResultCreatedAt,
+                er.UpdatedAt AS ResultUpdatedAt,
+                a.AppointmentTime,
+                a.Status AS AppointmentStatus,
+                a.CreatedAt AS AppointmentCreatedAt,
+                r.RoomName,
+                se.SlotDate,
+                se.StartTime,
+                se.EndTime
+            FROM ExaminationResults er
+            LEFT JOIN Users u1 ON er.PatientID = u1.UserID
+            LEFT JOIN Users u2 ON er.DoctorID = u2.UserID
+            LEFT JOIN Users u3 ON er.NurseID = u3.UserID
+            JOIN Services s ON er.ServiceID = s.ServiceID
+            JOIN Appointments a ON er.AppointmentID = a.AppointmentID
+            JOIN Rooms r ON a.RoomID = r.RoomID
+            JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+            WHERE er.AppointmentID = ?
+            """;
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, appointmentId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Thông tin kết quả khám
+                    diagnosisDetails.put("resultId", rs.getInt("ResultID"));
+                    diagnosisDetails.put("appointmentId", rs.getInt("AppointmentID"));
+                    diagnosisDetails.put("diagnosis", rs.getString("Diagnosis") != null ? rs.getString("Diagnosis") : "Chưa có chẩn đoán");
+                    diagnosisDetails.put("notes", rs.getString("Notes") != null ? rs.getString("Notes") : "Chưa có ghi chú");
+                    diagnosisDetails.put("status", rs.getString("Status"));
+                    diagnosisDetails.put("resultCreatedAt", rs.getTimestamp("ResultCreatedAt"));
+                    diagnosisDetails.put("resultUpdatedAt", rs.getTimestamp("ResultUpdatedAt"));
+
+                    // Thông tin bệnh nhân
+                    diagnosisDetails.put("patientId", rs.getInt("PatientID"));
+                    diagnosisDetails.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                    diagnosisDetails.put("patientPhone", rs.getString("PatientPhone") != null ? rs.getString("PatientPhone") : "N/A");
+                    diagnosisDetails.put("patientEmail", rs.getString("PatientEmail") != null ? rs.getString("PatientEmail") : "N/A");
+                    diagnosisDetails.put("patientGender", rs.getString("PatientGender") != null ? rs.getString("PatientGender") : "N/A");
+
+                    // Thông tin bác sĩ
+                    diagnosisDetails.put("doctorId", rs.getInt("DoctorID"));
+                    diagnosisDetails.put("doctorName", rs.getString("DoctorName") != null ? rs.getString("DoctorName") : "N/A");
+
+                    // Thông tin y tá
+                    diagnosisDetails.put("nurseId", rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
+                    diagnosisDetails.put("nurseName", rs.getString("NurseName") != null ? rs.getString("NurseName") : "N/A");
+
+                    // Thông tin dịch vụ
+                    diagnosisDetails.put("serviceId", rs.getInt("ServiceID"));
+                    diagnosisDetails.put("serviceName", rs.getString("ServiceName"));
+                    diagnosisDetails.put("servicePrice", rs.getBigDecimal("ServicePrice"));
+
+                    // Thông tin lịch hẹn
+                    diagnosisDetails.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
+                    diagnosisDetails.put("appointmentStatus", rs.getString("AppointmentStatus"));
+                    diagnosisDetails.put("appointmentCreatedAt", rs.getTimestamp("AppointmentCreatedAt"));
+                    diagnosisDetails.put("roomName", rs.getString("RoomName"));
+                    diagnosisDetails.put("slotDate", rs.getDate("SlotDate"));
+                    diagnosisDetails.put("startTime", rs.getTime("StartTime"));
+                    diagnosisDetails.put("endTime", rs.getTime("EndTime"));
+                } else {
+                    // Nếu không tìm thấy kết quả khám, trả về thông tin lịch hẹn cơ bản
+                    Map<String, Object> appointmentData = getAppointmentDetailsById(appointmentId);
+                    if (!appointmentData.isEmpty()) {
+                        diagnosisDetails.put("appointmentId", appointmentId);
+                        diagnosisDetails.put("diagnosis", "Chưa có chẩn đoán");
+                        diagnosisDetails.put("notes", "Chưa có ghi chú");
+                        diagnosisDetails.put("status", "Chưa có kết quả khám");
+                        diagnosisDetails.put("resultId", null);
+
+                        // Copy thông tin từ appointment
+                        diagnosisDetails.putAll(appointmentData);
+                    } else {
+                        throw new SQLException("No appointment found with ID: " + appointmentId);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            String errorMsg = String.format("SQLException in getDiagnosisDetailsByAppointmentId for appointmentId %d at %s +07: %s, SQLState: %s",
+                    appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+            System.err.println(errorMsg);
+            throw e;
+        }
+
+        return diagnosisDetails;
+    }
 }
