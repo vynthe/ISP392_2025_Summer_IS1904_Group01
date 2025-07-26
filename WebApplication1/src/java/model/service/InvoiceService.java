@@ -27,11 +27,11 @@ public class InvoiceService {
     }
 
     public boolean addInvoice(Invoices invoice) throws SQLException {
-        // Kiểm tra đã tồn tại hóa đơn cho cặp patientId, serviceId chưa
-        if (existsInvoice(invoice.getPatientID(), invoice.getServiceID())) {
-            // Đã tồn tại, không cho phép thêm mới
-            return false;
-        }
+//        // Kiểm tra đã tồn tại hóa đơn cho cặp patientId, serviceId chưa
+//        if (existsInvoice(invoice.getPatientID(), invoice.getServiceID())) {
+//            // Đã tồn tại, không cho phép thêm mới
+//            return false;
+//        }
         // Nếu chưa có, cho phép thêm mới
         return invoiceDAO.addInvoice(invoice);
     }
@@ -64,7 +64,7 @@ public class InvoiceService {
         return invoiceDAO.deleteInvoice(invoiceId);
     }
 
-    public boolean existsInvoice(int patientId, int serviceId) throws SQLException {
-        return invoiceDAO.existsInvoice(patientId, serviceId);
-    }
+//    public boolean existsInvoice(int patientId, int serviceId) throws SQLException {
+//        return invoiceDAO.existsInvoice(patientId, serviceId);
+//    }
 }

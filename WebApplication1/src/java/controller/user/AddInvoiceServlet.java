@@ -5,51 +5,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.entity.Invoices;
-import model.service.InvoiceService;
-
+import model.entity.Services;
+import model.service.Services_Service;
 import java.io.IOException;
-import java.sql.Date;
+import java.sql.SQLException;
 
 public class AddInvoiceServlet extends HttpServlet {
-
-    private final InvoiceService invoiceService = new InvoiceService();
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            // Lấy dữ liệu từ query string
-            String resultIdStr = request.getParameter("resultId");
-            String patientIdStr = request.getParameter("patientId");
-            String doctorIdStr = request.getParameter("doctorId");
-            String serviceIdStr = request.getParameter("serviceId");
-            String totalAmountStr = request.getParameter("totalAmount");
-
-            // Kiểm tra đủ dữ liệu chưa
-            if (resultIdStr == null || patientIdStr == null || doctorIdStr == null
-                    || serviceIdStr == null || totalAmountStr == null
-                    || resultIdStr.trim().isEmpty() || patientIdStr.trim().isEmpty()
-                    || doctorIdStr.trim().isEmpty() || serviceIdStr.trim().isEmpty()
-                    || totalAmountStr.trim().isEmpty()) {
-                request.setAttribute("error", "Thiếu thông tin cần thiết để hiển thị form xác nhận!");
-            } else {
-                // Truyền dữ liệu sang JSP để hiển thị
-                request.setAttribute("resultId", resultIdStr);
-                request.setAttribute("patientId", patientIdStr);
-                request.setAttribute("doctorId", doctorIdStr);
-                request.setAttribute("serviceId", serviceIdStr);
-                request.setAttribute("totalAmount", totalAmountStr);
-            }
-
-            request.getRequestDispatcher("/views/user/Receptionist/AddInvoice.jsp").forward(request, response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
-        }
-    }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -57,36 +18,44 @@ public class AddInvoiceServlet extends HttpServlet {
             String patientIdStr = request.getParameter("patientId");
             String doctorIdStr = request.getParameter("doctorId");
             String serviceIdStr = request.getParameter("serviceId");
-            String totalAmountStr = request.getParameter("totalAmount");
+            String resultIdStr = request.getParameter("resultId");
 
-            // Parse dữ liệu
+            System.out.println("[DEBUG] patientIdStr = " + patientIdStr);
+            System.out.println("[DEBUG] doctorIdStr = " + doctorIdStr);
+            System.out.println("[DEBUG] serviceIdStr = " + serviceIdStr);
+            System.out.println("[DEBUG] resultIdStr = " + resultIdStr);
+
             int patientId = Integer.parseInt(patientIdStr);
             int doctorId = Integer.parseInt(doctorIdStr);
             int serviceId = Integer.parseInt(serviceIdStr);
-            double totalAmount = Double.parseDouble(totalAmountStr);
+            int resultId = resultIdStr != null && !resultIdStr.isEmpty() ? Integer.parseInt(resultIdStr) : 0;
 
-            // Tạo đối tượng hóa đơn
-            Invoices invoice = new Invoices();
-            invoice.setPatientID(patientId);
-            invoice.setDoctorID(doctorId);
-            invoice.setServiceID(serviceId);
-            invoice.setTotalAmount(totalAmount);
-            invoice.setStatus("PENDING"); // hoặc "CHƯA THANH TOÁN"
-            invoice.setCreatedBy(doctorId); // tạm lấy bác sĩ làm người tạo
-            invoice.setCreatedAt(new Date(System.currentTimeMillis()));
-            invoice.setUpdatedAt(new Date(System.currentTimeMillis()));
+            // Láº¥y thĂ´ng tin dá»‹ch vá»¥
+            Services_Service servicesService = new Services_Service();
+            Services service = servicesService.getServiceById(serviceId);
+            System.out.println("[DEBUG] service = " + (service != null ? service.getServiceName() : "null"));
 
-            boolean added = invoiceService.addInvoice(invoice);
+            if (service == null) {
+                request.setAttribute("error", "KhĂ´ng tĂ¬m tháº¥y dá»‹ch vá»¥ vá»›i ID: " + serviceId);
+                request.getRequestDispatcher("/views/user/Receptionist/AddInvoice.jsp").forward(request, response);
+                return;
+            }
 
-            String message = added ? "Thêm hóa đơn thành công!" : "Đã tồn tại hóa đơn, không thể thêm mới!";
-            response.sendRedirect(request.getContextPath() + "/ViewInvoiceServlet?message=" + java.net.URLEncoder.encode(message, "UTF-8"));
+            // Truyá»�n thĂ´ng tin sang JSP xĂ¡c nháº­n
+            request.setAttribute("patientId", patientId);
+            request.setAttribute("doctorId", doctorId);
+            request.setAttribute("serviceId", serviceId);
+            request.setAttribute("resultId", resultId);
+            request.setAttribute("serviceName", service.getServiceName());
+            request.setAttribute("servicePrice", service.getPrice());
 
-        } catch (NumberFormatException e) {
+            // CĂ³ thá»ƒ láº¥y thĂªm tĂªn bá»‡nh nhĂ¢n, bĂ¡c sÄ© náº¿u cáº§n
+
+            request.getRequestDispatcher("/views/user/Receptionist/AddInvoice.jsp").forward(request, response);
+        } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu không hợp lệ: " + e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
+            request.setAttribute("error", "CĂ³ lá»—i khi xĂ¡c nháº­n thanh toĂ¡n: " + e.getMessage());
+            request.getRequestDispatcher("/views/user/Receptionist/AddInvoice.jsp").forward(request, response);
         }
     }
-}
+} 

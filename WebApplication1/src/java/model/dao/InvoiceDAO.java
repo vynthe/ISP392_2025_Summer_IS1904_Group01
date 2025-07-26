@@ -430,14 +430,14 @@ public class InvoiceDAO {
         return invoice;
     }
 
-    public boolean existsInvoice(int patientId, int serviceId) throws SQLException {
-        String sql = "SELECT 1 FROM Invoices WHERE PatientID = ? AND ServiceID = ? AND Status != 'CANCELLED' LIMIT 1";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, patientId);
-            pstmt.setInt(2, serviceId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next();
-            }
-        }
-    }
+//    public boolean existsInvoice(int patientId, int serviceId) throws SQLException {
+//        String sql = "SELECT 1 FROM Invoices WHERE PatientID = ? AND ServiceID = ? AND Status != 'CANCELLED' LIMIT 1";
+//        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setInt(1, patientId);
+//            pstmt.setInt(2, serviceId);
+//            try (ResultSet rs = pstmt.executeQuery()) {
+//                return rs.next();
+//            }
+//        }
+//    }
 }
