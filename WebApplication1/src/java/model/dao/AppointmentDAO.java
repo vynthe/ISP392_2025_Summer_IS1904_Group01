@@ -581,20 +581,51 @@ public class AppointmentDAO {
         return null;
     }
 
-    // Hủy lịch hẹn (soft delete)
     public boolean cancelAppointment(int appointmentId) throws SQLException {
-        String sql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ? AND Status != 'Cancelled'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-            pstmt.setInt(2, appointmentId);
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("SQLException in cancelAppointment: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
+    // Kiểm tra xem appointment có tồn tại và lấy trạng thái hiện tại
+    String checkSql = "SELECT Status FROM Appointments WHERE AppointmentID = ?";
+    try (Connection conn = dbContext.getConnection(); 
+         PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        
+        checkStmt.setInt(1, appointmentId);
+        ResultSet rs = checkStmt.executeQuery();
+        
+        if (!rs.next()) {
+            // Appointment không tồn tại
+            System.err.println("❌ Appointment " + appointmentId + " does not exist at " + LocalDateTime.now() + " +07");
+            return false;
         }
+        
+        String currentStatus = rs.getString("Status");
+        
+        // Nếu đã bị cancelled, coi như thành công (tránh double-cancel)
+        if ("Cancelled".equals(currentStatus)) {
+            System.out.println("ℹ️ Appointment " + appointmentId + " is already cancelled - treating as success at " + LocalDateTime.now() + " +07");
+            return true;
+        }
+        
+        // Thực hiện cancel nếu chưa bị cancelled
+        String updateSql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ?";
+        try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+            updateStmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            updateStmt.setInt(2, appointmentId);
+            
+            int rowsAffected = updateStmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("✅ Appointment " + appointmentId + " cancelled successfully at " + LocalDateTime.now() + " +07");
+                return true;
+            } else {
+                System.err.println("❌ Failed to cancel appointment " + appointmentId + " at " + LocalDateTime.now() + " +07");
+                return false;
+            }
+        }
+        
+    } catch (SQLException e) {
+        System.err.println("SQLException in cancelAppointment for appointmentId " + appointmentId + ": " + 
+                          e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+        throw e;
     }
+}
 
     // Xóa lịch hẹn vĩnh viễn (hard delete)
     public boolean deleteAppointmentPermanently(int appointmentId) throws SQLException {

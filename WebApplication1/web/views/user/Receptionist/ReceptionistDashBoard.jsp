@@ -356,7 +356,7 @@
                     </div>
                     <h3 class="card-title">Quản Lý Đặt Lịch</h3>
                     <p class="card-subtitle">Xem và quản lý tất cả các cuộc hẹn và lịch trình đặt lịch</p>
-                    <a href="${pageContext.request.contextPath}/BookingServlet" class="action-btn">
+                    <a href="${pageContext.request.contextPath}/ViewBookingServlet" class="action-btn">
                         <i class="fas fa-calendar-check mr-2"></i>Xem Lịch Đặt
                     </a>
                 </div>
