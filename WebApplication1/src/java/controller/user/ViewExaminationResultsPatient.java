@@ -1,174 +1,170 @@
 package controller.user;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
+import model.service.ExaminationResultsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import model.service.ExaminationResultsService;
+import model.entity.Users;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
-@WebServlet(name = "ViewExaminationResultsPatient", urlPatterns = {"/ViewExaminationResultsPatient"})
+/**
+ * Controller để xử lý việc xem kết quả khám của bệnh nhân
+ */
+@WebServlet("/ViewExaminationResultsPatient")
 public class ViewExaminationResultsPatient extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    private ExaminationResultsService examinationResultsService;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        examinationResultsService = new ExaminationResultsService();
+    
+    private final ExaminationResultsService examinationResultsService;
+    
+    public ViewExaminationResultsPatient() {
+        this.examinationResultsService = new ExaminationResultsService();
     }
-
+    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        HttpSession session = request.getSession();
-        Integer patientId = (Integer) session.getAttribute("userId");
-        String userRole = (String) session.getAttribute("userRole");
-        
-        // Kiểm tra đăng nhập và quyền truy cập
-        if (patientId == null || !"patient".equalsIgnoreCase(userRole)) {
-            response.sendRedirect("/views/user/Patient/ViewExaminationResultsPatient.jsp");
+        // Get the session without creating a new one
+        HttpSession session = request.getSession(false);
+
+        // Check if user is logged in
+        if (session == null || session.getAttribute("user") == null) {
+            request.setAttribute("error", "Bạn cần đăng nhập để truy cập trang này.");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
             return;
         }
 
+        // Get user from session and verify role is Patient
+        Users user = (Users) session.getAttribute("user");
+        System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole());
+        if (!"Patient".equalsIgnoreCase(user.getRole())) {
+            request.setAttribute("error", "Chỉ bệnh nhân mới có quyền truy cập vào trang này.");
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            return;
+        }
+        
+        // Use UserID from session as patientId
+        int patientId = user.getUserID();
+        
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
         }
-
+        
         try {
             switch (action) {
                 case "list":
-                    handleListExaminationResults(request, response, patientId);
+                    handleListResults(request, response, patientId);
                     break;
                 case "detail":
-                    handleViewDetail(request, response, patientId);
+                    handleResultDetail(request, response, patientId);
                     break;
                 default:
-                    handleListExaminationResults(request, response, patientId);
+                    handleListResults(request, response, patientId);
                     break;
             }
         } catch (SQLException e) {
-            System.err.println("Database error in ViewExaminationResultsPatient: " + e.getMessage());
-            request.setAttribute("errorMessage", "Có lỗi xảy ra khi truy xuất dữ liệu. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
-        } catch (Exception e) {
-            System.err.println("Unexpected error in ViewExaminationResultsPatient: " + e.getMessage());
-            request.setAttribute("errorMessage", "Có lỗi không mong muốn xảy ra. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
+            request.setAttribute("errorMessage", "Có lỗi xảy ra khi truy xuất dữ liệu: " + e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
         }
     }
-
+    
     /**
-     * Xử lý hiển thị danh sách kết quả khám bệnh
+     * Xử lý hiển thị danh sách kết quả khám của bệnh nhân
      */
-    private void handleListExaminationResults(HttpServletRequest request, HttpServletResponse response, int patientId)
+    private void handleListResults(HttpServletRequest request, HttpServletResponse response, int patientId) 
             throws ServletException, IOException, SQLException {
         
-        // Lấy thông số phân trang
+        // Xử lý phân trang
         int page = 1;
-        int pageSize = DEFAULT_PAGE_SIZE;
+        int pageSize = 10;
         
         String pageParam = request.getParameter("page");
-        String pageSizeParam = request.getParameter("pageSize");
-        
-        try {
-            if (pageParam != null && !pageParam.trim().isEmpty()) {
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
                 page = Integer.parseInt(pageParam);
                 if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
             }
-            if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) {
-                pageSize = Integer.parseInt(pageSizeParam);
-                if (pageSize < 1) pageSize = DEFAULT_PAGE_SIZE;
-                if (pageSize > 50) pageSize = 50; // Giới hạn tối đa
-            }
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid page parameters: " + e.getMessage());
-            page = 1;
-            pageSize = DEFAULT_PAGE_SIZE;
         }
-
-        // Lấy dữ liệu từ service
+        
+        String pageSizeParam = request.getParameter("pageSize");
+        if (pageSizeParam != null && !pageSizeParam.isEmpty()) {
+            try {
+                pageSize = Integer.parseInt(pageSizeParam);
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 50) pageSize = 50; // Giới hạn tối đa
+            } catch (NumberFormatException e) {
+                pageSize = 10;
+            }
+        }
+        
+        // Lấy danh sách kết quả khám
         List<Map<String, Object>> examinationResults = 
             examinationResultsService.getExaminationResultsByPatientId(patientId, page, pageSize);
-        int totalRecords = examinationResultsService.getTotalExaminationResultsByPatientId(patientId);
         
-        // Tính toán thông tin phân trang
-        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+        // Lấy tổng số bản ghi để tính pagination
+        int totalResults = examinationResultsService.getTotalExaminationResultsByPatientId(patientId);
+        int totalPages = (int) Math.ceil((double) totalResults / pageSize);
         
         // Set attributes cho JSP
         request.setAttribute("examinationResults", examinationResults);
         request.setAttribute("currentPage", page);
         request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalResults", totalResults);
         request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalRecords", totalRecords);
         
-        // Thông tin bổ sung cho phân trang
-        request.setAttribute("hasNextPage", page < totalPages);
-        request.setAttribute("hasPreviousPage", page > 1);
-        request.setAttribute("nextPage", page + 1);
-        request.setAttribute("previousPage", page - 1);
+        // Tính toán thông tin phân trang
+        int startPage = Math.max(1, page - 2);
+        int endPage = Math.min(totalPages, page + 2);
+        request.setAttribute("startPage", startPage);
+        request.setAttribute("endPage", endPage);
         
-        // Forward đến JSP danh sách
-        request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
+        // Forward đến JSP
+        request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp")
+               .forward(request, response);
     }
-
+    
     /**
-     * Xử lý hiển thị chi tiết kết quả khám bệnh
+     * Xử lý hiển thị chi tiết kết quả khám
      */
-    private void handleViewDetail(HttpServletRequest request, HttpServletResponse response, int patientId)
+    private void handleResultDetail(HttpServletRequest request, HttpServletResponse response, int patientId) 
             throws ServletException, IOException, SQLException {
         
         String resultIdParam = request.getParameter("resultId");
-        
-        if (resultIdParam == null || resultIdParam.trim().isEmpty()) {
-            request.setAttribute("errorMessage", "Không tìm thấy ID kết quả khám bệnh.");
-            request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
+        if (resultIdParam == null || resultIdParam.isEmpty()) {
+            request.setAttribute("errorMessage", "Không tìm thấy ID kết quả khám");
+            handleListResults(request, response, patientId);
             return;
         }
         
         try {
             int resultId = Integer.parseInt(resultIdParam);
             
-            // Lấy chi tiết kết quả khám bệnh
+            // Lấy chi tiết kết quả khám (đảm bảo chỉ bệnh nhân này mới xem được)
             Map<String, Object> resultDetail = 
                 examinationResultsService.getExaminationResultDetailForPatient(resultId, patientId);
             
-            if (resultDetail == null || resultDetail.isEmpty()) {
-                request.setAttribute("errorMessage", "Không tìm thấy kết quả khám bệnh hoặc bạn không có quyền truy cập.");
-                request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
-                return;
-            }
-            
-            // Set attribute và forward đến JSP chi tiết
             request.setAttribute("resultDetail", resultDetail);
-            request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp")
+                   .forward(request, response);
             
         } catch (NumberFormatException e) {
-            System.err.println("Invalid result ID format: " + resultIdParam);
-            request.setAttribute("errorMessage", "ID kết quả khám bệnh không hợp lệ.");
-            request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
+            request.setAttribute("errorMessage", "ID kết quả khám không hợp lệ");
+            handleListResults(request, response, patientId);
         } catch (SQLException e) {
             if (e.getMessage().contains("No examination result found")) {
-                request.setAttribute("errorMessage", "Không tìm thấy kết quả khám bệnh hoặc bạn không có quyền truy cập.");
-                request.getRequestDispatcher("/views/user/Patient/ViewExaminationResultsPatient.jsp").forward(request, response);
+                request.setAttribute("errorMessage", "Không tìm thấy kết quả khám hoặc bạn không có quyền xem");
             } else {
-                throw e; // Re-throw để xử lý ở level cao hơn
+                request.setAttribute("errorMessage", "Có lỗi xảy ra khi truy xuất dữ liệu: " + e.getMessage());
             }
+            handleListResults(request, response, patientId);
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        // Chuyển hướng POST requests sang GET
-        doGet(request, response);
     }
 }
