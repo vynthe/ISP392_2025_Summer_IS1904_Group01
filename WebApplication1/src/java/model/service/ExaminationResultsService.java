@@ -69,6 +69,7 @@ public class ExaminationResultsService {
         return examinationResultsDAO.addExaminationResultFromAppointment(appointmentId, nurseId, status, diagnosis, notes);
     }
 
+    
     public Map<String, Object> getExaminationResultById(int resultId) throws SQLException {
         if (resultId <= 0) {
             throw new IllegalArgumentException("Result ID must be positive");

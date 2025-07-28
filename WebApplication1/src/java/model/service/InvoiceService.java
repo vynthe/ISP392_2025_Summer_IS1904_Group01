@@ -165,12 +165,25 @@ public class InvoiceService {
     /**
      * ✅ THÊM: Lấy thông tin chi tiết hóa đơn kèm thông tin kết quả khám
      */
-    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
-        if (invoiceId <= 0) {
-            throw new IllegalArgumentException("InvoiceID không hợp lệ: " + invoiceId);
+//    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
+//        if (invoiceId <= 0) {
+//            throw new IllegalArgumentException("InvoiceID không hợp lệ: " + invoiceId);
+//        }
+//        return invoiceDAO.getInvoiceDetailWithExaminationResult(invoiceId);
+//    }
+
+    /**
+     * ✅ Lấy chi tiết kết quả khám + hóa đơn theo resultId (JOIN 2 bảng)
+     * @param resultId ID của kết quả khám
+     * @return Map chứa thông tin chi tiết của cả ExaminationResults và Invoices (hoặc null nếu không có)
+     */
+    public Map<String, Object> getExaminationResultWithInvoiceByResultId(int resultId) throws SQLException {
+        if (resultId <= 0) {
+            throw new IllegalArgumentException("ResultID không hợp lệ: " + resultId);
         }
-        return invoiceDAO.getInvoiceDetailWithExaminationResult(invoiceId);
+        return invoiceDAO.getExaminationResultWithInvoiceByResultId(resultId);
     }
+
 
     // ---------------------- Phương thức hỗ trợ ----------------------
     

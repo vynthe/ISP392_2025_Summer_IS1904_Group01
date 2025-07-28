@@ -507,55 +507,110 @@ public class InvoiceDAO {
         return invoices;
     }
 
-    // ✅ THÊM: Lấy thông tin chi tiết hóa đơn kèm thông tin kết quả khám
-    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
-        String sql = "SELECT i.*, r.AppointmentID, r.NurseID, r.Diagnosis, r.Notes, r.Status as resultStatus, "
-                + "d.FullName as doctorName, p.FullName as patientName, "
-                + "n.FullName as nurseName, s.ServiceName, s.Price "
-                + "FROM Invoices i "
-                + "LEFT JOIN ExaminationResults r ON i.ResultID = r.ResultID "
-                + "LEFT JOIN Users d ON i.DoctorID = d.UserID "
-                + "LEFT JOIN Users p ON i.PatientID = p.UserID "
-                + "LEFT JOIN Users n ON r.NurseID = n.UserID "
-                + "LEFT JOIN Services s ON i.ServiceID = s.ServiceID "
-                + "WHERE i.InvoiceID = ?";
-        
-        try (Connection conn = dbContext.getConnection(); 
+    /**
+     * ✅ Lấy chi tiết kết quả khám + hóa đơn theo resultId (JOIN 2 bảng)
+     * @param resultId ID của kết quả khám
+     * @return Map chứa thông tin chi tiết của cả ExaminationResults và Invoices (hoặc null nếu không có)
+     */
+    public Map<String, Object> getExaminationResultWithInvoiceByResultId(int resultId) throws SQLException {
+        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, d.FullName AS doctorName, " +
+                "r.PatientID, p.FullName AS patientName, r.NurseID, n.FullName AS nurseName, " +
+                "r.ServiceID, s.ServiceName, s.Price, r.Status AS resultStatus, r.Diagnosis, r.Notes, r.CreatedAt AS resultCreatedAt, r.UpdatedAt AS resultUpdatedAt, " +
+                "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus, i.CreatedAt AS invoiceCreatedAt, i.UpdatedAt AS invoiceUpdatedAt " +
+                "FROM ExaminationResults r " +
+                "LEFT JOIN Users d ON r.DoctorID = d.UserID " +
+                "LEFT JOIN Users p ON r.PatientID = p.UserID " +
+                "LEFT JOIN Users n ON r.NurseID = n.UserID " +
+                "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                "LEFT JOIN Invoices i ON r.ResultID = i.ResultID " +
+                "WHERE r.ResultID = ?";
+        try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, invoiceId);
-            
+            pstmt.setInt(1, resultId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     Map<String, Object> detail = new HashMap<>();
-                    
-                    // Thông tin hóa đơn
-                    detail.put("invoiceId", rs.getInt("InvoiceID"));
-                    detail.put("totalAmount", rs.getDouble("TotalAmount"));
-                    detail.put("status", rs.getString("Status"));
-                    detail.put("createdAt", rs.getTimestamp("CreatedAt"));
-                    detail.put("updatedAt", rs.getTimestamp("UpdatedAt"));
-                    
                     // Thông tin kết quả khám
                     detail.put("resultId", rs.getInt("ResultID"));
                     detail.put("appointmentId", rs.getInt("AppointmentID"));
-                    detail.put("diagnosis", rs.getString("Diagnosis"));
-                    detail.put("notes", rs.getString("Notes"));
-                    detail.put("resultStatus", rs.getString("resultStatus"));
-                    
-                    // Thông tin người dùng
+                    detail.put("doctorId", rs.getInt("DoctorID"));
                     detail.put("doctorName", rs.getString("doctorName"));
+                    detail.put("patientId", rs.getInt("PatientID"));
                     detail.put("patientName", rs.getString("patientName"));
+                    detail.put("nurseId", rs.getObject("NurseID"));
                     detail.put("nurseName", rs.getString("nurseName"));
+                    detail.put("serviceId", rs.getInt("ServiceID"));
                     detail.put("serviceName", rs.getString("ServiceName"));
                     detail.put("servicePrice", rs.getDouble("Price"));
-                    
+                    detail.put("resultStatus", rs.getString("resultStatus"));
+                    detail.put("diagnosis", rs.getString("Diagnosis"));
+                    detail.put("notes", rs.getString("Notes"));
+                    detail.put("resultCreatedAt", rs.getTimestamp("resultCreatedAt"));
+                    detail.put("resultUpdatedAt", rs.getTimestamp("resultUpdatedAt"));
+                    // Thông tin hóa đơn (có thể null)
+                    detail.put("invoiceId", rs.getObject("InvoiceID"));
+                    detail.put("totalAmount", rs.getObject("TotalAmount"));
+                    detail.put("invoiceStatus", rs.getString("invoiceStatus"));
+                    detail.put("invoiceCreatedAt", rs.getTimestamp("invoiceCreatedAt"));
+                    detail.put("invoiceUpdatedAt", rs.getTimestamp("invoiceUpdatedAt"));
                     return detail;
                 }
             }
         }
         return null;
     }
+
+//    // ✅ THÊM: Lấy thông tin chi tiết hóa đơn kèm thông tin kết quả khám
+//    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
+//        String sql = "SELECT i.*, r.AppointmentID, r.NurseID, r.Diagnosis, r.Notes, r.Status as resultStatus, "
+//                + "d.FullName as doctorName, p.FullName as patientName, "
+//                + "n.FullName as nurseName, s.ServiceName, s.Price "
+//                + "FROM Invoices i "
+//                + "LEFT JOIN ExaminationResults r ON i.ResultID = r.ResultID "
+//                + "LEFT JOIN Users d ON i.DoctorID = d.UserID "
+//                + "LEFT JOIN Users p ON i.PatientID = p.UserID "
+//                + "LEFT JOIN Users n ON r.NurseID = n.UserID "
+//                + "LEFT JOIN Services s ON i.ServiceID = s.ServiceID "
+//                + "WHERE i.InvoiceID = ?";
+//        
+//        try (Connection conn = dbContext.getConnection(); 
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            
+//            pstmt.setInt(1, invoiceId);
+//            
+//            try (ResultSet rs = pstmt.executeQuery()) {
+//                if (rs.next()) {
+//                    Map<String, Object> detail = new HashMap<>();
+//                    
+//                    // Thông tin hóa đơn
+//                    detail.put("invoiceId", rs.getInt("InvoiceID"));
+//                    detail.put("totalAmount", rs.getDouble("TotalAmount"));
+//                    detail.put("status", rs.getString("Status"));
+//                    detail.put("createdAt", rs.getTimestamp("CreatedAt"));
+//                    detail.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+//                    
+//                    // Thông tin kết quả khám
+//                    detail.put("resultId", rs.getInt("ResultID"));
+//                    detail.put("appointmentId", rs.getInt("AppointmentID"));
+//                    detail.put("diagnosis", rs.getString("Diagnosis"));
+//                    detail.put("notes", rs.getString("Notes"));
+//                    detail.put("resultStatus", rs.getString("resultStatus"));
+//                    
+//                    // Thông tin người dùng
+//                    detail.put("doctorName", rs.getString("doctorName"));
+//                    detail.put("patientName", rs.getString("patientName"));
+//                    detail.put("nurseName", rs.getString("nurseName"));
+//                    detail.put("serviceName", rs.getString("ServiceName"));
+//                    detail.put("servicePrice", rs.getDouble("Price"));
+//                    
+//                    return detail;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
+
 
     private Invoices mapResultSetToInvoice(ResultSet rs) throws SQLException {
         Invoices invoice = new Invoices();

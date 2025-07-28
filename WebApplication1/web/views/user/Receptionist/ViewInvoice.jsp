@@ -690,7 +690,7 @@
                                                     </c:if>
                                                     
                                                     <!-- ✅ THÊM: Nút xem chi tiết kết quả khám -->
-                                                    <a href="${pageContext.request.contextPath}/ViewExaminationResultDetailServlet?resultId=${result.resultId}" 
+                                                    <a href="${pageContext.request.contextPath}/ViewInvoiceDetailServlet?resultId=${result.resultId}" 
                                                        class="action-btn update-btn">
                                                         <i class="fas fa-eye"></i>
                                                         Xem chi tiết
