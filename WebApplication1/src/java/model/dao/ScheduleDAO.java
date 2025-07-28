@@ -1225,4 +1225,144 @@ public boolean updateScheduleForDoctorNurse(int slotId, int userId, LocalDate ne
             if (conn != null) try { conn.close(); } catch (SQLException e) { /* ignored */ }
         }
     }
+ public boolean reassignScheduleToUser(int slotId, int newUserId) throws SQLException {
+        // Validate input
+        if (slotId <= 0 || newUserId <= 0) {
+            throw new IllegalArgumentException("slotId và newUserId phải là số dương");
+        }
+
+        String checkSql = "SELECT SlotID, UserID, Role, SlotDate, StartTime, EndTime, Status FROM ScheduleEmployee WHERE SlotID = ?";
+        String roleCheckSql = "SELECT Role FROM Users WHERE UserID = ? AND Role = ? AND Status = 'Active'";
+        String conflictSql = "SELECT COUNT(*) FROM ScheduleEmployee " +
+                            "WHERE UserID = ? AND SlotDate = ? AND Status != 'Cancelled' " +
+                            "AND ((StartTime <= ? AND EndTime > ?) OR (StartTime < ? AND EndTime >= ?))";
+        String updateSql = "UPDATE ScheduleEmployee SET UserID = ?, UpdatedAt = GETDATE() WHERE SlotID = ?";
+        String notificationSql = "INSERT INTO Notifications (SenderID, SenderRole, ReceiverID, ReceiverRole, Title, Message, IsRead, CreatedAt) " +
+                               "VALUES (?, 'Receptionist', ?, ?, ?, ?, 0, GETDATE())";
+
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Kiểm tra schedule có tồn tại không
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setInt(1, slotId);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new IllegalArgumentException("Schedule với SlotID " + slotId + " không tồn tại");
+                    }
+
+                    int oldUserId = rs.getInt("UserID");
+                    String role = rs.getString("Role");
+                    LocalDate slotDate = rs.getDate("SlotDate").toLocalDate();
+                    LocalTime startTime = rs.getTime("StartTime").toLocalTime();
+                    LocalTime endTime = rs.getTime("EndTime").toLocalTime();
+                    String status = rs.getString("Status");
+
+                    // Kiểm tra user mới có cùng role không (Doctor thay Doctor, Nurse thay Nurse)
+                    try (PreparedStatement roleStmt = conn.prepareStatement(roleCheckSql)) {
+                        roleStmt.setInt(1, newUserId);
+                        roleStmt.setString(2, role);
+                        try (ResultSet rsRole = roleStmt.executeQuery()) {
+                            if (!rsRole.next()) {
+                                throw new IllegalArgumentException("User ID " + newUserId + " không có role " + role + " hoặc không active");
+                            }
+                        }
+                    }
+
+                    // Kiểm tra user mới có available không (không có lịch trùng)
+                    try (PreparedStatement conflictStmt = conn.prepareStatement(conflictSql)) {
+                        conflictStmt.setInt(1, newUserId);
+                        conflictStmt.setDate(2, Date.valueOf(slotDate));
+                        conflictStmt.setTime(3, Time.valueOf(startTime));
+                        conflictStmt.setTime(4, Time.valueOf(startTime));
+                        conflictStmt.setTime(5, Time.valueOf(endTime));
+                        conflictStmt.setTime(6, Time.valueOf(endTime));
+                        try (ResultSet rsConflict = conflictStmt.executeQuery()) {
+                            if (rsConflict.next() && rsConflict.getInt(1) > 0) {
+                                throw new IllegalArgumentException("User ID " + newUserId + " đã có lịch trùng thời gian trong slot " + 
+                                                                 slotDate + " từ " + startTime + " đến " + endTime);
+                            }
+                        }
+                    }
+
+                    // Thực hiện reassign - CHỈ CẦN CẬP NHẬT UpdatedAt, KHÔNG CẦN UpdatedBy
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                        updateStmt.setInt(1, newUserId);
+                        updateStmt.setInt(2, slotId);
+                        int rowsAffected = updateStmt.executeUpdate();
+
+                        if (rowsAffected > 0) {
+                            // Tạo notification cho user cũ và user mới
+                            try (PreparedStatement notifyStmt = conn.prepareStatement(notificationSql)) {
+                                // Notification cho user mới - sử dụng system user ID = 1
+                                notifyStmt.setInt(1, 1); // System user
+                                notifyStmt.setInt(2, newUserId);
+                                notifyStmt.setString(3, role);
+                                notifyStmt.setString(4, "Lịch làm việc mới được phân công");
+                                notifyStmt.setString(5, "Bạn được thay thế làm " + role + " vào ngày " + slotDate + 
+                                                   " từ " + startTime + " đến " + endTime);
+                                notifyStmt.setBoolean(6, false);
+                                notifyStmt.executeUpdate();
+
+                                // Notification cho user cũ
+                                notifyStmt.setInt(2, oldUserId);
+                                notifyStmt.setString(4, "Lịch làm việc bị thay đổi");
+                                notifyStmt.setString(5, "Lịch " + role + " của bạn vào ngày " + slotDate + 
+                                                   " từ " + startTime + " đến " + endTime + " đã được chuyển cho người khác");
+                                notifyStmt.executeUpdate();
+                            }
+
+                            conn.commit();
+                            System.out.println("Reassign schedule thành công: SlotID " + slotId + 
+                                              " từ UserID " + oldUserId + " sang UserID " + newUserId + 
+                                              " tại " + LocalDateTime.now() + " +07");
+                            return true;
+                        } else {
+                            conn.rollback();
+                            return false;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException trong reassignScheduleToUser: " + e.getMessage() + 
+                              " tại " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
+  public Map<String, String> getScheduleBySlotId(int slotId) throws SQLException {
+        Map<String, String> schedule = new LinkedHashMap<>();
+        String sql = "SELECT se.SlotID, se.UserID, u.FullName, se.Role, se.SlotDate, se.StartTime, se.EndTime, " +
+                     "r.RoomName, STRING_AGG(s.ServiceName, ',') AS ServiceNames " +
+                     "FROM ScheduleEmployee se " +
+                     "LEFT JOIN Users u ON se.UserID = u.UserID " +
+                     "LEFT JOIN Rooms r ON se.RoomID = r.RoomID " +
+                     "LEFT JOIN RoomServices rs ON r.RoomID = rs.RoomID " +
+                     "LEFT JOIN Services s ON rs.ServiceID = s.ServiceID " +
+                     "WHERE se.SlotID = ? " +
+                     "GROUP BY se.SlotID, se.UserID, u.FullName, se.Role, se.SlotDate, se.StartTime, se.EndTime, r.RoomName";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, slotId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    schedule.put("SlotID", String.valueOf(rs.getInt("SlotID")));
+                    schedule.put("UserID", String.valueOf(rs.getInt("UserID")));
+                    schedule.put("FullName", rs.getString("FullName") != null ? rs.getString("FullName") : "");
+                    schedule.put("Role", rs.getString("Role") != null ? rs.getString("Role") : "");
+                    schedule.put("SlotDate", rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toString() : "");
+                    schedule.put("StartTime", rs.getTime("StartTime") != null ? rs.getTime("StartTime").toString() : "");
+                    schedule.put("EndTime", rs.getTime("EndTime") != null ? rs.getTime("EndTime").toString() : "");
+                    schedule.put("RoomName", rs.getString("RoomName") != null ? rs.getString("RoomName") : "Chưa phân phòng");
+                    schedule.put("ServiceNames", rs.getString("ServiceNames") != null ? rs.getString("ServiceNames") : "");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException trong getScheduleBySlotId: " + e.getMessage() + 
+                              " tại " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return schedule;
+    }
 }

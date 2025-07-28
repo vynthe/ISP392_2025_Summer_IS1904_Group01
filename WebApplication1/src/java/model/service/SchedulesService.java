@@ -370,6 +370,54 @@ public boolean updateScheduleForDoctorNurse(int slotId, int userId, LocalDate ne
             throws SQLException, IllegalArgumentException {
         return scheduleDAO.updateScheduleForDoctorNurse(slotId, userId, newSlotDate, newStartTime, newEndTime, updatedBy);
     }
+
+ public boolean reassignScheduleToUser(int slotId, int newUserId) 
+            throws SQLException, IllegalArgumentException {
+    
+        // Validate input
+        if (slotId <= 0) {
+            throw new IllegalArgumentException("Slot ID phải là số dương");
+        }
+        if (newUserId <= 0) {
+            throw new IllegalArgumentException("User ID mới phải là số dương");
+        }
+    
+        // Kiểm tra schedule có tồn tại không
+        ScheduleEmployee currentSchedule = scheduleDAO.getScheduleById(slotId);
+        if (currentSchedule == null) {
+            throw new IllegalArgumentException("Schedule với ID " + slotId + " không tồn tại");
+        }
+    
+        // Kiểm tra vai trò của schedule
+        String role = currentSchedule.getRole();
+        if (!"Doctor".equalsIgnoreCase(role) && !"Nurse".equalsIgnoreCase(role)) {
+            throw new IllegalArgumentException("Chỉ có thể reassign lịch của Doctor hoặc Nurse");
+        }
+    
+        // Kiểm tra user mới có vai trò phù hợp và active không
+        Users newUser = userDAO.getUserByID(newUserId);
+        if (newUser == null) {
+            throw new IllegalArgumentException("User với ID " + newUserId + " không tồn tại");
+        }
+        if (!role.equalsIgnoreCase(newUser.getRole())) {
+            throw new IllegalArgumentException("User mới phải có vai trò " + role + 
+                                             ", nhưng có vai trò " + newUser.getRole());
+        }
+        if (!"Active".equalsIgnoreCase(newUser.getStatus())) {
+            throw new IllegalArgumentException("User với ID " + newUserId + " không ở trạng thái Active");
+        } 
+        try {
+            boolean result = scheduleDAO.reassignScheduleToUser(slotId, newUserId);
+            if (!result) {
+                throw new SQLException("Không thể reassign lịch với SlotID " + slotId + " cho UserID " + newUserId);
+            }
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi reassign schedule trong service cho SlotID " + slotId + 
+                              ": " + e.getMessage() + " tại " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+    }
 }
 
 

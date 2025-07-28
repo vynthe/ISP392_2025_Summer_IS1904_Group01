@@ -133,30 +133,27 @@ public class AppointmentDAO {
         }
         return services.isEmpty() ? List.of("N/A") : services;
     }
-
-    // Lấy danh sách lịch trình theo DoctorID (đã sửa sang dùng ScheduleEmployee)
-    public List<String> getSchedulesByDoctorId(int doctorId) throws SQLException {
-        List<String> schedules = new ArrayList<>();
-        String sql = "SELECT SlotDate, StartTime, EndTime, Status FROM ScheduleEmployee "
-                + "WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Available'";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, doctorId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    String schedule = rs.getDate("SlotDate").toLocalDate() + " ("
-                            + rs.getTime("StartTime").toLocalTime() + " - "
-                            + rs.getTime("EndTime").toLocalTime() + ", Status: "
-                            + rs.getString("Status") + ")";
-                    schedules.add(schedule);
-                }
+public List<String> getSchedulesByDoctorId(int doctorId) throws SQLException {
+    List<String> schedules = new ArrayList<>();
+    String sql = "SELECT SlotDate, StartTime, EndTime, Status FROM ScheduleEmployee "
+            + "WHERE UserID = ? AND Role = 'Doctor' AND Status = 'Available'";
+    try (Connection conn = dbContext.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, doctorId);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String schedule = rs.getDate("SlotDate").toLocalDate() + " ("
+                        + rs.getTime("StartTime").toLocalTime() + " - "
+                        + rs.getTime("EndTime").toLocalTime() + ", Status: "
+                        + rs.getString("Status") + ")";
+                schedules.add(schedule);
             }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getSchedulesByDoctorId at " + LocalDateTime.now() + " +07: " + e.getMessage());
-            throw e;
         }
-        return schedules.isEmpty() ? List.of("N/A") : schedules;
+    } catch (SQLException e) {
+        System.err.println("SQLException in getSchedulesByDoctorId at " + LocalDateTime.now() + " +07: " + e.getMessage());
+        throw e;
     }
-
+    return schedules.isEmpty() ? List.of("N/A") : schedules;
+}
     // Lấy thông tin chi tiết phòng theo RoomID
     public Rooms getRoomByID(int roomID) throws SQLException {
         String sql = "SELECT * FROM Rooms WHERE RoomID = ?";
@@ -581,49 +578,142 @@ public class AppointmentDAO {
         return null;
     }
 
-    public boolean cancelAppointment(int appointmentId) throws SQLException {
-    // Kiểm tra xem appointment có tồn tại và lấy trạng thái hiện tại
-    String checkSql = "SELECT Status FROM Appointments WHERE AppointmentID = ?";
-    try (Connection conn = dbContext.getConnection(); 
-         PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+   public boolean cancelAppointmentAndUpdateSlot(int appointmentId) throws SQLException {
+    Connection conn = null;
+    try {
+        conn = dbContext.getConnection();
+        conn.setAutoCommit(false); // Bắt đầu transaction
         
-        checkStmt.setInt(1, appointmentId);
-        ResultSet rs = checkStmt.executeQuery();
+        System.out.println("🔄 Starting cancel process for appointment " + appointmentId + " at " + LocalDateTime.now() + " +07");
         
-        if (!rs.next()) {
-            // Appointment không tồn tại
-            System.err.println("❌ Appointment " + appointmentId + " does not exist at " + LocalDateTime.now() + " +07");
-            return false;
+        // BƯỚC 1: Lấy thông tin appointment và slot
+        String getInfoSql = """
+            SELECT a.Status, a.SlotID, a.PatientID, a.DoctorID, a.RoomID,
+                   se.Status as SlotStatus, se.UserID as SlotDoctorId
+            FROM Appointments a 
+            JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+            WHERE a.AppointmentID = ?
+        """;
+        
+        int slotId = 0;
+        int patientId = 0;
+        int doctorId = 0;
+        int roomId = 0;
+        String currentAppStatus = null;
+        String currentSlotStatus = null;
+        
+        try (PreparedStatement getInfoStmt = conn.prepareStatement(getInfoSql)) {
+            getInfoStmt.setInt(1, appointmentId);
+            ResultSet rs = getInfoStmt.executeQuery();
+            
+            if (!rs.next()) {
+                System.err.println("❌ Appointment " + appointmentId + " not found!");
+                conn.rollback();
+                return false;
+            }
+            
+            currentAppStatus = rs.getString("Status");
+            slotId = rs.getInt("SlotID");
+            patientId = rs.getInt("PatientID");
+            doctorId = rs.getInt("DoctorID");
+            roomId = rs.getInt("RoomID");
+            currentSlotStatus = rs.getString("SlotStatus");
+            
+            System.out.println("📋 Current status - Appointment: " + currentAppStatus + ", Slot: " + currentSlotStatus);
         }
         
-        String currentStatus = rs.getString("Status");
-        
-        // Nếu đã bị cancelled, coi như thành công (tránh double-cancel)
-        if ("Cancelled".equals(currentStatus)) {
-            System.out.println("ℹ️ Appointment " + appointmentId + " is already cancelled - treating as success at " + LocalDateTime.now() + " +07");
+        // Nếu đã cancelled, return success
+        if ("Cancelled".equals(currentAppStatus)) {
+            System.out.println("ℹ️ Appointment already cancelled, checking slot status...");
+            conn.commit();
             return true;
         }
         
-        // Thực hiện cancel nếu chưa bị cancelled
-        String updateSql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ?";
-        try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-            updateStmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-            updateStmt.setInt(2, appointmentId);
+        // BƯỚC 2: Cancel appointment (UPDATE bảng Appointments)
+        String cancelAppSql = "UPDATE Appointments SET Status = 'Cancelled', UpdatedAt = ? WHERE AppointmentID = ?";
+        try (PreparedStatement cancelStmt = conn.prepareStatement(cancelAppSql)) {
+            cancelStmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            cancelStmt.setInt(2, appointmentId);
             
-            int rowsAffected = updateStmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("✅ Appointment " + appointmentId + " cancelled successfully at " + LocalDateTime.now() + " +07");
-                return true;
-            } else {
-                System.err.println("❌ Failed to cancel appointment " + appointmentId + " at " + LocalDateTime.now() + " +07");
+            int appRowsAffected = cancelStmt.executeUpdate();
+            if (appRowsAffected == 0) {
+                System.err.println("❌ Failed to cancel appointment " + appointmentId);
+                conn.rollback();
                 return false;
+            }
+            System.out.println("✅ Step 1: Appointment " + appointmentId + " cancelled successfully");
+        }
+        
+        // BƯỚC 3: Kiểm tra còn appointment nào khác trong slot không
+        String countActiveSql = "SELECT COUNT(*) FROM Appointments WHERE SlotID = ? AND Status = 'Approved'";
+        int remainingAppointments = 0;
+        
+        try (PreparedStatement countStmt = conn.prepareStatement(countActiveSql)) {
+            countStmt.setInt(1, slotId);
+            ResultSet rs = countStmt.executeQuery();
+            if (rs.next()) {
+                remainingAppointments = rs.getInt(1);
             }
         }
         
+        System.out.println("📊 Remaining active appointments in slot " + slotId + ": " + remainingAppointments);
+        
+        // BƯỚC 4: Cập nhật slot status (UPDATE bảng ScheduleEmployee)
+        if (remainingAppointments == 0) {
+            // Không còn appointment nào → chuyển slot về Available
+            String updateSlotSql = """
+                UPDATE ScheduleEmployee 
+                SET Status = 'Available', 
+                    PatientID = NULL, 
+                    UpdatedAt = GETDATE() 
+                WHERE SlotID = ? AND Status = 'Booked'
+            """;
+            
+            try (PreparedStatement updateSlotStmt = conn.prepareStatement(updateSlotSql)) {
+                updateSlotStmt.setInt(1, slotId);
+                
+                int slotRowsAffected = updateSlotStmt.executeUpdate();
+                if (slotRowsAffected > 0) {
+                    System.out.println("✅ Step 2: Slot " + slotId + " updated from 'Booked' to 'Available'");
+                } else {
+                    System.out.println("⚠️ Warning: Slot " + slotId + " update failed or already Available");
+                }
+            }
+        } else {
+            System.out.println("ℹ️ Step 2: Slot " + slotId + " kept as 'Booked' (has " + remainingAppointments + " remaining appointments)");
+        }
+        
+        // BƯỚC 5: Commit transaction
+        conn.commit();
+        System.out.println("🎉 SUCCESS: Both Appointment and Slot updated successfully at " + LocalDateTime.now() + " +07");
+        
+        return true;
+        
     } catch (SQLException e) {
-        System.err.println("SQLException in cancelAppointment for appointmentId " + appointmentId + ": " + 
-                          e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
+        // Rollback nếu có lỗi
+        if (conn != null) {
+            try {
+                conn.rollback();
+                System.err.println("🔄 Transaction rolled back due to error");
+            } catch (SQLException rollbackEx) {
+                System.err.println("❌ Rollback failed: " + rollbackEx.getMessage());
+            }
+        }
+        
+        System.err.println("❌ SQLException in cancelAppointmentAndUpdateSlot for appointmentId " + appointmentId + 
+                          ": " + e.getMessage() + ", SQLState: " + e.getSQLState() + " at " + LocalDateTime.now() + " +07");
         throw e;
+        
+    } finally {
+        // Đóng connection
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true); // Restore auto-commit
+                conn.close();
+            } catch (SQLException e) {
+                System.err.println("❌ Failed to close connection: " + e.getMessage());
+            }
+        }
     }
 }
 

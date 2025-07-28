@@ -432,6 +432,7 @@
 
             scheduleData.push({
                 slotId: '${schedule.slotId}',
+                userId: '${schedule.userId}', // ✅ THÊM DÒNG NÀY
                 fullName: '<c:out value="${schedule.fullName}" escapeXml="true"/>',
                 role: '<c:out value="${schedule.role}" escapeXml="true"/>',
                 roomId: '${schedule.roomId != null ? schedule.roomId : ""}',
@@ -602,14 +603,16 @@
                                     '</div>' +
                                     '<div class="appointment-service">' + services + '</div>' +
                                     '<div class="appointment-actions">' +
-                                    '<form action="${pageContext.request.contextPath}/UpdateAppointment" method="post">' +
-                                    '<input type="hidden" name="action" value="edit">' +
-                                    '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' + // ✅ Thay đổi từ index thành slotId
-                                    '<input type="hidden" name="userID" value="' + schedule.userID + '">' +
-                                    '<button type="submit">Sửa</button>' +
+                                    // ✅ SỬA FORM - Đảm bảo tham số đúng
+                                    '<form action="${pageContext.request.contextPath}/EditScheduleDoctorNurseServlet" method="get" style="display:inline;">' +
+                                    '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' +
+                                    '<input type="hidden" name="userID" value="' + schedule.userId + '">' +
+                                    '<button type="submit" style="margin-right:5px;">Sửa</button>' +
                                     '</form>' +
-                                    '<form action="${pageContext.request.contextPath}/DeleteAppointmentServlet" method="post">' + // ✅ Đảm bảo đúng URL
-                                    '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' + // ✅ Thay đổi từ index thành slotId
+                                    // ✅ SỬA FORM XÓA
+                                    '<form action="${pageContext.request.contextPath}/DeleteScheduleDoctorNurseServlet" method="post" style="display:inline;">' +
+                                    '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' +
+                                    '<input type="hidden" name="userId" value="' + schedule.userId + '">' +
                                     '<button type="submit" onclick="return confirm(\'Bạn có chắc muốn xóa lịch này?\')">Xóa</button>' +
                                     '</form>' +
                                     '</div>' +

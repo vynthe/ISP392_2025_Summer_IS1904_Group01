@@ -257,14 +257,14 @@ public class AppointmentService {
         return appointmentDAO.getAppointmentById(appointmentId);
     }
 
-    public boolean cancelAppointment(int appointmentId) throws SQLException {
-        if (appointmentId <= 0) {
-            throw new IllegalArgumentException("ID lịch hẹn không hợp lệ: " + appointmentId);
-        }
-
-        return appointmentDAO.cancelAppointment(appointmentId);
+ public boolean cancelAppointment(int appointmentId) throws SQLException {
+    if (appointmentId <= 0) {
+        throw new IllegalArgumentException("ID lịch hẹn không hợp lệ: " + appointmentId);
     }
-
+    
+    // Gọi phương thức tích hợp mới thay vì phương thức cũ
+    return appointmentDAO.cancelAppointmentAndUpdateSlot(appointmentId);
+}
     public boolean deleteAppointmentPermanently(int appointmentId) throws SQLException {
         if (appointmentId <= 0) {
             throw new IllegalArgumentException("ID lịch hẹn không hợp lệ: " + appointmentId);
