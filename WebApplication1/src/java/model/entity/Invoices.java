@@ -3,9 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package model.entity;
- import java.sql.Date;
+
+import java.sql.Date;
 
 public class Invoices {
+
     private int invoiceID;
     private int patientID;
     private int doctorID;
@@ -15,11 +17,12 @@ public class Invoices {
     private int createdBy;
     private Date createdAt;
     private Date updatedAt;
+    private int resultID;
 
     public Invoices() {
     }
 
-    public Invoices(int invoiceID, int patientID, int doctorID, double totalAmount, String status, int serviceID, int createdBy, Date createdAt, Date updatedAt) {
+    public Invoices(int invoiceID, int patientID, int doctorID, double totalAmount, String status, int serviceID, int createdBy, Date createdAt, Date updatedAt, int resultID) {
         this.invoiceID = invoiceID;
         this.patientID = patientID;
         this.doctorID = doctorID;
@@ -29,7 +32,18 @@ public class Invoices {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.resultID = resultID;
     }
+
+    public int getResultID() {
+        return resultID;
+    }
+
+    public void setResultID(int resultID) {
+        this.resultID = resultID;
+    }
+
+   
 
     public int getInvoiceID() {
         return invoiceID;
@@ -103,8 +117,4 @@ public class Invoices {
         this.updatedAt = updatedAt;
     }
 
-  
-    
-
-    
 }

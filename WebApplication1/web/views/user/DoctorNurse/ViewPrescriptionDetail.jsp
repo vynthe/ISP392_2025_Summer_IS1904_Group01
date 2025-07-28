@@ -152,11 +152,26 @@
                 letter-spacing: 0.5px;
             }
 
-            .status-pending { background: #fff3cd; color: #856404; }
-            .status-in-progress { background: #d1ecf1; color: #0c5460; }
-            .status-completed { background: #d4edda; color: #155724; }
-            .status-dispensed { background: #e2e3e5; color: #383d41; }
-            .status-cancelled { background: #f8d7da; color: #721c24; }
+            .status-pending {
+                background: #fff3cd;
+                color: #856404;
+            }
+            .status-in-progress {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+            .status-completed {
+                background: #d4edda;
+                color: #155724;
+            }
+            .status-dispensed {
+                background: #e2e3e5;
+                color: #383d41;
+            }
+            .status-cancelled {
+                background: #f8d7da;
+                color: #721c24;
+            }
 
             .info-grid {
                 display: grid;
@@ -601,21 +616,21 @@
                 </div>
             </div>
 
-           
+
         </div>
-                         <div class="action-buttons">
-                <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?id=${prescription != null ? prescription.prescriptionId : ''}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
-                    Chỉnh sửa ghi chú
-                </a>
-                
-                
-                
-                <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/ViewPatientResult" class="btn back-link">
-                    <i class="fas fa-arrow-left"></i>
-                    Quay lại danh sách
-                </a>
-            </div>
+        <div class="action-buttons">
+            <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?id=${prescription != null ? prescription.prescriptionId : ''}" class="btn btn-primary">
+                <i class="fas fa-edit"></i>
+                Chỉnh sửa ghi chú
+            </a>
+
+
+
+            <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/ViewPatientResult.jsp" class="btn back-link">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại danh sách
+            </a>
+        </div>
 
 
     </body>
