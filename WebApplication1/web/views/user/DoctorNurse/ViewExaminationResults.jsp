@@ -481,36 +481,12 @@
             </c:if>
 
             <c:if test="${empty errorMessage}">
-                <!-- Thống kê -->
+                <!-- Thống kê chỉ hiển thị Tổng lịch hẹn -->
                 <c:if test="${not empty appointments}">
                     <div class="stats">
                         <div class="stat-card">
                             <div class="stat-number">${appointments.size()}</div>
                             <div class="stat-label">Tổng lịch hẹn</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">
-                                <c:set var="completedCount" value="0" />
-                                <c:forEach var="appointment" items="${appointments}">
-                                    <c:if test="${appointment.status == 'Completed' || appointment.status == 'Hoàn thành'}">
-                                        <c:set var="completedCount" value="${completedCount + 1}" />
-                                    </c:if>
-                                </c:forEach>
-                                ${completedCount}
-                            </div>
-                            <div class="stat-label">Đã hoàn thành</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">
-                                <c:set var="diagnosisCount" value="0" />
-                                <c:forEach var="appointment" items="${appointments}">
-                                    <c:if test="${not empty appointment.diagnosis}">
-                                        <c:set var="diagnosisCount" value="${diagnosisCount + 1}" />
-                                    </c:if>
-                                </c:forEach>
-                                ${diagnosisCount}
-                            </div>
-                            <div class="stat-label">Có chuẩn đoán</div>
                         </div>
                     </div>
                 </c:if>
@@ -608,7 +584,7 @@
                     <c:if test="${totalPages > 1}">
                         <div class="pagination">
                             <c:if test="${currentPage > 1}">
-                                <a href="ViewExaminationResults?page=${currentPage - 1}&pageSize=${pageSize}">
+                                <a href="ViewExaminationResultsPatient?page=${currentPage - 1}&pageSize=${pageSize}">
                                     <i class="fas fa-chevron-left"></i> Trước
                                 </a>
                             </c:if>
@@ -616,32 +592,32 @@
                             <c:choose>
                                 <c:when test="${totalPages <= 7}">
                                     <c:forEach begin="1" end="${totalPages}" var="i">
-                                        <a href="ViewExaminationResults?page=${i}&pageSize=${pageSize}" 
+                                        <a href="ViewExaminationResultsPatient?page=${i}&pageSize=${pageSize}" 
                                            class="${i == currentPage ? 'active' : ''}">${i}</a>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
                                     <c:if test="${currentPage > 3}">
-                                        <a href="ViewExaminationResults?page=1&pageSize=${pageSize}">1</a>
+                                        <a href="ViewExaminationResultsPatient?page=1&pageSize=${pageSize}">1</a>
                                         <span style="padding: 8px; color: #A0AEC0;">...</span>
                                     </c:if>
 
                                     <c:forEach begin="${currentPage - 2}" end="${currentPage + 2}" var="i">
                                         <c:if test="${i >= 1 && i <= totalPages}">
-                                            <a href="ViewExaminationResults?page=${i}&pageSize=${pageSize}" 
+                                            <a href="ViewExaminationResultsPatient?page=${i}&pageSize=${pageSize}" 
                                                class="${i == currentPage ? 'active' : ''}">${i}</a>
                                         </c:if>
                                     </c:forEach>
 
                                     <c:if test="${currentPage < totalPages - 2}">
                                         <span style="padding: 8px; color: #A0AEC0;">...</span>
-                                        <a href="ViewExaminationResults?page=${totalPages}&pageSize=${pageSize}">${totalPages}</a>
+                                        <a href="ViewExaminationResultsPatient?page=${totalPages}&pageSize=${pageSize}">${totalPages}</a>
                                     </c:if>
                                 </c:otherwise>
                             </c:choose>
 
                             <c:if test="${currentPage < totalPages}">
-                                <a href="ViewExaminationResults?page=${currentPage + 1}&pageSize=${pageSize}">
+                                <a href="ViewExaminationResultsPatient?page=${currentPage + 1}&pageSize=${pageSize}">
                                     Sau <i class="fas fa-chevron-right"></i>
                                 </a>
                             </c:if>

@@ -177,7 +177,7 @@
                 position: absolute;
                 right: 0;
                 top: calc(100% + 10px);
-                width: 200px;
+                width: 220px;
                 background: white;
                 border-radius: 15px;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -635,12 +635,16 @@
                                 Chỉnh sửa hồ sơ
                             </a>
                             <a href="${pageContext.request.contextPath}/ChangePasswordController">
-                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-key"></i>
                                 Đổi mật khẩu
                             </a>
                             <a href="${pageContext.request.contextPath}/ViewAppointmentPatient">
                                 <i class="fas fa-calendar-check"></i>
                                 Xem lịch khám
+                            </a>
+                            <a href="${pageContext.request.contextPath}/ViewExaminationResultsPatient">
+                                <i class="fas fa-file-medical-alt"></i>
+                                Xem kết quả khám
                             </a>
                             <a href="${pageContext.request.contextPath}/LogoutServlet" 
                                class="danger" 

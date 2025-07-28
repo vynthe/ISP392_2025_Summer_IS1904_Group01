@@ -74,62 +74,67 @@ public class EditExaminationResultServlet extends HttpServlet {
         }
     }
 
-   @Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    HttpSession session = request.getSession(false);
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
 
-    if (session == null || session.getAttribute("user") == null) {
-        response.sendRedirect(request.getContextPath() + "/views/common/login.jsp?error=You must be logged in.");
-        return;
-    }
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/views/common/login.jsp?error=You must be logged in.");
+            return;
+        }
 
-    Users user = (Users) session.getAttribute("user");
-    if (!"Doctor".equalsIgnoreCase(user.getRole())) {
-        response.sendRedirect(request.getContextPath() + "/views/common/error.jsp?error=Only doctors can access this page.");
-        return;
-    }
+        Users user = (Users) session.getAttribute("user");
+        if (!"Doctor".equalsIgnoreCase(user.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/views/common/error.jsp?error=Only doctors can access this page.");
+            return;
+        }
 
-    String appointmentIdParam = request.getParameter("appointmentId");
-    
-    if (appointmentIdParam == null || appointmentIdParam.trim().isEmpty()) {
-        request.getSession().setAttribute("errorMessage", "Thiếu thông tin Appointment ID.");
-        response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
-        return;
-    }
-
-    try {
-        int appointmentId = Integer.parseInt(appointmentIdParam.trim());
-        Integer resultId = examinationResultsService.getResultIdByAppointmentId(appointmentId);
-
-        if (resultId == null) {
-            request.getSession().setAttribute("errorMessage", "Không tìm thấy ResultID để cập nhật.");
+        String appointmentIdParam = request.getParameter("appointmentId");
+        
+        if (appointmentIdParam == null || appointmentIdParam.trim().isEmpty()) {
+            request.getSession().setAttribute("errorMessage", "Thiếu thông tin Appointment ID.");
             response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
             return;
         }
 
-        // Chỉ lấy notes để cập nhật, giữ nguyên diagnosis
-        String notes = request.getParameter("notes");
+        try {
+            int appointmentId = Integer.parseInt(appointmentIdParam.trim());
+            Integer resultId = examinationResultsService.getResultIdByAppointmentId(appointmentId);
 
-        // FIXED: Chỉ truyền 3 parameters: resultId, diagnosis=null, notes
-        boolean updated = examinationResultsService.updateExaminationResult(resultId, null, notes);
-        
-        if (updated) {
-            request.getSession().setAttribute("successMessage", "Ghi chú đã được cập nhật thành công.");
-        } else {
-            request.getSession().setAttribute("errorMessage", "Cập nhật ghi chú thất bại.");
+            if (resultId == null) {
+                request.getSession().setAttribute("errorMessage", "Không tìm thấy ResultID để cập nhật.");
+                response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
+                return;
+            }
+
+            // Lấy thông tin hiện tại để giữ nguyên diagnosis
+            Map<String, Object> currentResult = examinationResultsService.getExaminationResultById(resultId);
+            String currentDiagnosis = (String) currentResult.get("diagnosis");
+            
+            // Chỉ lấy notes từ form để cập nhật
+            String notes = request.getParameter("notes");
+
+            // FIXED: Giữ nguyên diagnosis hiện tại, chỉ cập nhật notes
+            boolean updated = examinationResultsService.updateExaminationResult(resultId, currentDiagnosis, notes);
+            
+            if (updated) {
+                request.getSession().setAttribute("successMessage", "Ghi chú đã được cập nhật thành công.");
+            } else {
+                request.getSession().setAttribute("errorMessage", "Cập nhật ghi chú thất bại.");
+            }
+
+            // Redirect về trang xem chi tiết thay vì danh sách
+            response.sendRedirect(request.getContextPath() + "/ViewExaminationResults?appointmentId=" + appointmentId);
+            
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("errorMessage", "Appointment ID không hợp lệ - " + appointmentIdParam);
+            response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
+        } catch (IllegalArgumentException e) {
+            request.getSession().setAttribute("errorMessage", "Cập nhật thất bại: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
+        } catch (SQLException e) {
+            request.getSession().setAttribute("errorMessage", "Cập nhật thất bại: Lỗi cơ sở dữ liệu - " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
         }
-
-        response.sendRedirect(request.getContextPath() + "/ViewExaminationResults?appointmentId=" + appointmentId);
-        
-    } catch (NumberFormatException e) {
-        request.getSession().setAttribute("errorMessage", "Appointment ID không hợp lệ - " + appointmentIdParam);
-        response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
-    } catch (IllegalArgumentException e) {
-        request.getSession().setAttribute("errorMessage", "Cập nhật thất bại: " + e.getMessage());
-        response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
-    } catch (SQLException e) {
-        request.getSession().setAttribute("errorMessage", "Cập nhật thất bại: Lỗi cơ sở dữ liệu - " + e.getMessage());
-        response.sendRedirect(request.getContextPath() + "/ViewExaminationResults");
     }
-}
 }

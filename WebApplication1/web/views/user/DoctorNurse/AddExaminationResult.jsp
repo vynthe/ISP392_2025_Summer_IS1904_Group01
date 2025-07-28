@@ -425,7 +425,7 @@
                                        min="1"
                                        placeholder="Nhập mã y tá (tùy chọn)">
                             </div>
-                            <div class="form-hint">Để trống nếu không có y tá hỗ trợ</div>
+                                       <div class="form-hint">Để trống nếu không có y tá hỗ trợ</div>
                         </div>
                     </div>
                 </div>
@@ -434,37 +434,21 @@
                     <div class="section-title">
                         🔄 Trạng thái khám
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="label-required">Chọn trạng thái</label>
-                        <div class="status-options">
-                            <input type="radio" id="pending" name="status" value="Pending" class="status-option" ${param.status == 'Pending' || empty param.status ? 'checked' : ''}>
-                            <label for="pending" class="status-label">⏳ Chờ xử lý</label>
-
-                            <input type="radio" id="draft" name="status" value="Draft" class="status-option" ${param.status == 'Draft' ? 'checked' : ''}>
-                            <label for="draft" class="status-label">📝 Bản nháp</label>
-
-                            <input type="radio" id="completed" name="status" value="Completed" class="status-option" ${param.status == 'Completed' ? 'checked' : ''}>
-                            <label for="completed" class="status-label">✅ Hoàn thành</label>
-
-                            <input type="radio" id="reviewed" name="status" value="Reviewed" class="status-option" ${param.status == 'Reviewed' ? 'checked' : ''}>
-                            <label for="reviewed" class="status-label">👨‍⚕️ Đã duyệt</label>
-
-                            <input type="radio" id="cancelled" name="status" value="Cancelled" class="status-option" ${param.status == 'Cancelled' ? 'checked' : ''}>
-                            <label for="cancelled" class="status-label">❌ Đã hủy</label>
-                        </div>
-                    </div>
+                    <input type="radio" id="completed" name="status" value="Completed" class="status-option" ${param.status == 'Completed' ? 'checked' : ''}>
+                    <label for="completed" class="status-label">✅ Hoàn thành</label>
                 </div>
+        </div>
+    </div>
 
-                <div class="form-section">
-                    <div class="section-title">
-                        🩺 Thông tin y khoa
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="diagnosis">Chuẩn đoán</label>
-                        <div class="input-wrapper">
-                            <textarea id="diagnosis" 
+    <div class="form-section">
+        <div class="section-title">
+            🩺 Thông tin y khoa
+        </div>
+
+        <div class="form-group">
+            <label for="diagnosis">Chuẩn đoán</label>
+            <div class="input-wrapper">
+                <textarea id="diagnosis" 
                                       name="diagnosis" 
                                       rows="4"
                                       placeholder="Nhập chuẩn đoán chi tiết của bác sĩ...">${param.diagnosis}</textarea>

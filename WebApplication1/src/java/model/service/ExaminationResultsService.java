@@ -117,4 +117,40 @@ public boolean updateExaminationResult(int resultId, String diagnosis, String no
             throw e;
         }
     }
+    public List<Map<String, Object>> getExaminationResultsByPatientId(int patientId, int page, int pageSize) throws SQLException {
+    if (patientId <= 0) {
+        throw new IllegalArgumentException("Patient ID must be positive");
+    }
+    if (page < 1 || pageSize < 1) {
+        throw new IllegalArgumentException("Page and pageSize must be positive");
+    }
+
+    try {
+        return examinationResultsDAO.getExaminationResultsByPatientId(patientId, page, pageSize);
+    } catch (SQLException e) {
+        System.err.println("Error in ExaminationResultsService.getExaminationResultsByPatientId: " + e.getMessage());
+        throw e;
+    }
+}
+public int getTotalExaminationResultsByPatientId(int patientId) throws SQLException {
+    if (patientId <= 0) {
+        throw new IllegalArgumentException("Patient ID must be positive");
+    }
+    return examinationResultsDAO.getTotalExaminationResultsByPatientId(patientId);
+}
+public Map<String, Object> getExaminationResultDetailForPatient(int resultId, int patientId) throws SQLException {
+    if (resultId <= 0) {
+        throw new IllegalArgumentException("Result ID must be positive");
+    }
+    if (patientId <= 0) {
+        throw new IllegalArgumentException("Patient ID must be positive");
+    }
+
+    try {
+        return examinationResultsDAO.getExaminationResultDetailForPatient(resultId, patientId);
+    } catch (SQLException e) {
+        System.err.println("Error in ExaminationResultsService.getExaminationResultDetailForPatient: " + e.getMessage());
+        throw e;
+    }
+}
 }
