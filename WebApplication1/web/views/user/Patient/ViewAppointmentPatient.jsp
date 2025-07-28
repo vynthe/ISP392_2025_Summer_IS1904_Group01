@@ -202,7 +202,7 @@
 
         <!-- Back Button -->
         <div class="text-center mt-4">
-            <a href="${pageContext.request.contextPath}/PatientDashboard" class="btn btn-back">
+            <a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp" class="btn btn-back">
                 <i class="fas fa-arrow-left"></i> Quay lại Dashboard
             </a>
         </div>
