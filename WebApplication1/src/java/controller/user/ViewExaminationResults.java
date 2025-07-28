@@ -121,20 +121,20 @@ public class ViewExaminationResults extends HttpServlet {
 
 
             // Forward to JSP for display
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
+            request.getRequestDispatcher("views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
 
         } catch (SQLException e) {
             // Log and handle database errors
             System.err.println("SQLException in ViewExaminationResults for doctorId " + user.getUserID() + " at " + LocalDateTime.now() + " +07: " + e.getMessage() + ", SQLState: " + e.getSQLState());
             e.printStackTrace(); // Print full stack trace for debugging
             request.setAttribute("errorMessage", "Lỗi khi lấy dữ liệu lịch hẹn: " + e.getMessage());
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
+            request.getRequestDispatcher("views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
         } catch (Exception e) {
             // Handle any other unexpected errors
             System.err.println("Unexpected error in ViewExaminationResults at " + LocalDateTime.now() + " +07: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("errorMessage", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
+            request.getRequestDispatcher("views/user/DoctorNurse/ViewExaminationResults.jsp").forward(request, response);
         }
     }
 
