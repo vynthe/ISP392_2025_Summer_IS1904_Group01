@@ -123,42 +123,6 @@
                 background-color: rgba(59, 130, 246, 0.1);
             }
 
-            .user-menu {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-            }
-
-            .user-avatar {
-                width: 36px;
-                height: 36px;
-                background: var(--gradient-primary);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--white);
-                font-weight: 600;
-                font-size: 0.875rem;
-            }
-
-            .user-info {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-            }
-
-            .user-name {
-                font-size: 0.875rem;
-                font-weight: 600;
-                color: var(--gray-900);
-            }
-
-            .user-role {
-                font-size: 0.75rem;
-                color: var(--gray-500);
-            }
-
             /* Main Content Wrapper */
             .main-wrapper {
                 flex: 1;
@@ -932,7 +896,7 @@
                         <input type="text" name="patientName" placeholder="Tìm theo tên bệnh nhân..." 
                                value="${patientName}" class="search-input">
                         <button type="submit" class="search-button">
-                              <i class="fas fa-search"></i> Tìm kiếm
+                            <i class="fas fa-search"></i> Tìm kiếm
                         </button>
                         <c:if test="${not empty patientName}">
                             <a href="${pageContext.request.contextPath}/ViewPatientResultServlet" class="clear-button">
@@ -993,6 +957,7 @@
                                             <tr>
                                                 <th>STT</th>
                                                 <th>Mã Lịch Hẹn</th> 
+                                                <th>Mã Đơn Thuốc</th>
                                                 <th>Tên Bệnh Nhân</th>
                                                 <th>Tên Bác Sĩ</th>
                                                 <th>Tên Y Tá</th>
@@ -1006,6 +971,7 @@
                                                 <tr>
                                                     <td><span class="row-number">${(currentPage - 1) * pageSize + status.count}</span></td>
                                                     <td><div class="prescription-details">${result.appointmentId != null ? result.appointmentId : 'N/A'}</div></td>
+                                                    <td><div class="prescription-details">${result.prescriptionId != null ? result.prescriptionId : 'Chưa có đơn thuốc'}</div></td>
                                                     <td><div class="prescription-details">${result.patientName}</div></td>
                                                     <td><div class="prescription-details">${result.doctorName}</div></td>
                                                     <td><div class="prescription-details">${result.nurseName != null ? result.nurseName : 'Chưa có y tá'}</div></td>
@@ -1027,10 +993,12 @@
                                                                     <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
                                                                 </a>
                                                             </c:if>
-                                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
-                                                               class="action-btn btn-view">
-                                                                <i class="fas fa-eye"></i> Xem Chi Tiết
-                                                            </a>
+                                                            <c:if test="${result.hasPrescription && result.prescriptionId != null}">
+                                                                <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?prescriptionId=${result.prescriptionId}" 
+                                                                   class="action-btn btn-view">
+                                                                    <i class="fas fa-eye"></i> Xem Chi Tiết
+                                                                </a>
+                                                            </c:if>
                                                             <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?resultId=${result.resultId}&patientId=${result.patientId}&doctorId=${result.doctorId}" 
                                                                class="action-btn btn-edit">
                                                                 <i class="fas fa-edit"></i> Sửa
@@ -1055,6 +1023,10 @@
                                                 <div class="card-field">
                                                     <span class="field-label">Mã Lịch Hẹn:</span>
                                                     <span class="field-value">${result.appointmentId != null ? result.appointmentId : 'N/A'}</span>
+                                                </div>
+                                                <div class="card-field">
+                                                    <span class="field-label">Mã Đơn Thuốc:</span>
+                                                    <span class="field-value">${result.prescriptionId != null ? result.prescriptionId : 'Chưa có đơn thuốc'}</span>
                                                 </div>
                                                 <div class="card-field">
                                                     <span class="field-label">Bệnh nhân:</span>
@@ -1089,10 +1061,12 @@
                                                             <i class="fas fa-prescription-bottle-alt"></i> Kê Đơn
                                                         </a>
                                                     </c:if>
-                                                    <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?patientId=${result.patientId}&doctorId=${result.doctorId != null ? result.doctorId : 0}&resultId=${result.resultId}&appointmentId=${result.appointmentId != null ? result.appointmentId : ''}&patientName=${fn:escapeXml(result.patientName)}&doctorName=${fn:escapeXml(result.doctorName)}&diagnosis=${fn:escapeXml(result.diagnosis)}&notes=${fn:escapeXml(result.notes)}" 
-                                                       class="action-btn btn-view">
-                                                        <i class="fas fa-eye"></i> Xem Chi Tiết
-                                                    </a>
+                                                    <c:if test="${result.hasPrescription && result.prescriptionId != null}">
+                                                        <a href="${pageContext.request.contextPath}/ViewPrescriptionDetailServlet?prescriptionId=${result.prescriptionId}" 
+                                                           class="action-btn btn-view">
+                                                            <i class="fas fa-eye"></i> Xem Chi Tiết
+                                                        </a>
+                                                    </c:if>
                                                     <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?resultId=${result.resultId}&patientId=${result.patientId}&doctorId=${result.doctorId}" 
                                                        class="action-btn btn-edit">
                                                         <i class="fas fa-edit"></i> Sửa
@@ -1202,7 +1176,7 @@
                         <div class="contact-info">
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt contact-icon"></i>
-                                <span>DH FPT , HÒA LẠC </span>
+                                <span>DH FPT, Hòa Lạc</span>
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-phone contact-icon"></i>

@@ -177,7 +177,7 @@ public class AddPrescriptionServlet extends HttpServlet {
             String[] medicationIdStrs = request.getParameterValues("medicationIds");
             String[] quantities = request.getParameterValues("quantities");
             String[] instructions = request.getParameterValues("instructions");
-            String signature = request.getParameter("signature"); // Thêm signature parameter
+            String signature = request.getParameter("signature");
             String saveToDB = request.getParameter("save");
             
             // Get display names for showing in form
@@ -216,7 +216,12 @@ public class AddPrescriptionServlet extends HttpServlet {
             if (medicationIdStrs == null || medicationIdStrs.length == 0) {
                 throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc.");
             }
-            // Validate signature when saving to database
+            if (quantities == null || quantities.length == 0) {
+                throw new IllegalArgumentException("Phải nhập số lượng cho từng thuốc.");
+            }
+            if (quantities.length != medicationIdStrs.length) {
+                throw new IllegalArgumentException("Số lượng thuốc và số lượng nhập không khớp.");
+            }
             if ("true".equals(saveToDB) && (signature == null || signature.trim().isEmpty())) {
                 throw new IllegalArgumentException("Chữ ký bác sĩ là bắt buộc khi lưu đơn thuốc.");
             }
@@ -250,11 +255,24 @@ public class AddPrescriptionServlet extends HttpServlet {
                 throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc hợp lệ.");
             }
 
+            // Parse and validate quantities
+            List<String> quantityList = Arrays.stream(quantities)
+                    .map(q -> q != null ? q.trim() : "")
+                    .collect(Collectors.toList());
+            for (String q : quantityList) {
+                if (q.isEmpty() || !q.matches("\\d+")) {
+                    throw new IllegalArgumentException("Số lượng phải là số và không được để trống.");
+                }
+            }
+            // Ghép quantity thành chuỗi, ví dụ: "2; 1; 3"
+            String quantityStr = String.join("; ", quantityList);
+
             System.out.println("DEBUG - Parsed medication IDs: " + medicationIds);
 
             // Get medication details from database
             List<Medication> allMedications = prescriptionService.getAllMedications();
-            StringBuilder prescriptionDetails = new StringBuilder();
+            StringBuilder prescriptionDosage = new StringBuilder();
+            StringBuilder instruct = new StringBuilder();
             
             for (int i = 0; i < medicationIds.size(); i++) {
                 int medicationId = medicationIds.get(i);
@@ -266,44 +284,42 @@ public class AddPrescriptionServlet extends HttpServlet {
                     .orElse(null);
                 
                 if (medication != null) {
-                    prescriptionDetails.append("Thuốc: ").append(medication.getName())
-                                     .append(" - Liều dùng: ").append(medication.getDosage());
+                    // Build prescriptionDosage (KHÔNG có số lượng)
+                    prescriptionDosage.append(medication.getName()).append(" - ").append(medication.getDosage());
+                    prescriptionDosage.append("; ");
                     
-                    // Add quantity if provided
-                    if (quantities != null && i < quantities.length && 
-                        quantities[i] != null && !quantities[i].trim().isEmpty()) {
-                        prescriptionDetails.append(" - Số lượng: ").append(quantities[i].trim());
-                    }
-                    
-                    // Add instructions if provided
+                    // Build instruct
                     if (instructions != null && i < instructions.length && 
                         instructions[i] != null && !instructions[i].trim().isEmpty()) {
-                        prescriptionDetails.append(" - Cách dùng: ").append(instructions[i].trim());
+                        instruct.append(instructions[i].trim()).append("; ");
+                    } else {
+                        instruct.append("Không có hướng dẫn cụ thể cho ").append(medication.getName()).append("; ");
                     }
                     
-                    prescriptionDetails.append("; ");
-                    
-                    System.out.println("DEBUG - Added medication: " + medication.getName() + " - " + medication.getDosage());
+                    System.out.println("DEBUG - Added medication: " + medication.getName() + " - Dosage: " + medication.getDosage() + 
+                                       ", Quantity: " + (quantities != null && i < quantities.length ? quantities[i] : "N/A") +
+                                       ", Instruction: " + (instructions != null && i < instructions.length ? instructions[i] : "N/A"));
                 } else {
                     log.warn("Medication with ID " + medicationId + " not found");
-                    prescriptionDetails.append("Thuốc ID: ").append(medicationId)
-                                     .append(" (Không tìm thấy); ");
+                    prescriptionDosage.append("Thuốc ID: ").append(medicationId).append(" (Không tìm thấy); ");
+                    instruct.append("Không có hướng dẫn cho thuốc ID: ").append(medicationId).append("; ");
                 }
             }
 
-            System.out.println("DEBUG - Final prescription details: " + prescriptionDetails.toString());
+            System.out.println("DEBUG - Final prescriptionDosage: " + prescriptionDosage.toString());
+            System.out.println("DEBUG - Final instruct: " + instruct.toString());
 
             // Create prescription object
             Prescriptions prescription = new Prescriptions();
             prescription.setPatientId(patientId);
             prescription.setDoctorId(doctorId);
-            prescription.setPrescriptionDetails(prescriptionDetails.toString());
 
             if ("true".equals(saveToDB)) {
                 System.out.println("DEBUG - Saving prescription to database at " + LocalDateTime.now() + " +07");
                 
-                // Call addPrescription with signature parameter
-                boolean added = prescriptionService.addPrescription(prescription, resultId, appointmentId, medicationIds, signature);
+                // Call addPrescription with prescriptionDosage, instruct, quantity
+                boolean added = prescriptionService.addPrescription(prescription, resultId, appointmentId, medicationIds, 
+                                                                  signature, prescriptionDosage.toString(), instruct.toString(), quantityStr);
                 
                 // Set display attributes for form
                 setDisplayAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, 
@@ -316,7 +332,8 @@ public class AddPrescriptionServlet extends HttpServlet {
                     System.out.println("DEBUG - Prescription added successfully at " + LocalDateTime.now() + " +07");
                     log.info("Prescription added successfully for patientId: " + patientId + 
                              ", resultId: " + resultId + ", appointmentId: " + appointmentId + 
-                             ", medicationIds: " + medicationIds + ", signature: " + signature);
+                             ", medicationIds: " + medicationIds + ", signature: " + signature +
+                             ", dosage: " + prescriptionDosage + ", instruct: " + instruct);
                     
                     // Set success message and redirect back to ViewPatientResult
                     request.getSession().setAttribute("statusMessage", 
@@ -340,10 +357,13 @@ public class AddPrescriptionServlet extends HttpServlet {
             } else {
                 System.out.println("DEBUG - Preview mode, returning to form at " + LocalDateTime.now() + " +07");
                 setFormAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, 
-                                medicationIdStrs, quantities, instructions, signature); // Thêm signature vào form attributes
+                                medicationIdStrs, quantities, instructions, signature);
                 setDisplayAttributes(request, patientIdStr, doctorIdStr, resultIdStr, appointmentIdStr, 
                                    patientName, doctorName, resultName, diagnosis, notes);
                 request.setAttribute("medications", prescriptionService.getAllMedications());
+                request.setAttribute("formPrescriptionDosage", prescriptionDosage.toString());
+                request.setAttribute("formInstruct", instruct.toString());
+                request.setAttribute("formQuantity", quantityStr);
                 request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
             }
             
@@ -362,8 +382,17 @@ public class AddPrescriptionServlet extends HttpServlet {
                                request.getParameter("diagnosis"),
                                request.getParameter("notes"));
             
-            // Preserve signature in form
+            // Preserve form data
             request.setAttribute("formSignature", request.getParameter("signature"));
+            request.setAttribute("formMedicationIds", request.getParameterValues("medicationIds") != null 
+                                                    ? Arrays.asList(request.getParameterValues("medicationIds")) 
+                                                    : null);
+            request.setAttribute("formQuantities", request.getParameterValues("quantities") != null 
+                                                 ? Arrays.asList(request.getParameterValues("quantities")) 
+                                                 : null);
+            request.setAttribute("formInstructions", request.getParameterValues("instructions") != null 
+                                                   ? Arrays.asList(request.getParameterValues("instructions")) 
+                                                   : null);
             
             try {
                 request.setAttribute("medications", prescriptionService.getAllMedications());
@@ -388,8 +417,17 @@ public class AddPrescriptionServlet extends HttpServlet {
                                request.getParameter("diagnosis"),
                                request.getParameter("notes"));
             
-            // Preserve signature in form
+            // Preserve form data
             request.setAttribute("formSignature", request.getParameter("signature"));
+            request.setAttribute("formMedicationIds", request.getParameterValues("medicationIds") != null 
+                                                    ? Arrays.asList(request.getParameterValues("medicationIds")) 
+                                                    : null);
+            request.setAttribute("formQuantities", request.getParameterValues("quantities") != null 
+                                                 ? Arrays.asList(request.getParameterValues("quantities")) 
+                                                 : null);
+            request.setAttribute("formInstructions", request.getParameterValues("instructions") != null 
+                                                   ? Arrays.asList(request.getParameterValues("instructions")) 
+                                                   : null);
             
             try {
                 request.setAttribute("medications", prescriptionService.getAllMedications());
@@ -402,6 +440,7 @@ public class AddPrescriptionServlet extends HttpServlet {
         } catch (Exception e) {
             log.error("Unexpected error processing request: " + e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
             
+            // Set display attributes and error message
             setDisplayAttributes(request, 
                                request.getParameter("patientId"), 
                                request.getParameter("doctorId"), 
@@ -413,8 +452,17 @@ public class AddPrescriptionServlet extends HttpServlet {
                                request.getParameter("diagnosis"),
                                request.getParameter("notes"));
             
-            // Preserve signature in form
+            // Preserve form data
             request.setAttribute("formSignature", request.getParameter("signature"));
+            request.setAttribute("formMedicationIds", request.getParameterValues("medicationIds") != null 
+                                                    ? Arrays.asList(request.getParameterValues("medicationIds")) 
+                                                    : null);
+            request.setAttribute("formQuantities", request.getParameterValues("quantities") != null 
+                                                 ? Arrays.asList(request.getParameterValues("quantities")) 
+                                                 : null);
+            request.setAttribute("formInstructions", request.getParameterValues("instructions") != null 
+                                                   ? Arrays.asList(request.getParameterValues("instructions")) 
+                                                   : null);
             
             try {
                 request.setAttribute("medications", prescriptionService.getAllMedications());
@@ -445,7 +493,7 @@ public class AddPrescriptionServlet extends HttpServlet {
         request.setAttribute("formDoctorId", doctorId);
         request.setAttribute("formResultId", resultId);
         request.setAttribute("formAppointmentId", appointmentId);
-        request.setAttribute("formSignature", signature); // Thêm signature vào form attributes
+        request.setAttribute("formSignature", signature);
         if (medicationIds != null) {
             request.setAttribute("formMedicationIds", Arrays.asList(medicationIds));
         }

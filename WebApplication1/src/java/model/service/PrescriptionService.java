@@ -1,6 +1,5 @@
 package model.service;
 
-import com.sun.jdi.connect.spi.Connection;
 import model.entity.Prescriptions;
 import model.entity.Medication;
 import model.dao.PrescriptionDAO;
@@ -8,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,33 +25,42 @@ public class PrescriptionService {
     }
 
     /**
-     * Add a new prescription with associated medications and signature
+     * Add a new prescription with associated medications, dosage, instructions, quantity, and signature
      * The NurseID will be automatically retrieved from ExaminationResults
      * @param prescription The prescription object
      * @param resultId The examination result ID
-     * @param appointmentId The appointment ID
+     * @param appointmentId The appointment ID (can be null)
      * @param medicationIds List of medication IDs
      * @param signature Doctor's signature
+     * @param prescriptionDosage Dosage details for the prescription
+     * @param instruct Instructions for the prescription
+     * @param quantity Quantity details for the prescription
      * @return true if prescription was added successfully
      * @throws SQLException if database operation fails
      * @throws IllegalArgumentException if input parameters are invalid
      */
-    public boolean addPrescription(Prescriptions prescription, int resultId, int appointmentId, 
-                                 List<Integer> medicationIds, String signature) throws SQLException {
+    public boolean addPrescription(Prescriptions prescription, int resultId, Integer appointmentId, 
+                                 List<Integer> medicationIds, String signature, String prescriptionDosage, 
+                                 String instruct, String quantity) throws SQLException {
         validatePrescriptionInput(prescription, resultId, appointmentId, medicationIds);
+        validateNonEmptyString(prescriptionDosage, "Prescription Dosage");
+        validateNonEmptyString(instruct, "Instruction");
+        validateNonEmptyString(quantity, "Quantity");
         
         try {
-            boolean added = prescriptionDAO.addPrescription(prescription, resultId, appointmentId, medicationIds, signature);
+            boolean added = prescriptionDAO.addPrescription(prescription, resultId, appointmentId, medicationIds, signature, prescriptionDosage, instruct, quantity);
             if (added) {
                 String nurseInfo = prescription.getNurseId() != null ? 
                     ", NurseID: " + prescription.getNurseId() : ", NurseID: null";
                 log.info("Successfully added prescription with ID: " + prescription.getPrescriptionId() + 
-                         ", ResultID: " + resultId + ", AppointmentID: " + appointmentId + 
+                         ", ResultID: " + resultId + ", AppointmentID: " + (appointmentId != null ? appointmentId : "null") + 
                          ", MedicationIDs: " + medicationIds + nurseInfo + 
-                         " at " + LocalDateTime.now() + " +07");
+                         ", Dosage: " + prescriptionDosage + ", Instruct: " + instruct + 
+                         ", Quantity: " + quantity + " at " + LocalDateTime.now() + " +07");
             } else {
                 log.warn("Failed to add prescription for ResultID: " + resultId + 
-                         ", AppointmentID: " + appointmentId + " at " + LocalDateTime.now() + " +07");
+                         ", AppointmentID: " + (appointmentId != null ? appointmentId : "null") + 
+                         " at " + LocalDateTime.now() + " +07");
             }
             return added;
         } catch (SQLException e) {
@@ -64,9 +73,9 @@ public class PrescriptionService {
     /**
      * Add a new prescription without signature (backward compatibility)
      */
-    public boolean addPrescription(Prescriptions prescription, int resultId, int appointmentId, 
-                                 List<Integer> medicationIds) throws SQLException {
-        return addPrescription(prescription, resultId, appointmentId, medicationIds, null);
+    public boolean addPrescription(Prescriptions prescription, int resultId, Integer appointmentId, 
+                                 List<Integer> medicationIds, String prescriptionDosage, String instruct, String quantity) throws SQLException {
+        return addPrescription(prescription, resultId, appointmentId, medicationIds, null, prescriptionDosage, instruct, quantity);
     }
 
     /**
@@ -87,6 +96,9 @@ public class PrescriptionService {
                 String nurseInfo = prescription.getNurseId() != null ? 
                     ", NurseID: " + prescription.getNurseId() : ", NurseID: null";
                 log.info("Retrieved prescription with ID: " + prescriptionId + nurseInfo + 
+                        ", Dosage: " + prescription.getPrescriptionDosage() + 
+                        ", Instruct: " + prescription.getInstruct() + 
+                        ", Quantity: " + prescription.getQuantity() + 
                         " at " + LocalDateTime.now() + " +07");
             }
             return prescription;
@@ -365,7 +377,8 @@ public class PrescriptionService {
             throw e;
         }
     }
-   public boolean hasPrescription(int resultId) throws SQLException {
+
+    public boolean hasPrescription(int resultId) throws SQLException {
         validatePositiveId(resultId, "Result ID");
 
         try {
@@ -381,7 +394,7 @@ public class PrescriptionService {
     }
 
     // Private validation methods
-    private void validatePrescriptionInput(Prescriptions prescription, int resultId, int appointmentId, 
+    private void validatePrescriptionInput(Prescriptions prescription, int resultId, Integer appointmentId, 
                                          List<Integer> medicationIds) {
         if (prescription == null) {
             log.warn("Invalid input: Prescription object cannot be null at " + LocalDateTime.now() + " +07");
@@ -398,10 +411,11 @@ public class PrescriptionService {
             throw new IllegalArgumentException("Doctor ID must be positive");
         }
         
-        // Note: We don't validate NurseID here since it's automatically retrieved from ExaminationResults
-        
         validatePositiveId(resultId, "Result ID");
-        validatePositiveId(appointmentId, "Appointment ID");
+        if (appointmentId != null && appointmentId <= 0) {
+            log.warn("Invalid input: Appointment ID must be positive or null at " + LocalDateTime.now() + " +07");
+            throw new IllegalArgumentException("Appointment ID must be positive or null");
+        }
         
         if (medicationIds == null || medicationIds.isEmpty()) {
             log.warn("Invalid input: Medication IDs list cannot be null or empty at " + LocalDateTime.now() + " +07");
@@ -438,5 +452,133 @@ public class PrescriptionService {
 
     private String trimString(String value) {
         return value != null ? value.trim() : null;
+    }
+    /**
+     * Get detailed information about a prescription, including associated medications
+     * @param prescriptionId The ID of the prescription to retrieve details for
+     * @return Map containing prescription details and list of medications, or null if not found
+     * @throws SQLException if database operation fails
+     * @throws IllegalArgumentException if prescriptionId is invalid
+     */
+    
+    /**
+ * Get detailed information about a prescription, including associated medications
+ * @param prescriptionId The ID of the prescription to retrieve details for
+ * @return Map containing prescription details and list of medications, or null if not found
+ * @throws SQLException if database operation fails
+ * @throws IllegalArgumentException if prescriptionId is invalid
+ */
+/**
+ * Get detailed information about a prescription, including associated medications
+ * @param prescriptionId The ID of the prescription to retrieve details for
+ * @return Map containing prescription details, or null if not found
+ * @throws SQLException if database operation fails
+ * @throws IllegalArgumentException if prescriptionId is invalid
+ */
+public Map<String, Object> getPrescriptionDetailById(int id) throws SQLException {
+    Map<String, Object> result = new HashMap<>();
+
+    // Gọi DAO để lấy dữ liệu chi tiết đơn thuốc
+    PrescriptionDAO prescriptionDAO = new PrescriptionDAO();
+    Map<String, Object> prescriptionDetail = prescriptionDAO.getPrescriptionDetailById(id);
+
+    if (prescriptionDetail != null) {
+        result.putAll(prescriptionDetail);
+    } else {
+        throw new SQLException("Không tìm thấy đơn thuốc với ID = " + id);
+    }
+
+    return result;
+}
+ public List<Map<String, Object>> getAllExaminationResultsByDoctorId(int doctorId) throws SQLException {
+        validatePositiveId(doctorId, "Doctor ID");
+
+        try {
+            List<Map<String, Object>> results = prescriptionDAO.getAllExaminationResultsByDoctorId(doctorId);
+            long countWithNurse = results.stream().filter(r -> r.get("nurseId") != null).count();
+            log.info("Retrieved " + results.size() + " examination results for doctor ID: " + doctorId + 
+                    " (" + countWithNurse + " with nurse involvement) at " + LocalDateTime.now() + " +07");
+            return results;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving examination results for doctor ID " + doctorId + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+  public List<Map<String, Object>> getExaminationResultsByPatientNameAndDoctorId(String patientName, int doctorId) throws SQLException {
+        validateNonEmptyString(patientName, "Patient name");
+        validatePositiveId(doctorId, "Doctor ID");
+
+        try {
+            String trimmedPatientName = patientName.trim();
+            List<Map<String, Object>> results = prescriptionDAO.getExaminationResultsByPatientNameAndDoctorId(trimmedPatientName, doctorId);
+            long countWithNurse = results.stream().filter(r -> r.get("nurseId") != null).count();
+            log.info("Retrieved " + results.size() + " examination results for patient name: '" + 
+                    trimmedPatientName + "' and doctor ID: " + doctorId + 
+                    " (" + countWithNurse + " with nurse involvement) at " + LocalDateTime.now() + " +07");
+            return results;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving examination results for patient name '" + patientName + 
+                     "' and doctor ID " + doctorId + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+  public List<Map<String, Object>> getResultWithPatientByDoctorId(int doctorId, String patientName, int page, int pageSize) throws SQLException {
+        validatePositiveId(doctorId, "Doctor ID");
+        validatePaginationParameters(page, pageSize);
+
+        try {
+            String trimmedPatientName = trimString(patientName);
+            List<Map<String, Object>> results = prescriptionDAO.getResultWithPatientByDoctorId(doctorId, trimmedPatientName, page, pageSize);
+            long countWithNurse = results.stream().filter(r -> r.get("nurseId") != null).count();
+            log.info("Retrieved " + results.size() + " examination results for doctor ID: " + doctorId + 
+                     (trimmedPatientName != null ? ", patient name: '" + trimmedPatientName + "'" : "") + 
+                     " (" + countWithNurse + " with nurse involvement) at " + LocalDateTime.now() + " +07");
+            return results;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving examination results for doctor ID " + doctorId + 
+                     (patientName != null ? ", patient name '" + patientName + "'" : "") + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+
+    public int getTotalResultByDoctorId(int doctorId, String patientName) throws SQLException {
+        validatePositiveId(doctorId, "Doctor ID");
+
+        try {
+            String trimmedPatientName = trimString(patientName);
+            int total = prescriptionDAO.getTotalResultByDoctorId(doctorId, trimmedPatientName);
+            log.info("Retrieved total examination results count: " + total + " for doctor ID: " + doctorId + 
+                     (trimmedPatientName != null ? ", patient name: '" + trimmedPatientName + "'" : "") + 
+                     " at " + LocalDateTime.now() + " +07");
+            return total;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving total examination results for doctor ID " + doctorId + 
+                     (patientName != null ? ", patient name '" + patientName + "'" : "") + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+
+     public List<Map<String, Object>> getPrescriptionsByPatientId(int patientId) throws SQLException {
+        if (patientId <= 0) {
+            throw new IllegalArgumentException("Patient ID must be positive");
+        }
+
+        System.out.println("DEBUG - Calling getPrescriptionsByPatientId for patientId: " + patientId + 
+                           " at " + LocalDateTime.now() + " +07");
+
+        try {
+            List<Map<String, Object>> prescriptions = prescriptionDAO.getPrescriptionsByPatientId(patientId);
+            System.out.println("DEBUG - Total prescriptions retrieved: " + prescriptions.size() + 
+                              " for patientId: " + patientId + " at " + LocalDateTime.now() + " +07");
+            return prescriptions;
+        } catch (SQLException e) {
+            System.err.println("SQLException in getPrescriptionsByPatientId for patientId " + patientId + 
+                               " at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

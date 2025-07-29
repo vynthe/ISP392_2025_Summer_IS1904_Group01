@@ -744,34 +744,71 @@
                         <div class="medications-section">
                             <h3 class="section-title"><i class="fas fa-capsules"></i> Danh Sách Thuốc</h3>
                             <div id="medicationList">
-                                <div class="medication-item">
-                                    <div class="medication-grid">
-                                        <div class="form-group">
-                                            <label class="form-label required">Tên Thuốc</label>
-                                            <select name="medicationIds" class="form-select" required>
-                                                <option value="">Chọn thuốc</option>
-                                                <c:if test="${not empty medications}">
-                                                    <c:forEach var="med" items="${medications}">
-                                                        <option value="${med.medicationID}" <c:if test="${formMedicationIds != null && formMedicationIds.contains(String.valueOf(med.medicationID))}">selected</c:if>>
-                                                            ${med.name} - ${med.dosage}
-                                                        </option>
-                                                    </c:forEach>
-                                                </c:if>
-                                            </select>
-                                        </div>
-                                        <div class="medication-details">
-                                            <div class="form-group">
-                                                <label class="form-label">Số Lượng</label>
-                                                <input type="text" name="quantities" class="form-input" placeholder="Ví dụ: 1 lọ, 10 viên...">
+                                <c:choose>
+                                    <c:when test="${formMedicationIds != null && !formMedicationIds.isEmpty()}">
+                                        <c:forEach var="medId" items="${formMedicationIds}" varStatus="status">
+                                            <div class="medication-item">
+                                                <div class="medication-grid">
+                                                    <div class="form-group">
+                                                        <label class="form-label required">Tên Thuốc</label>
+                                                        <select name="medicationIds" class="form-select" required>
+                                                            <option value="">Chọn thuốc</option>
+                                                            <c:forEach var="med" items="${medications}">
+                                                                <option value="${med.medicationID}" <c:if test="${med.medicationID == medId}">selected</c:if>>
+                                                                    ${med.name} - ${med.dosage}
+                                                                </option>
+                                                            </c:forEach>
+                                                        </select>
+                                                    </div>
+                                                    <div class="medication-details">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Số Lượng</label>
+                                                            <input type="text" name="quantities" class="form-input" 
+                                                                   value="${formQuantities != null && status.index < formQuantities.size() ? formQuantities[status.index] : ''}" 
+                                                                   placeholder="Ví dụ: 1 lọ, 10 viên...">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Hướng Dẫn Sử Dụng</label>
+                                                    <textarea name="instructions" class="form-textarea" 
+                                                              placeholder="Ví dụ: Uống 1 viên sau mỗi bữa ăn, ngày 2 lần...">${formInstructions != null && status.index < formInstructions.size() ? formInstructions[status.index] : ''}</textarea>
+                                                </div>
+                                                <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
                                             </div>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="medication-item">
+                                            <div class="medication-grid">
+                                                <div class="form-group">
+                                                    <label class="form-label required">Tên Thuốc</label>
+                                                    <select name="medicationIds" class="form-select" required>
+                                                        <option value="">Chọn thuốc</option>
+                                                        <c:if test="${not empty medications}">
+                                                            <c:forEach var="med" items="${medications}">
+                                                                <option value="${med.medicationID}">
+                                                                    ${med.name} - ${med.dosage}
+                                                                </option>
+                                                            </c:forEach>
+                                                        </c:if>
+                                                    </select>
+                                                </div>
+                                                <div class="medication-details">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Số Lượng</label>
+                                                        <input type="text" name="quantities" class="form-input" placeholder="Ví dụ: 1 lọ, 10 viên...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Hướng Dẫn Sử Dụng</label>
+                                                <textarea name="instructions" class="form-textarea" placeholder="Ví dụ: Uống 1 viên sau mỗi bữa ăn, ngày 2 lần..."></textarea>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Hướng Dẫn Sử Dụng</label>
-                                        <textarea name="instructions" class="form-textarea" placeholder="Ví dụ: Uống 1 viên sau mỗi bữa ăn, ngày 2 lần..."></textarea>
-                                    </div>
-                                    <button type="button" class="remove-btn" onclick="removeMedication(this)">×</button>
-                                </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                             <button type="button" class="add-btn" onclick="addMedication()">
                                 <i class="fas fa-plus"></i> Thêm Thuốc
@@ -862,7 +899,7 @@
 
             console.log("Medications loaded:", medicationsData);
 
-            let medicationCount = 1;
+            let medicationCount = ${formMedicationIds != null ? formMedicationIds.size() : 1};
 
             function addMedication() {
                 console.log("Adding new medication, available medications:", medicationsData.length);
@@ -1040,27 +1077,31 @@
                 const instructions = document.getElementsByName('instructions');
                 const signature = document.getElementById('signature').value.trim();
 
-                let previewContent = "=== XEM TRƯỚC ĐỀN THUỐC ===\n\n";
+                let previewContent = "=== XEM TRƯỚC ĐƠN THUỐC ===\n\n";
                 previewContent += "Bệnh nhân: ${patientName != null ? patientName : 'Không xác định'}\n";
                 previewContent += "Bác sĩ: ${doctorName != null ? doctorName : 'Không xác định'}\n";
                 previewContent += "Kết quả khám: ${resultName != null ? resultName : 'Không xác định'}\n\n";
-                previewContent += "DANH SÁCH THUỐC:\n";
+                previewContent += "LIỀU LƯỢNG:\n";
 
                 let hasValidMedication = false;
+                let dosageContent = "";
+                let instructContent = "";
                 for (let i = 0; i < medicationIds.length; i++) {
                     const medId = medicationIds[i].value;
                     if (medId) {
                         const selectedMed = medicationsData.find(med => med.id == medId);
                         if (selectedMed) {
                             hasValidMedication = true;
-                            previewContent += `${i + 1}. ${selectedMed.name} - ${selectedMed.dosage}\n`;
+                            dosageContent += `${selectedMed.name} - ${selectedMed.dosage}`;
                             if (quantities[i] && quantities[i].value.trim()) {
-                                previewContent += `   Số lượng: ${quantities[i].value.trim()}\n`;
+                                dosageContent += ` - Số lượng: ${quantities[i].value.trim()}`;
                             }
+                            dosageContent += "; ";
                             if (instructions[i] && instructions[i].value.trim()) {
-                                previewContent += `   Cách dùng: ${instructions[i].value.trim()}\n`;
+                                instructContent += `${instructions[i].value.trim()}; `;
+                            } else {
+                                instructContent += `Không có hướng dẫn cụ thể cho ${selectedMed.name}; `;
                             }
-                            previewContent += "\n";
                         }
                     }
                 }
@@ -1070,6 +1111,9 @@
                     return;
                 }
 
+                previewContent += dosageContent + "\n\n";
+                previewContent += "HƯỚNG DẪN SỬ DỤNG:\n";
+                previewContent += instructContent + "\n\n";
                 previewContent += "CHỮ KÝ BÁC SĨ:\n";
                 previewContent += signature || "(Chưa có chữ ký)";
 
