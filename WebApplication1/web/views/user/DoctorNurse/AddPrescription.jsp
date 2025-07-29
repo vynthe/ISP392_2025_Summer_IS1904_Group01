@@ -832,9 +832,7 @@
                         <input type="hidden" name="save" value="true">
 
                         <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="previewPrescription()">
-                                <i class="fas fa-eye"></i> Xem Trước
-                            </button>
+                           
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-check"></i> Tạo Đơn Thuốc
                             </button>

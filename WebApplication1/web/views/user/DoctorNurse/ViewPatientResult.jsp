@@ -999,10 +999,7 @@
                                                                     <i class="fas fa-eye"></i> Xem Chi Tiết
                                                                 </a>
                                                             </c:if>
-                                                            <a href="${pageContext.request.contextPath}/EditPrescriptionNoteServlet?resultId=${result.resultId}&patientId=${result.patientId}&doctorId=${result.doctorId}" 
-                                                               class="action-btn btn-edit">
-                                                                <i class="fas fa-edit"></i> Sửa
-                                                            </a>
+                                                            
                                                         </div>
                                                     </td>
                                                 </tr>

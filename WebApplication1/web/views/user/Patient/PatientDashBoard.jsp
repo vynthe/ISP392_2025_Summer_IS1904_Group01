@@ -504,15 +504,19 @@
                 animation: slideUp 0.4s ease;
             }
             @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
             }
             @keyframes slideUp {
-                from { 
+                from {
                     opacity: 0;
                     transform: translateY(50px) scale(0.9);
                 }
-                to { 
+                to {
                     opacity: 1;
                     transform: translateY(0) scale(1);
                 }
@@ -535,8 +539,12 @@
                 animation: shimmer 3s infinite;
             }
             @keyframes shimmer {
-                0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-                100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+                0% {
+                    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+                }
+                100% {
+                    transform: translateX(100%) translateY(100%) rotate(45deg);
+                }
             }
             .chatbot-title {
                 display: flex;
@@ -569,8 +577,12 @@
                 animation: pulse 2s infinite;
             }
             @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.5; }
+                0%, 100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
             }
             #chatBox {
                 height: 350px;
@@ -669,8 +681,12 @@
                 animation: typingDot 1.4s infinite;
             }
             @keyframes typingDot {
-                0%, 60%, 100% { opacity: 0; }
-                30% { opacity: 1; }
+                0%, 60%, 100% {
+                    opacity: 0;
+                }
+                30% {
+                    opacity: 1;
+                }
             }
             .error-message {
                 background: linear-gradient(135deg, #ff6b6b, #ee5a24);
@@ -902,6 +918,8 @@
                             <a href="${pageContext.request.contextPath}/ChangePasswordController"><i class="fas fa-key"></i> Đổi mật khẩu</a>
                             <a href="${pageContext.request.contextPath}/ViewAppointmentPatient"><i class="fas fa-calendar-check"></i> Xem lịch khám</a>
                             <a href="${pageContext.request.contextPath}/ViewExaminationResultsPatient"><i class="fas fa-file-medical-alt"></i> Xem kết quả khám</a>
+                            <a href="${pageContext.request.contextPath}/ViewPrescriptionPatient"><i class="fas fa-prescription-bottle-alt"></i> Xem đơn thuốc</a>
+
                             <a href="${pageContext.request.contextPath}/LogoutServlet" class="danger" onclick="return confirm('Bạn có chắc muốn đăng xuất?')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     </div>
@@ -1124,7 +1142,8 @@
                 const userInput = document.getElementById('userInput');
                 const sendButton = document.getElementById('sendButton');
                 const userMessage = userInput.value.trim();
-                if (!userMessage) return;
+                if (!userMessage)
+                    return;
                 userInput.disabled = true;
                 sendButton.disabled = true;
                 sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1232,7 +1251,7 @@
                     document.getElementById('userInput').focus();
                 }, 300);
             });
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && chatbotOverlay.classList.contains('active')) {
                     chatbotOverlay.classList.remove('active');
                 }

@@ -335,12 +335,20 @@ public class AddPrescriptionServlet extends HttpServlet {
                              ", medicationIds: " + medicationIds + ", signature: " + signature +
                              ", dosage: " + prescriptionDosage + ", instruct: " + instruct);
                     
-                    // Set success message and redirect back to ViewPatientResult
-                    request.getSession().setAttribute("statusMessage", 
+                    // Set success message and stay on AddPrescription page
+                    request.setAttribute("successMessage", 
                         "Tạo đơn thuốc thành công cho bệnh nhân " + patientName + "!");
                     
-                    String redirectUrl = request.getContextPath() + "/ViewPatientResultServlet";
-                    response.sendRedirect(redirectUrl);
+                    // Reset form fields
+                    request.setAttribute("formSignature", "");
+                    request.setAttribute("formMedicationIds", null);
+                    request.setAttribute("formQuantities", null);
+                    request.setAttribute("formInstructions", null);
+                    request.setAttribute("formPrescriptionDosage", "");
+                    request.setAttribute("formInstruct", "");
+                    request.setAttribute("formQuantity", "");
+                    
+                    request.getRequestDispatcher("/views/user/DoctorNurse/AddPrescription.jsp").forward(request, response);
                     return;
                     
                 } else {
