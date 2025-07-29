@@ -153,7 +153,6 @@ public class GeminiChatServlet extends HttpServlet {
         ));
     }
     
-    // Knowledge Item class để lưu trữ thông tin
     static class KnowledgeItem {
         String title;
         String content;
@@ -165,7 +164,6 @@ public class GeminiChatServlet extends HttpServlet {
             this.keywords = keywords;
         }
         
-        // Tính điểm relevance
         double calculateRelevance(String userMessage) {
             String message = userMessage.toLowerCase();
             double score = 0.0;
@@ -173,14 +171,12 @@ public class GeminiChatServlet extends HttpServlet {
             for (String keyword : keywords) {
                 if (message.contains(keyword.toLowerCase())) {
                     score += 1.0;
-                    // Bonus cho exact match
                     if (message.equals(keyword.toLowerCase())) {
                         score += 0.5;
                     }
                 }
             }
             
-            // Fuzzy matching bonus
             for (String keyword : keywords) {
                 if (fuzzyMatch(message, keyword.toLowerCase())) {
                     score += 0.3;
@@ -213,26 +209,27 @@ public class GeminiChatServlet extends HttpServlet {
             
             JsonObject requestData = gson.fromJson(requestBody, JsonObject.class);
             String userMessage = requestData.get("message").getAsString().trim();
+            boolean generalQuery = requestData.has("generalQuery") && requestData.get("generalQuery").getAsBoolean();
             
-            System.out.println("💬 User message: " + userMessage);
+            System.out.println("💬 User message: " + userMessage + ", General Query: " + generalQuery);
             
             // RAG Pipeline: Retrieve relevant knowledge
-            List<KnowledgeItem> relevantKnowledge = retrieveRelevantKnowledge(userMessage);
+            List<KnowledgeItem> relevantKnowledge = generalQuery ? new ArrayList<>() : retrieveRelevantKnowledge(userMessage);
             
             String aiResponse;
             try {
                 if (!relevantKnowledge.isEmpty()) {
                     // Dùng RAG với context từ knowledge base
-                    aiResponse = callGoogleAIWithRAG(userMessage, relevantKnowledge);
+                    aiResponse = callGoogleAIWithRAG(userMessage, relevantKnowledge, request);
                 } else {
                     // Fallback to general context
-                    aiResponse = callGoogleAIGeneral(userMessage);
+                    aiResponse = callGoogleAIGeneral(userMessage, request);
                 }
                 System.out.println("🤖 AI Response: " + aiResponse);
             } catch (Exception e) {
                 System.err.println("❌ AI API Error: " + e.getMessage());
-                // Enhanced fallback with RAG
-                aiResponse = getEnhancedFallbackResponse(userMessage, relevantKnowledge);
+                // Enhanced fallback
+                aiResponse = getEnhancedFallbackResponse(userMessage, relevantKnowledge, request);
                 System.out.println("🔄 Using enhanced fallback: " + aiResponse);
             }
             
@@ -273,62 +270,93 @@ public class GeminiChatServlet extends HttpServlet {
     }
     
     // RAG-enhanced AI call
-    private String callGoogleAIWithRAG(String userMessage, List<KnowledgeItem> relevantKnowledge) throws IOException {
+    private String callGoogleAIWithRAG(String userMessage, List<KnowledgeItem> relevantKnowledge, HttpServletRequest request) throws IOException {
         StringBuilder context = new StringBuilder();
-        context.append("Bạn là trợ lý ảo chuyên nghiệp của Nha Khoa PDC. ");
-        context.append("Dựa vao thông tin sau để trả lời chính xác và hữu ích:\n\n");
+        context.append("Bạn là trợ lý ảo chuyên nghiệp của Nha Khoa PDC, chuyên cung cấp thông tin về các dịch vụ nha khoa như Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
+                      "Bạn cũng có khả năng trả lời các câu hỏi ngoài nha khoa (như thời tiết, tin tức, hoặc các chủ đề chung) một cách ngắn gọn, chính xác và thân thiện. " +
+                      "Nếu câu hỏi không liên quan đến nha khoa, hãy trả lời hữu ích và đề xuất liên hệ PDC (hotline 1900-1234) nếu cần thêm thông tin về nha khoa. " +
+                      "Sử dụng tiếng Việt tự nhiên, chuyên nghiệp và thân thiện.\n\n");
         
         for (KnowledgeItem item : relevantKnowledge) {
             context.append("=== ").append(item.title).append(" ===\n");
             context.append(item.content).append("\n\n");
         }
         
-        context.append("Câu hỏi của khách hàng: ").append(userMessage);
+        // Thêm lịch sử trò chuyện
+        @SuppressWarnings("unchecked")
+        List<String> chatHistory = (List<String>) request.getSession().getAttribute("chatHistory");
+        if (chatHistory != null && !chatHistory.isEmpty()) {
+            context.append("Lịch sử trò chuyện:\n");
+            for (String history : chatHistory) {
+                context.append(history).append("\n");
+            }
+        }
+        
+        context.append("Câu hỏi hiện tại: ").append(userMessage);
         context.append("\n\nHãy trả lời một cách thân thiện, chuyên nghiệp và chi tiết.");
         
         return callGoogleAI(context.toString());
     }
     
     // General AI call without RAG
-    private String callGoogleAIGeneral(String userMessage) throws IOException {
-        String context = "Bạn là trợ lý ảo của Nha Khoa PDC - 'Giải pháp tối ưu, can thiệp tối thiểu'. " +
-                "Chuyên về: Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
-                "Trả lời thân thiện, chuyên nghiệp bằng tiếng Việt.\n\nCâu hỏi: " + userMessage;
+    private String callGoogleAIGeneral(String userMessage, HttpServletRequest request) throws IOException {
+        StringBuilder context = new StringBuilder();
+        context.append("Bạn là trợ lý ảo thông minh của Nha Khoa PDC - 'Giải pháp tối ưu, can thiệp tối thiểu'. " +
+                      "Chuyên về: Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
+                      "Bạn cũng có khả năng trả lời các câu hỏi ngoài nha khoa (như thời tiết, tin tức, hoặc các chủ đề chung) một cách ngắn gọn, chính xác và thân thiện. " +
+                      "Nếu câu hỏi không liên quan đến nha khoa, hãy trả lời hữu ích và đề xuất liên hệ PDC (hotline 1900-1234) nếu cần thêm thông tin về nha khoa. " +
+                      "Sử dụng tiếng Việt tự nhiên, chuyên nghiệp và thân thiện.\n\n");
         
-        return callGoogleAI(context);
+        // Thêm lịch sử trò chuyện
+        @SuppressWarnings("unchecked")
+        List<String> chatHistory = (List<String>) request.getSession().getAttribute("chatHistory");
+        if (chatHistory != null && !chatHistory.isEmpty()) {
+            context.append("Lịch sử trò chuyện:\n");
+            for (String history : chatHistory) {
+                context.append(history).append("\n");
+            }
+        }
+        
+        context.append("Câu hỏi hiện tại: ").append(userMessage);
+        context.append("\n\nHãy trả lời một cách thân thiện, chuyên nghiệp và chi tiết.");
+        
+        return callGoogleAI(context.toString());
     }
     
     // Enhanced fallback with RAG knowledge
-    private String getEnhancedFallbackResponse(String userMessage, List<KnowledgeItem> relevantKnowledge) {
+    private String getEnhancedFallbackResponse(String userMessage, List<KnowledgeItem> relevantKnowledge, HttpServletRequest request) throws IOException {
         if (!relevantKnowledge.isEmpty()) {
-            // Return most relevant knowledge
             KnowledgeItem bestMatch = relevantKnowledge.get(0);
             return bestMatch.content + "\n\n💡 *Để biết thêm thông tin chi tiết, bạn có thể liên hệ hotline 1900-1234 để được tư vấn miễn phí.*";
         }
         
-        // Smart fallbacks based on message patterns
-        String message = userMessage.toLowerCase();
-        
-        if (containsAny(message, "xin chào", "hello", "hi", "chào")) {
-            return "👋 Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể hỗ trợ bạn về:\n\n" +
-                   "🦷 Cấy ghép Implant\n😊 Niềng răng chỉnh nha\n👶 Nha khoa trẻ em\n🏥 Phẫu thuật hàm mặt\n✨ Nha khoa thẩm mỹ\n🦷 Nhổ răng khôn\n\n" +
-                   "Bạn quan tâm dịch vụ nào? Tôi sẽ tư vấn chi tiết cho bạn! 😊";
+        // Thử gọi Gemini API với ngữ cảnh chung
+        String context = "Bạn là một trợ lý ảo thông minh, có thể trả lời mọi câu hỏi một cách ngắn gọn, chính xác và thân thiện bằng tiếng Việt. " +
+                        "Nếu câu hỏi liên quan đến nha khoa, hãy đề xuất liên hệ Nha Khoa PDC (hotline 1900-1234). " +
+                        "Câu hỏi: " + userMessage;
+        try {
+            return callGoogleAI(context);
+        } catch (Exception e) {
+            // Smart fallbacks based on message patterns
+            String message = userMessage.toLowerCase();
+            
+            if (containsAny(message, "xin chào", "hello", "hi", "chào")) {
+                return "👋 Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể hỗ trợ bạn về:\n\n" +
+                       "🦷 Cấy ghép Implant\n😊 Niềng răng chỉnh nha\n👶 Nha khoa thử em\n🏥 Phẫu thuật hàm mặt\n✨ Nha khoa thẩm mỹ\n🦷 Nhổ răng khôn\n\n" +
+                       "Bạn quan tâm dịch vụ nào? Hoặc hỏi tôi bất kỳ điều gì, tôi sẽ cố gắng trả lời! 😊";
+            }
+            
+            if (containsAny(message, "cảm ơn", "thank", "thanks")) {
+                return "🙏 Rất vui được hỗ trợ bạn! Nha Khoa PDC luôn sẵn sàng tư vấn miễn phí 24/7. Chúc bạn một ngày tốt lành! 😊";
+            }
+            
+            if (containsAny(message, "tạm biệt", "bye", "goodbye")) {
+                return "👋 Tạm biệt! Cảm ơn bạn đã quan tâm đến Nha Khoa PDC. Hẹn gặp lại bạn sớm nhé! 😊";
+            }
+            
+            // Default intelligent response
+            return "🤔 Xin lỗi, tôi chưa có đủ thông tin để trả lời câu hỏi này. Bạn có muốn hỏi về các dịch vụ nha khoa của PDC không? Gọi hotline 1900-1234 để được tư vấn chi tiết! 😊";
         }
-        
-        if (containsAny(message, "cảm ơn", "thank", "thanks")) {
-            return "🙏 Rất vui được hỗ trợ bạn! Nha Khoa PDC luôn sẵn sàng tư vấn miễn phí 24/7. Chúc bạn một ngày tốt lành! 😊";
-        }
-        
-        if (containsAny(message, "tạm biệt", "bye", "goodbye")) {
-            return "👋 Tạm biệt! Cảm ơn bạn đã quan tâm đến Nha Khoa PDC. Hẹn gặp lại bạn sớm nhé! 😊";
-        }
-        
-        // Default intelligent response
-        return "🤔 Tôi hiểu bạn đang quan tâm về vấn đề răng miệng. Mặc dù tôi chưa có thông tin cụ thể về câu hỏi này, " +
-               "nhưng đội ngũ bác sĩ chuyên khoa của PDC sẽ tư vấn chi tiết cho bạn.\n\n" +
-               "📞 **Liên hệ ngay**: 1900-1234\n" +
-               "💬 **Hoặc hỏi tôi về**: Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật, Thẩm mỹ, Nhổ răng khôn\n\n" +
-               "Bạn có câu hỏi nào khác tôi có thể hỗ trợ không? 😊";
     }
     
     // Helper methods
@@ -340,7 +368,6 @@ public class GeminiChatServlet extends HttpServlet {
     }
     
     private static boolean fuzzyMatch(String text, String keyword) {
-        // Simple fuzzy matching - can be enhanced with Levenshtein distance
         if (keyword.length() < 3) return false;
         return text.contains(keyword.substring(0, Math.min(3, keyword.length())));
     }
@@ -392,9 +419,17 @@ public class GeminiChatServlet extends HttpServlet {
         contents.add(content);
         requestBody.add("contents", contents);
         
+        // Thêm cấu hình grounding
+        JsonObject tools = new JsonObject();
+        JsonObject googleSearchRetrieval = new JsonObject();
+        googleSearchRetrieval.addProperty("type", "google_search_retrieval");
+        JsonArray toolsArray = new JsonArray();
+        toolsArray.add(googleSearchRetrieval);
+        requestBody.add("tools", toolsArray);
+        
         // Generation config for better responses
         JsonObject generationConfig = new JsonObject();
-        generationConfig.addProperty("temperature", 0.8);
+        generationConfig.addProperty("temperature", 0.7); // Giảm temperature để trả lời chính xác hơn
         generationConfig.addProperty("maxOutputTokens", 2048);
         generationConfig.addProperty("topP", 0.9);
         generationConfig.addProperty("topK", 40);

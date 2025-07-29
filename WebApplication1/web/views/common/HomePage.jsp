@@ -415,7 +415,7 @@
                 color: inherit;
             }
 
-            /* Chatbot Overlay */
+            /* Enhanced Chatbot Styles */
             .chatbot-overlay {
                 display: none;
                 position: fixed;
@@ -423,10 +423,12 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.5);
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(8px);
                 z-index: 1002;
                 justify-content: center;
                 align-items: center;
+                animation: fadeIn 0.3s ease;
             }
 
             .chatbot-overlay.active {
@@ -434,139 +436,378 @@
             }
 
             .chatbot-box {
-                background: white;
-                padding: 20px;
-                border-radius: 20px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                max-width: 600px;
+                background: linear-gradient(145deg, #ffffff, #f8f9ff);
+                padding: 0;
+                border-radius: 25px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+                max-width: 450px;
                 width: 90%;
+                max-height: 600px;
                 position: relative;
+                overflow: hidden;
+                border: 1px solid rgba(102, 126, 234, 0.1);
+                animation: slideUp 0.4s ease;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes slideUp {
+                from { 
+                    opacity: 0;
+                    transform: translateY(50px) scale(0.9);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            .chatbot-header {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                padding: 20px 25px;
+                color: white;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .chatbot-header::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -50%;
+                width: 100%;
+                height: 200%;
+                background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+                animation: shimmer 3s infinite;
+            }
+
+            @keyframes shimmer {
+                0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+                100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            }
+
+            .chatbot-title {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 18px;
+                font-weight: 600;
+                position: relative;
+                z-index: 2;
+            }
+
+            .chatbot-title i {
+                font-size: 20px;
+                color: #ffd700;
+            }
+
+            .chatbot-status {
+                font-size: 12px;
+                opacity: 0.9;
+                margin-top: 4px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                position: relative;
+                z-index: 2;
+            }
+
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                background: #4CAF50;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
             }
 
             #chatBox {
-                height: 300px;
+                height: 350px;
                 overflow-y: auto;
-                border: 1px solid #f0f0f0;
-                padding: 15px;
+                padding: 20px;
+                background: linear-gradient(to bottom, #fafbff, #f0f2ff);
+                position: relative;
+            }
+
+            #chatBox::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #chatBox::-webkit-scrollbar-track {
+                background: rgba(0,0,0,0.05);
                 border-radius: 10px;
-                margin-bottom: 20px;
-                background: #fafafa;
+            }
+
+            #chatBox::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-radius: 10px;
             }
 
             #chatBox p {
-                margin: 10px 0;
-                padding: 8px 12px;
-                border-radius: 10px;
+                margin: 15px 0;
+                padding: 12px 18px;
+                border-radius: 20px;
                 word-wrap: break-word;
+                max-width: 85%;
+                position: relative;
+                animation: messageSlide 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+            @keyframes messageSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             .user {
-                background: #667eea;
+                background: linear-gradient(135deg, #667eea, #764ba2);
                 color: white;
-                margin-left: 20%;
-                text-align: right;
+                margin-left: auto;
+                margin-right: 0;
+                border-bottom-right-radius: 5px;
+                position: relative;
+            }
+
+            .user::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -10px;
+                width: 0;
+                height: 0;
+                border-top: 10px solid transparent;
+                border-bottom: 10px solid transparent;
+                border-right: 10px solid #667eea;
             }
 
             .bot {
-                background: #e9ecef;
+                background: linear-gradient(135deg, #ffffff, #f8f9ff);
                 color: #2c3e50;
-                margin-right: 20%;
+                margin-right: auto;
+                margin-left: 0;
+                border: 1px solid rgba(102, 126, 234, 0.1);
+                border-bottom-left-radius: 5px;
+                position: relative;
+            }
+
+            .bot::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: -10px;
+                width: 0;
+                height: 0;
+                border-top: 10px solid transparent;
+                border-bottom: 10px solid transparent;
+                border-left: 10px solid #ffffff;
             }
 
             .typing {
-                background: #e9ecef;
-                color: #7f8c8d;
-                margin-right: 20%;
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                color: #1976d2;
+                margin-right: auto;
+                margin-left: 0;
                 font-style: italic;
+                border: 1px solid rgba(25, 118, 210, 0.2);
+                position: relative;
+            }
+
+            .typing::after {
+                content: '';
+                display: inline-block;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background: #1976d2;
+                margin-left: 8px;
+                animation: typingDot 1.4s infinite;
+            }
+
+            @keyframes typingDot {
+                0%, 60%, 100% { opacity: 0; }
+                30% { opacity: 1; }
+            }
+
+            .error-message {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+                color: white;
+                margin-right: auto;
+                margin-left: 0;
+                border-bottom-left-radius: 5px;
+            }
+
+            .chatbot-input-container {
+                padding: 20px;
+                background: white;
+                border-top: 1px solid rgba(0,0,0,0.1);
+                position: relative;
             }
 
             .chatbot-input {
                 display: flex;
-                gap: 10px;
+                gap: 12px;
+                align-items: flex-end;
+            }
+
+            .input-wrapper {
+                flex: 1;
+                position: relative;
             }
 
             .chatbot-input input[type="text"] {
-                flex: 1;
-                padding: 12px;
-                border: 1px solid #ccc;
+                width: 100%;
+                padding: 15px 20px;
+                border: 2px solid #e1e8ed;
                 border-radius: 25px;
-                font-size: 16px;
+                font-size: 15px;
                 outline: none;
+                transition: all 0.3s ease;
+                background: #fafbff;
+                color: #2c3e50;
             }
 
             .chatbot-input input[type="text"]:focus {
                 border-color: #667eea;
-                box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                background: white;
             }
 
-            .chatbot-input button {
-                padding: 12px 24px;
+            .chatbot-input input[type="text"]::placeholder {
+                color: #95a5a6;
+            }
+
+            .send-button {
+                width: 50px;
+                height: 50px;
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 color: white;
                 border: none;
-                border-radius: 25px;
-                font-weight: 600;
+                border-radius: 50%;
+                font-size: 16px;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             }
 
-            .chatbot-input button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            .send-button:hover:not(:disabled) {
+                transform: translateY(-2px) scale(1.05);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
             }
 
-            .chatbot-input button:disabled {
+            .send-button:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
                 transform: none;
-            }
-
-            .error-message {
-                background: #ff6b6b;
-                color: white;
-                margin-right: 20%;
+                box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
             }
 
             .close-btn {
                 position: absolute;
-                top: 10px;
-                right: 15px;
-                font-size: 20px;
+                top: 15px;
+                right: 20px;
+                font-size: 24px;
                 cursor: pointer;
-                color: #666;
-                background: none;
+                color: white;
+                background: rgba(255,255,255,0.2);
                 border: none;
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                z-index: 3;
             }
 
             .close-btn:hover {
-                color: #ff6b6b;
+                background: rgba(255,255,255,0.3);
+                transform: rotate(90deg);
             }
 
-            /* Chatbot Toggle Button */
+            /* Enhanced Chatbot Toggle Button */
             .chatbot-toggle {
                 position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 60px;
-                height: 60px;
+                bottom: 25px;
+                right: 25px;
+                width: 65px;
+                height: 65px;
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
                 cursor: pointer;
                 z-index: 1001;
-                transition: transform 0.3s ease;
+                transition: all 0.3s ease;
+                border: 3px solid white;
+                animation: chatbotPulse 3s infinite;
+            }
+
+            @keyframes chatbotPulse {
+                0%, 100% {
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0.4);
+                }
+                50% {
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 0 10px rgba(102, 126, 234, 0);
+                }
             }
 
             .chatbot-toggle:hover {
-                transform: scale(1.1);
+                transform: scale(1.1) rotate(5deg);
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
             }
 
             .chatbot-toggle i {
                 color: white;
-                font-size: 24px;
+                font-size: 26px;
+                transition: transform 0.3s ease;
+            }
+
+            .chatbot-toggle:hover i {
+                transform: scale(1.1);
+            }
+
+            /* Quick Suggestions */
+            .quick-suggestions {
+                padding: 15px 20px 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .suggestion-chip {
+                background: rgba(102, 126, 234, 0.1);
+                color: #667eea;
+                padding: 8px 12px;
+                border-radius: 15px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(102, 126, 234, 0.2);
+            }
+
+            .suggestion-chip:hover {
+                background: #667eea;
+                color: white;
+                transform: scale(1.05);
             }
 
             /* Loading Animation */
@@ -641,26 +882,44 @@
                 }
 
                 .chatbot-box {
-                    padding: 15px;
+                    max-width: 95%;
+                    max-height: 90vh;
+                    margin: 20px;
+                }
+
+                #chatBox {
+                    height: 280px;
                 }
 
                 .chatbot-input {
                     flex-direction: column;
+                    gap: 10px;
                 }
 
-                .chatbot-input input[type="text"] {
+                .send-button {
                     width: 100%;
+                    height: 45px;
+                    border-radius: 25px;
                 }
 
                 .chatbot-toggle {
-                    bottom: 10px;
-                    right: 10px;
-                    width: 50px;
-                    height: 50px;
+                    bottom: 15px;
+                    right: 15px;
+                    width: 55px;
+                    height: 55px;
                 }
 
                 .chatbot-toggle i {
-                    font-size: 20px;
+                    font-size: 22px;
+                }
+
+                .quick-suggestions {
+                    padding: 10px 15px 0;
+                }
+
+                .suggestion-chip {
+                    font-size: 11px;
+                    padding: 6px 10px;
                 }
             }
         </style>
@@ -806,28 +1065,58 @@
             </div>
         </section>
 
-        <!-- Chatbot Overlay -->
+        <!-- Enhanced Chatbot Overlay -->
         <div class="chatbot-overlay" id="chatbotOverlay">
             <div class="chatbot-box">
-                <button class="close-btn" id="closeBtn">&times;</button>
+                <div class="chatbot-header">
+                    <button class="close-btn" id="closeBtn">&times;</button>
+                    <div class="chatbot-title">
+                        <i class="fas fa-robot"></i>
+                        <div>
+                            <div>Trợ lý ảo PDC</div>
+                            <div class="chatbot-status">
+                                <span class="status-dot"></span>
+                                Đang hoạt động
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-suggestions">
+                    <div class="suggestion-chip" onclick="selectSuggestion('Tư vấn dịch vụ implant')">Implant</div>
+                    <div class="suggestion-chip" onclick="selectSuggestion('Giá chỉnh nha mắc cài')">Mắc cài</div>
+                    <div class="suggestion-chip" onclick="selectSuggestion('Nha khoa trẻ em')">Trẻ em</div>
+                    <div class="suggestion-chip" onclick="selectSuggestion('Bảng giá dịch vụ')">Bảng giá</div>
+                </div>
+
                 <div id="chatBox">
-                    <p class="bot">Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể giúp bạn trả lời các câu hỏi về dịch vụ nha khoa. Bạn cần hỗ trợ gì?</p>
+                    <p class="bot">
+                        <i class="fas fa-hand-paper" style="margin-right: 8px; color: #ffd700;"></i>
+                        Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể giúp bạn trả lời các câu hỏi về dịch vụ nha khoa. Bạn cần hỗ trợ gì?
+                    </p>
                     <c:forEach var="message" items="${sessionScope.chatHistory}">
                         <p class="${fn:startsWith(message, 'Bạn:') ? 'user' : 'bot'}">
                             ${message}
                         </p>
                     </c:forEach>
                 </div>
-                <div class="chatbot-input">
-                    <input type="text" id="userInput" placeholder="Nhập câu hỏi về dịch vụ nha khoa..." required>
-                    <button id="sendButton"><i class="fas fa-paper-plane"></i> Gửi</button>
+
+                <div class="chatbot-input-container">
+                    <div class="chatbot-input">
+                        <div class="input-wrapper">
+                            <input type="text" id="userInput" placeholder="Nhập câu hỏi về dịch vụ nha khoa..." required>
+                        </div>
+                        <button class="send-button" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chatbot Toggle Button -->
+        <!-- Enhanced Chatbot Toggle Button -->
         <div class="chatbot-toggle" id="chatbotToggle">
-            <i class="fas fa-comment"></i>
+            <i class="fas fa-comment-medical"></i>
         </div>
 
         <!-- Include Footer -->
@@ -888,7 +1177,7 @@
                 observer.observe(card);
             });
 
-            // Chatbot toggle functionality
+            // Enhanced Chatbot toggle functionality
             const chatbotToggle = document.getElementById('chatbotToggle');
             const chatbotOverlay = document.getElementById('chatbotOverlay');
             const closeBtn = document.getElementById('closeBtn');
@@ -896,6 +1185,8 @@
             chatbotToggle.addEventListener('click', () => {
                 chatbotOverlay.classList.add('active');
                 document.getElementById('userInput').focus();
+                // Add welcome sound effect (optional)
+                playNotificationSound();
             });
 
             closeBtn.addEventListener('click', () => {
@@ -909,31 +1200,89 @@
                 }
             });
 
-            // Auto-scroll chatbox to bottom
-            const chatBox = document.getElementById('chatBox');
-            if (chatBox) {
-                chatBox.scrollTop = chatBox.scrollHeight;
+            // Auto-scroll chatbox to bottom with smooth animation
+            function scrollChatToBottom() {
+                const chatBox = document.getElementById('chatBox');
+                if (chatBox) {
+                    chatBox.scrollTo({
+                        top: chatBox.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
             }
 
-            // Chatbot send message function - Now calls the actual servlet
+            // Initial scroll
+            scrollChatToBottom();
+
+            // Quick suggestion selection
+            function selectSuggestion(text) {
+                const userInput = document.getElementById('userInput');
+                userInput.value = text;
+                userInput.focus();
+                // Add subtle animation to input
+                userInput.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    userInput.style.transform = 'scale(1)';
+                }, 200);
+            }
+
+            // Enhanced message append function with better animations
+            function appendMessage(message, className) {
+                const chatBox = document.getElementById('chatBox');
+                const p = document.createElement('p');
+                p.className = className;
+                
+                // Add icons for different message types
+                if (className === 'bot') {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-robot';
+                    icon.style.marginRight = '8px';
+                    icon.style.color = '#667eea';
+                    p.appendChild(icon);
+                }
+                
+                const textNode = document.createTextNode(message);
+                p.appendChild(textNode);
+                
+                // Add message with animation
+                p.style.opacity = '0';
+                p.style.transform = 'translateY(20px)';
+                chatBox.appendChild(p);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    p.style.opacity = '1';
+                    p.style.transform = 'translateY(0)';
+                }, 10);
+                
+                scrollChatToBottom();
+                return p;
+            }
+
+            // Enhanced send message function with better UX
             async function sendMessage() {
                 const userInput = document.getElementById('userInput');
                 const sendButton = document.getElementById('sendButton');
                 const userMessage = userInput.value.trim();
 
-                if (!userMessage)
-                    return;
+                if (!userMessage) return;
 
+                // Disable input and button
                 userInput.disabled = true;
                 sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
+                // Add user message with animation
                 appendMessage(userMessage, 'user');
                 userInput.value = '';
 
+                // Show typing indicator
                 const typingMessage = appendMessage('Đang trả lời...', 'typing');
 
+                // Play send sound
+                playNotificationSound();
+
                 try {
-                    // ✅ SỬA LỖI: Đảm bảo đúng context path
                     const contextPath = '${pageContext.request.contextPath}';
                     const servletUrl = contextPath + '/ChatbotServlet';
 
@@ -952,9 +1301,7 @@
                     });
 
                     console.log('📊 Response status:', response.status);
-                    console.log('📊 Response headers:', [...response.headers.entries()]);
 
-                    // Kiểm tra response content type
                     const contentType = response.headers.get('content-type');
                     if (!contentType || !contentType.includes('application/json')) {
                         console.warn('⚠️ Response is not JSON:', contentType);
@@ -972,12 +1319,15 @@
                     const data = await response.json();
                     console.log('✅ Response data:', data);
 
+                    // Remove typing indicator
                     typingMessage.remove();
 
                     if (data.success) {
                         appendMessage(data.response, 'bot');
+                        playSuccessSound();
                     } else {
                         appendMessage(data.response || 'Có lỗi xảy ra', 'error-message');
+                        playErrorSound();
                         if (data.error) {
                             console.error('🔍 Server error details:', data.error);
                         }
@@ -987,50 +1337,63 @@
                     console.error('💥 Error details:', error);
                     typingMessage.remove();
 
-                    // Hiển thị lỗi chi tiết để debug
                     let errorMsg = '❌ Lỗi: ' + error.message;
                     appendMessage(errorMsg, 'error-message');
+                    playErrorSound();
 
-                    // Fallback response
+                    // Fallback response with delay for better UX
                     setTimeout(() => {
                         const fallback = getFallbackResponse(userMessage);
                         appendMessage('🤖 Dùng câu trả lời có sẵn: ' + fallback, 'bot');
                     }, 1000);
                 }
 
+                // Re-enable input and button
                 userInput.disabled = false;
                 sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 userInput.focus();
             }
 
-            // Fallback responses for when API fails
+            // Enhanced fallback responses
             function getFallbackResponse(userMessage) {
                 const message = userMessage.toLowerCase();
 
                 if (message.includes('implant') || message.includes('cấy ghép')) {
-                    return 'Cấy ghép Implant tại PDC sử dụng công nghệ tiên tiến với bảo hành 10 năm. Quy trình an toàn và thẩm mỹ cao. Bạn có thể đặt lịch tư vấn miễn phí để được thăm khám chi tiết.';
+                    return 'Cấy ghép Implant tại PDC sử dụng công nghệ tiên tiến với bảo hành 10 năm. Quy trình an toàn và thẩm mỹ cao. Bạn có thể đặt lịch tư vấn miễn phí để được thăm khám chi tiết. 🦷✨';
                 } else if (message.includes('mắc cài') || message.includes('niềng') || message.includes('chỉnh nha')) {
-                    return 'PDC cung cấp các loại mắc cài: kim loại, sứ, trong suốt. Thời gian điều trị 18-24 tháng. Chúng tôi có chuyên gia chỉnh nha giàu kinh nghiệm để mang lại nụ cười hoàn hảo cho bạn.';
+                    return 'PDC cung cấp các loại mắc cài: kim loại, sứ, trong suốt. Thời gian điều trị 18-24 tháng. Chúng tôi có chuyên gia chỉnh nha giàu kinh nghiệm để mang lại nụ cười hoàn hảo cho bạn. 😊🦷';
                 } else if (message.includes('trẻ em') || message.includes('bé')) {
-                    return 'Nha khoa trẻ em tại PDC có không gian thân thiện, bác sĩ chuyên khoa nhi. Chăm sóc răng miệng cho bé từ 6 tháng tuổi với phương pháp nhẹ nhàng, không đau.';
+                    return 'Nha khoa trẻ em tại PDC có không gian thân thiện, bác sĩ chuyên khoa nhi. Chăm sóc răng miệng cho bé từ 6 tháng tuổi với phương pháp nhẹ nhàng, không đau. 👶🦷';
                 } else if (message.includes('giá') || message.includes('chi phí')) {
-                    return 'Giá dịch vụ tại PDC phụ thuộc từng trường hợp. Chúng tôi có chính sách tư vấn và báo giá miễn phí. Bạn có thể đặt lịch để được thăm khám và báo giá chi tiết.';
+                    return 'Giá dịch vụ tại PDC phụ thuộc từng trường hợp. Chúng tôi có chính sách tư vấn và báo giá miễn phí. Bạn có thể đặt lịch để được thăm khám và báo giá chi tiết. 💰📋';
+                } else if (message.includes('địa chỉ') || message.includes('ở đâu')) {
+                    return 'Nha Khoa PDC có nhiều chi nhánh tại TP.HCM và các tỉnh thành. Bạn có thể gọi hotline để được tư vấn chi nhánh gần nhất. 📍🏥';
                 } else {
-                    return 'Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể hỗ trợ bạn về các dịch vụ: Cấy ghép Implant, Chỉnh nha mắc cài, Nha khoa trẻ em, Phẫu thuật xương hàm, Nha khoa thẩm mỹ, Nhổ răng khôn. Bạn cần tư vấn dịch vụ nào?';
+                    return 'Xin chào! Tôi có thể hỗ trợ bạn về các dịch vụ: Cấy ghép Implant, Chỉnh nha mắc cài, Nha khoa trẻ em, Phẫu thuật xương hàm, Nha khoa thẩm mỹ, Nhổ răng khôn. Bạn cần tư vấn dịch vụ nào? 🦷😊';
                 }
             }
 
-            function appendMessage(message, className) {
-                const chatBox = document.getElementById('chatBox');
-                const p = document.createElement('p');
-                p.className = className;
-                p.textContent = message;
-                chatBox.appendChild(p);
-                chatBox.scrollTop = chatBox.scrollHeight;
-                return p;
+            // Sound effects (optional - can be disabled)
+            function playNotificationSound() {
+                try {
+                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUOQF');
+                    audio.volume = 0.1;
+                    audio.play();
+                } catch (e) {
+                    // Ignore if audio fails
+                }
             }
 
-            // Event listeners
+            function playSuccessSound() {
+                // Success sound implementation
+            }
+
+            function playErrorSound() {
+                // Error sound implementation
+            }
+
+            // Event listeners with better UX
             document.getElementById('userInput').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -1040,8 +1403,20 @@
 
             document.getElementById('sendButton').addEventListener('click', sendMessage);
 
-            // Initial focus on input when chatbot is opened
-            document.getElementById('userInput').focus();
+            // Auto-focus on input when chatbot is opened
+            chatbotToggle.addEventListener('click', () => {
+                setTimeout(() => {
+                    document.getElementById('userInput').focus();
+                }, 300);
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Escape key to close chatbot
+                if (e.key === 'Escape' && chatbotOverlay.classList.contains('active')) {
+                    chatbotOverlay.classList.remove('active');
+                }
+            });
             
         </script>
         
