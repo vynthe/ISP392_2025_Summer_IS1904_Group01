@@ -15,16 +15,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * Servlet chính xử lý chatbot cho Nha Khoa PDC
+ * Sử dụng Google Gemini AI API kết hợp với RAG (Retrieval-Augmented Generation)
+ * để cung cấp thông tin chuyên nghiệp về các dịch vụ nha khoa
+ */
 @WebServlet("/ChatbotServlet")
 public class GeminiChatServlet extends HttpServlet {
+    // API key và URL để gọi Google Gemini AI
     private static final String API_KEY = "AIzaSyDzpsNtmWfBH4EE6EjxVho6D6ABY_02Phc";
     private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + API_KEY;
     
-    // Enhanced Knowledge Base với scoring
+    // Cơ sở tri thức (Knowledge Base) chứa thông tin về các dịch vụ nha khoa
     private static final Map<String, KnowledgeItem> KNOWLEDGE_BASE = new HashMap<>();
     
+    /**
+     * Khối static khởi tạo cơ sở tri thức với các thông tin về dịch vụ nha khoa
+     * Mỗi KnowledgeItem chứa: tiêu đề, nội dung chi tiết, và danh sách từ khóa
+     */
     static {
-        // Implant knowledge
+        // Thông tin về dịch vụ cấy ghép Implant
         KNOWLEDGE_BASE.put("implant", new KnowledgeItem(
             "Cấy ghép Implant",
             "🦷 **CẤY GHÉP IMPLANT TẠI PDC**\n\n" +
@@ -41,6 +51,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("implant", "cấy ghép", "trồng răng", "mất răng", "răng giả", "titanium")
         ));
         
+        // Thông tin về dịch vụ niềng răng chỉnh nha
         KNOWLEDGE_BASE.put("nieng_rang", new KnowledgeItem(
             "Niềng răng - Chỉnh nha",
             "😊 **NIỀNG RĂNG CHỈNH NHA TẠI PDC**\n\n" +
@@ -56,6 +67,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("niềng", "mắc cài", "chỉnh nha", "răng khấp khểnh", "răng hô", "răng móm", "invisalign")
         ));
         
+        // Thông tin về nha khoa trẻ em
         KNOWLEDGE_BASE.put("tre_em", new KnowledgeItem(
             "Nha khoa trẻ em",
             "👶 **NHA KHOA TRẺ EM CHUYÊN NGHIỆP**\n\n" +
@@ -73,6 +85,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("trẻ em", "bé", "nhi", "răng sữa", "sâu răng", "trẻ", "con", "fluor")
         ));
         
+        // Thông tin về phẫu thuật xương hàm
         KNOWLEDGE_BASE.put("phauthuat", new KnowledgeItem(
             "Phẫu thuật xương hàm",
             "🏥 **PHẪU THUẬT XƯƠNG HÀM CHỈNH HÌNH**\n\n" +
@@ -89,6 +102,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("phẫu thuật", "xương hàm", "hô", "móm", "lệch hàm", "hàm mặt", "chỉnh hình")
         ));
         
+        // Thông tin về nha khoa thẩm mỹ
         KNOWLEDGE_BASE.put("tham_my", new KnowledgeItem(
             "Nha khoa thẩm mỹ",
             "✨ **NHA KHOA THẨM MỸ ĐẲNG CẤP**\n\n" +
@@ -103,6 +117,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("thẩm mỹ", "tẩy trắng", "veneer", "bọc sứ", "răng đẹp", "nụ cười", "hollywood", "sứ")
         ));
         
+        // Thông tin về nhổ răng khôn
         KNOWLEDGE_BASE.put("nho_rang", new KnowledgeItem(
             "Nhổ răng khôn",
             "🦷 **NHỔ RĂNG KHÔN AN TOÀN**\n\n" +
@@ -119,6 +134,7 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("nhổ răng khôn", "răng khôn", "nhổ răng", "đau răng", "viêm lợi", "mọc lệch")
         ));
         
+        // Thông tin về giá cả dịch vụ
         KNOWLEDGE_BASE.put("gia_cuoc", new KnowledgeItem(
             "Bảng giá dịch vụ",
             "💰 **BẢNG GIÁ THAM KHẢO NHA KHOA PDC**\n\n" +
@@ -135,48 +151,66 @@ public class GeminiChatServlet extends HttpServlet {
             Arrays.asList("giá", "chi phí", "bảng giá", "tiền", "cost", "phí", "ưu đãi", "trả góp")
         ));
         
+        // Thông tin liên hệ
         KNOWLEDGE_BASE.put("lien_he", new KnowledgeItem(
             "Thông tin liên hệ",
             "📞 **THÔNG TIN LIÊN HỆ NHA KHOA PDC**\n\n" +
             "🏥 **Chi nhánh chính**: \n" +
-            "📍 123 Nguyễn Văn Linh, Q.7, TP.HCM\n" +
-            "☎️ Hotline: 1900-1234\n" +
-            "📱 Zalo: 0901-234-567\n\n" +
-            "🏥 **Chi nhánh 2**: \n" +
-            "📍 456 Lê Văn Việt, Q.9, TP.HCM\n" +
-            "☎️ Tel: 028-3456-7890\n\n" +
-            "⏰ **Giờ làm việc**: Thứ 2 - Chủ nhật (8:00 - 20:00)\n" +
+            "📍 FPT Hòa Lạc, Thạch Thất, Hà Nội\n" +
+            "☎️ Hotline: 0854321230\n" +
+            "📱 Zalo: 0854321230\n\n" +
+            "🏥 **Chi nhánh 1**: \n" +
+            "⏰ **Giờ làm việc**: Thứ 2 - Thứ 7 (7:30 - 17:30)\n" +
             "🌐 **Website**: www.nhakhoapdc.com\n" +
-            "📧 **Email**: info@nhakhoapdc.com\n" +
+            "📧 **Email**: nhakhoapdc@gmail.com\n" +
             "📅 **Đặt lịch online**: Có sẵn 24/7",
             Arrays.asList("địa chỉ", "liên hệ", "hotline", "ở đâu", "contact", "phone", "zalo", "email", "website")
         ));
     }
     
+    /**
+     * Lớp nội bộ đại diện cho một mục tri thức trong cơ sở dữ liệu
+     * Chứa thông tin về một dịch vụ nha khoa cụ thể
+     */
     static class KnowledgeItem {
-        String title;
-        String content;
-        List<String> keywords;
+        String title;           // Tiêu đề của dịch vụ
+        String content;         // Nội dung chi tiết về dịch vụ
+        List<String> keywords;  // Danh sách từ khóa liên quan
         
+        /**
+         * Constructor khởi tạo KnowledgeItem
+         * @param title Tiêu đề dịch vụ
+         * @param content Nội dung chi tiết
+         * @param keywords Danh sách từ khóa
+         */
         KnowledgeItem(String title, String content, List<String> keywords) {
             this.title = title;
             this.content = content;
             this.keywords = keywords;
         }
         
+        /**
+         * Tính toán độ liên quan của mục tri thức với câu hỏi của người dùng
+         * Sử dụng thuật toán matching từ khóa và fuzzy matching
+         * @param userMessage Câu hỏi của người dùng
+         * @return Điểm số độ liên quan (càng cao càng liên quan)
+         */
         double calculateRelevance(String userMessage) {
             String message = userMessage.toLowerCase();
             double score = 0.0;
             
+            // Kiểm tra exact match với từ khóa
             for (String keyword : keywords) {
                 if (message.contains(keyword.toLowerCase())) {
                     score += 1.0;
+                    // Bonus điểm nếu câu hỏi chính xác bằng từ khóa
                     if (message.equals(keyword.toLowerCase())) {
                         score += 0.5;
                     }
                 }
             }
             
+            // Fuzzy matching cho các từ khóa gần giống
             for (String keyword : keywords) {
                 if (fuzzyMatch(message, keyword.toLowerCase())) {
                     score += 0.3;
@@ -187,10 +221,17 @@ public class GeminiChatServlet extends HttpServlet {
         }
     }
     
+    /**
+     * Phương thức chính xử lý POST request từ client
+     * Nhận câu hỏi từ người dùng và trả về câu trả lời từ AI
+     * @param request HTTP request chứa câu hỏi
+     * @param response HTTP response chứa câu trả lời
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        // Thiết lập encoding UTF-8 cho request và response
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
@@ -199,48 +240,53 @@ public class GeminiChatServlet extends HttpServlet {
         Gson gson = new Gson();
         
         try {
+            // Đọc dữ liệu từ request body
             String requestBody = getRequestBody(request);
             System.out.println("📥 Received request: " + requestBody);
             
+            // Kiểm tra request body có hợp lệ không
             if (requestBody == null || requestBody.trim().isEmpty()) {
                 sendErrorResponse(out, gson, "Request body trống", "Empty request");
                 return;
             }
             
+            // Parse JSON từ request
             JsonObject requestData = gson.fromJson(requestBody, JsonObject.class);
             String userMessage = requestData.get("message").getAsString().trim();
-            boolean generalQuery = requestData.has("generalQuery") && requestData.get("generalQuery").getAsBoolean();
             
-            System.out.println("💬 User message: " + userMessage + ", General Query: " + generalQuery);
+            System.out.println("💬 User message: " + userMessage);
             
-            // RAG Pipeline: Retrieve relevant knowledge
-            List<KnowledgeItem> relevantKnowledge = generalQuery ? new ArrayList<>() : retrieveRelevantKnowledge(userMessage);
+            // RAG Pipeline: Tìm kiếm tri thức liên quan
+            List<KnowledgeItem> relevantKnowledge = retrieveRelevantKnowledge(userMessage);
             
             String aiResponse;
-            try {
-                if (!relevantKnowledge.isEmpty()) {
-                    // Dùng RAG với context từ knowledge base
+            if (!relevantKnowledge.isEmpty()) {
+                // Sử dụng RAG với context từ knowledge base
+                try {
                     aiResponse = callGoogleAIWithRAG(userMessage, relevantKnowledge, request);
-                } else {
-                    // Fallback to general context
-                    aiResponse = callGoogleAIGeneral(userMessage, request);
+                    System.out.println("🤖 AI Response: " + aiResponse);
+                } catch (Exception e) {
+                    System.err.println("❌ AI API Error: " + e.getMessage());
+                    // Fallback khi API lỗi
+                    aiResponse = getEnhancedFallbackResponse(userMessage, relevantKnowledge, request);
+                    System.out.println("🔄 Using enhanced fallback: " + aiResponse);
                 }
-                System.out.println("🤖 AI Response: " + aiResponse);
-            } catch (Exception e) {
-                System.err.println("❌ AI API Error: " + e.getMessage());
-                // Enhanced fallback
-                aiResponse = getEnhancedFallbackResponse(userMessage, relevantKnowledge, request);
-                System.out.println("🔄 Using enhanced fallback: " + aiResponse);
+            } else {
+                // Không tìm thấy tri thức liên quan
+                aiResponse = "🤔 Xin lỗi, câu hỏi của bạn không liên quan đến các dịch vụ nha khoa. Vui lòng hỏi về các dịch vụ như Implant, Niềng răng, Nha khoa trẻ em, hoặc liên hệ hotline 0854321230 để được tư vấn!";
+                System.out.println("🔄 No relevant knowledge found: " + aiResponse);
             }
             
-            // Lưu chat history
+            // Lưu lịch sử trò chuyện
             saveChatHistory(request, userMessage, aiResponse);
             
+            // Tạo JSON response
             JsonObject responseJson = new JsonObject();
             responseJson.addProperty("success", true);
             responseJson.addProperty("response", aiResponse);
             responseJson.addProperty("confidence", calculateConfidence(userMessage, relevantKnowledge));
             
+            // Gửi response về client
             out.print(gson.toJson(responseJson));
             out.flush();
             
@@ -251,10 +297,16 @@ public class GeminiChatServlet extends HttpServlet {
         }
     }
     
-    // Enhanced RAG: Retrieve relevant knowledge
+    /**
+     * Enhanced RAG: Tìm kiếm tri thức liên quan dựa trên câu hỏi của người dùng
+     * Sử dụng thuật toán scoring để xếp hạng độ liên quan
+     * @param userMessage Câu hỏi của người dùng
+     * @return Danh sách các mục tri thức liên quan, sắp xếp theo độ liên quan
+     */
     private List<KnowledgeItem> retrieveRelevantKnowledge(String userMessage) {
         List<KnowledgeItem> results = new ArrayList<>();
         
+        // Tính điểm liên quan cho từng mục tri thức
         for (KnowledgeItem item : KNOWLEDGE_BASE.values()) {
             double relevance = item.calculateRelevance(userMessage);
             if (relevance > 0) {
@@ -262,27 +314,35 @@ public class GeminiChatServlet extends HttpServlet {
             }
         }
         
-        // Sort by relevance score
+        // Sắp xếp theo điểm liên quan giảm dần
         results.sort((a, b) -> Double.compare(b.calculateRelevance(userMessage), a.calculateRelevance(userMessage)));
         
-        // Return top 3 most relevant
+        // Trả về top 3 mục liên quan nhất
         return results.subList(0, Math.min(3, results.size()));
     }
     
-    // RAG-enhanced AI call
+    /**
+     * RAG-enhanced AI call: Gọi AI với context từ knowledge base
+     * Sử dụng thông tin từ cơ sở tri thức để tăng độ chính xác của câu trả lời
+     * @param userMessage Câu hỏi của người dùng
+     * @param relevantKnowledge Danh sách tri thức liên quan
+     * @param request HTTP request để lấy lịch sử chat
+     * @return Câu trả lời từ AI
+     */
     private String callGoogleAIWithRAG(String userMessage, List<KnowledgeItem> relevantKnowledge, HttpServletRequest request) throws IOException {
         StringBuilder context = new StringBuilder();
-        context.append("Bạn là trợ lý ảo chuyên nghiệp của Nha Khoa PDC, chuyên cung cấp thông tin về các dịch vụ nha khoa như Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
-                      "Bạn cũng có khả năng trả lời các câu hỏi ngoài nha khoa (như thời tiết, tin tức, hoặc các chủ đề chung) một cách ngắn gọn, chính xác và thân thiện. " +
-                      "Nếu câu hỏi không liên quan đến nha khoa, hãy trả lời hữu ích và đề xuất liên hệ PDC (hotline 1900-1234) nếu cần thêm thông tin về nha khoa. " +
-                      "Sử dụng tiếng Việt tự nhiên, chuyên nghiệp và thân thiện.\n\n");
         
+        // Thêm system prompt cho AI
+        context.append("Bạn là trợ lý ảo chuyên nghiệp của Nha Khoa PDC, chỉ trả lời các câu hỏi liên quan đến các dịch vụ nha khoa như Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
+                      "Sử dụng tiếng Việt tự nhiên, chuyên nghiệp và thân thiện. Nếu câu hỏi không rõ ràng, yêu cầu người dùng cung cấp thêm thông tin hoặc đề xuất liên hệ hotline 0854321230.\n\n");
+        
+        // Thêm context từ knowledge base
         for (KnowledgeItem item : relevantKnowledge) {
             context.append("=== ").append(item.title).append(" ===\n");
             context.append(item.content).append("\n\n");
         }
         
-        // Thêm lịch sử trò chuyện
+        // Thêm lịch sử trò chuyện để AI hiểu context
         @SuppressWarnings("unchecked")
         List<String> chatHistory = (List<String>) request.getSession().getAttribute("chatHistory");
         if (chatHistory != null && !chatHistory.isEmpty()) {
@@ -292,86 +352,50 @@ public class GeminiChatServlet extends HttpServlet {
             }
         }
         
+        // Thêm câu hỏi hiện tại
         context.append("Câu hỏi hiện tại: ").append(userMessage);
-        context.append("\n\nHãy trả lời một cách thân thiện, chuyên nghiệp và chi tiết.");
+        context.append("\n\nHãy trả lời một cách thân thiện, chuyên nghiệp và chi tiết, chỉ dựa trên thông tin nha khoa.");
         
         return callGoogleAI(context.toString());
     }
     
-    // General AI call without RAG
-    private String callGoogleAIGeneral(String userMessage, HttpServletRequest request) throws IOException {
-        StringBuilder context = new StringBuilder();
-        context.append("Bạn là trợ lý ảo thông minh của Nha Khoa PDC - 'Giải pháp tối ưu, can thiệp tối thiểu'. " +
-                      "Chuyên về: Implant, Niềng răng, Nha khoa trẻ em, Phẫu thuật hàm mặt, Thẩm mỹ nha khoa, Nhổ răng khôn. " +
-                      "Bạn cũng có khả năng trả lời các câu hỏi ngoài nha khoa (như thời tiết, tin tức, hoặc các chủ đề chung) một cách ngắn gọn, chính xác và thân thiện. " +
-                      "Nếu câu hỏi không liên quan đến nha khoa, hãy trả lời hữu ích và đề xuất liên hệ PDC (hotline 1900-1234) nếu cần thêm thông tin về nha khoa. " +
-                      "Sử dụng tiếng Việt tự nhiên, chuyên nghiệp và thân thiện.\n\n");
-        
-        // Thêm lịch sử trò chuyện
-        @SuppressWarnings("unchecked")
-        List<String> chatHistory = (List<String>) request.getSession().getAttribute("chatHistory");
-        if (chatHistory != null && !chatHistory.isEmpty()) {
-            context.append("Lịch sử trò chuyện:\n");
-            for (String history : chatHistory) {
-                context.append(history).append("\n");
-            }
-        }
-        
-        context.append("Câu hỏi hiện tại: ").append(userMessage);
-        context.append("\n\nHãy trả lời một cách thân thiện, chuyên nghiệp và chi tiết.");
-        
-        return callGoogleAI(context.toString());
-    }
-    
-    // Enhanced fallback with RAG knowledge
-    private String getEnhancedFallbackResponse(String userMessage, List<KnowledgeItem> relevantKnowledge, HttpServletRequest request) throws IOException {
+    /**
+     * Enhanced fallback: Tạo câu trả lời dự phòng khi AI API không khả dụng
+     * Chỉ sử dụng tri thức có sẵn từ knowledge base
+     * @param userMessage Câu hỏi của người dùng
+     * @param relevantKnowledge Tri thức liên quan (nếu có)
+     * @param request HTTP request
+     * @return Câu trả lời fallback
+     */
+    private String getEnhancedFallbackResponse(String userMessage, List<KnowledgeItem> relevantKnowledge, HttpServletRequest request) {
+        // Nếu có tri thức liên quan, trả về thông tin đó
         if (!relevantKnowledge.isEmpty()) {
             KnowledgeItem bestMatch = relevantKnowledge.get(0);
-            return bestMatch.content + "\n\n💡 *Để biết thêm thông tin chi tiết, bạn có thể liên hệ hotline 1900-1234 để được tư vấn miễn phí.*";
+            return bestMatch.content + "\n\n💡 *Để biết thêm thông tin chi tiết, bạn có thể liên hệ hotline 0854321230 để được tư vấn miễn phí.*";
         }
         
-        // Thử gọi Gemini API với ngữ cảnh chung
-        String context = "Bạn là một trợ lý ảo thông minh, có thể trả lời mọi câu hỏi một cách ngắn gọn, chính xác và thân thiện bằng tiếng Việt. " +
-                        "Nếu câu hỏi liên quan đến nha khoa, hãy đề xuất liên hệ Nha Khoa PDC (hotline 1900-1234). " +
-                        "Câu hỏi: " + userMessage;
-        try {
-            return callGoogleAI(context);
-        } catch (Exception e) {
-            // Smart fallbacks based on message patterns
-            String message = userMessage.toLowerCase();
-            
-            if (containsAny(message, "xin chào", "hello", "hi", "chào")) {
-                return "👋 Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể hỗ trợ bạn về:\n\n" +
-                       "🦷 Cấy ghép Implant\n😊 Niềng răng chỉnh nha\n👶 Nha khoa thử em\n🏥 Phẫu thuật hàm mặt\n✨ Nha khoa thẩm mỹ\n🦷 Nhổ răng khôn\n\n" +
-                       "Bạn quan tâm dịch vụ nào? Hoặc hỏi tôi bất kỳ điều gì, tôi sẽ cố gắng trả lời! 😊";
-            }
-            
-            if (containsAny(message, "cảm ơn", "thank", "thanks")) {
-                return "🙏 Rất vui được hỗ trợ bạn! Nha Khoa PDC luôn sẵn sàng tư vấn miễn phí 24/7. Chúc bạn một ngày tốt lành! 😊";
-            }
-            
-            if (containsAny(message, "tạm biệt", "bye", "goodbye")) {
-                return "👋 Tạm biệt! Cảm ơn bạn đã quan tâm đến Nha Khoa PDC. Hẹn gặp lại bạn sớm nhé! 😊";
-            }
-            
-            // Default intelligent response
-            return "🤔 Xin lỗi, tôi chưa có đủ thông tin để trả lời câu hỏi này. Bạn có muốn hỏi về các dịch vụ nha khoa của PDC không? Gọi hotline 1900-1234 để được tư vấn chi tiết! 😊";
-        }
+        // Không tìm thấy tri thức liên quan
+        return "🤔 Xin lỗi, câu hỏi của bạn không liên quan đến các dịch vụ nha khoa. Vui lòng hỏi về các dịch vụ như Implant, Niềng răng, Nha khoa trẻ em, hoặc liên hệ hotline 0854321230 để được tư vấn!";
     }
     
-    // Helper methods
-    private boolean containsAny(String text, String... keywords) {
-        for (String keyword : keywords) {
-            if (text.contains(keyword)) return true;
-        }
-        return false;
-    }
-    
+    /**
+     * Fuzzy matching: So khớp gần đúng giữa text và keyword
+     * Dùng để tìm các từ khóa tương tự khi người dùng gõ sai chính tả
+     * @param text Văn bản người dùng nhập
+     * @param keyword Từ khóa cần so khớp
+     * @return true nếu có độ tương tự
+     */
     private static boolean fuzzyMatch(String text, String keyword) {
         if (keyword.length() < 3) return false;
         return text.contains(keyword.substring(0, Math.min(3, keyword.length())));
     }
     
+    /**
+     * Tính toán độ tin cậy của câu trả lời dựa trên độ liên quan của tri thức
+     * @param userMessage Câu hỏi của người dùng
+     * @param relevantKnowledge Tri thức liên quan
+     * @return Điểm tin cậy từ 0.0 đến 1.0
+     */
     private double calculateConfidence(String userMessage, List<KnowledgeItem> relevantKnowledge) {
         if (relevantKnowledge.isEmpty()) return 0.3;
         
@@ -379,6 +403,12 @@ public class GeminiChatServlet extends HttpServlet {
         return Math.min(0.95, 0.5 + (maxRelevance * 0.1));
     }
     
+    /**
+     * Lưu lịch sử trò chuyện vào session để AI có thể tham khảo context
+     * @param request HTTP request chứa session
+     * @param userMessage Tin nhắn của người dùng
+     * @param aiResponse Phản hồi của AI
+     */
     private void saveChatHistory(HttpServletRequest request, String userMessage, String aiResponse) {
         @SuppressWarnings("unchecked")
         List<String> chatHistory = (List<String>) request.getSession().getAttribute("chatHistory");
@@ -387,26 +417,35 @@ public class GeminiChatServlet extends HttpServlet {
             request.getSession().setAttribute("chatHistory", chatHistory);
         }
         
+        // Thêm tin nhắn mới vào lịch sử
         chatHistory.add("Bạn: " + userMessage);
         chatHistory.add("PDC Bot: " + aiResponse);
         
-        // Keep only last 20 messages
+        // Giữ chỉ 20 tin nhắn gần nhất để tránh session quá lớn
         if (chatHistory.size() > 20) {
             chatHistory = new ArrayList<>(chatHistory.subList(chatHistory.size() - 20, chatHistory.size()));
             request.getSession().setAttribute("chatHistory", chatHistory);
         }
     }
     
-    // Core Google AI call method
+    /**
+     * Core method: Gọi Google Gemini AI API
+     * Tạo HTTP request tới Google AI và parse response
+     * @param context Ngữ cảnh và câu hỏi gửi tới AI
+     * @return Câu trả lời từ AI
+     * @throws IOException Nếu có lỗi network hoặc API
+     */
     private String callGoogleAI(String context) throws IOException {
+        // Tạo connection tới Google AI API
         URL url = new URL(API_URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         conn.setDoOutput(true);
-        conn.setConnectTimeout(30000);
-        conn.setReadTimeout(30000);
+        conn.setConnectTimeout(30000);  // 30 giây timeout
+        conn.setReadTimeout(30000);     // 30 giây read timeout
         
+        // Tạo JSON request body theo format của Google AI API
         JsonObject requestBody = new JsonObject();
         JsonArray contents = new JsonArray();
         JsonObject content = new JsonObject();
@@ -419,7 +458,7 @@ public class GeminiChatServlet extends HttpServlet {
         contents.add(content);
         requestBody.add("contents", contents);
         
-        // Thêm cấu hình grounding
+        // Thêm cấu hình grounding để AI có thể search thông tin thời gian thực
         JsonObject tools = new JsonObject();
         JsonObject googleSearchRetrieval = new JsonObject();
         googleSearchRetrieval.addProperty("type", "google_search_retrieval");
@@ -427,21 +466,21 @@ public class GeminiChatServlet extends HttpServlet {
         toolsArray.add(googleSearchRetrieval);
         requestBody.add("tools", toolsArray);
         
-        // Generation config for better responses
+        // Cấu hình generation để có câu trả lời tốt hơn
         JsonObject generationConfig = new JsonObject();
-        generationConfig.addProperty("temperature", 0.7); // Giảm temperature để trả lời chính xác hơn
-        generationConfig.addProperty("maxOutputTokens", 2048);
-        generationConfig.addProperty("topP", 0.9);
-        generationConfig.addProperty("topK", 40);
+        generationConfig.addProperty("temperature", 0.7);      // Độ sáng tạo vừa phải
+        generationConfig.addProperty("maxOutputTokens", 2048); // Giới hạn độ dài response
+        generationConfig.addProperty("topP", 0.9);             // Nucleus sampling
+        generationConfig.addProperty("topK", 40);              // Top-K sampling
         requestBody.add("generationConfig", generationConfig);
         
-        // Send request
+        // Gửi request
         try (OutputStream os = conn.getOutputStream()) {
             byte[] input = requestBody.toString().getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
         
-        // Read response
+        // Đọc response
         int responseCode = conn.getResponseCode();
         InputStream inputStream = (responseCode == 200) ? conn.getInputStream() : conn.getErrorStream();
         
@@ -453,14 +492,16 @@ public class GeminiChatServlet extends HttpServlet {
             }
         }
         
+        // Kiểm tra response code
         if (responseCode != 200) {
             throw new IOException("API Error " + responseCode + ": " + response.toString());
         }
         
-        // Parse response
+        // Parse JSON response từ Google AI
         Gson gson = new Gson();
         JsonObject responseJson = gson.fromJson(response.toString(), JsonObject.class);
         
+        // Trích xuất text từ response structure phức tạp của Google AI
         if (responseJson.has("candidates")) {
             JsonArray candidates = responseJson.getAsJsonArray("candidates");
             if (candidates.size() > 0) {
@@ -483,6 +524,12 @@ public class GeminiChatServlet extends HttpServlet {
         throw new IOException("Invalid response structure");
     }
     
+    /**
+     * Đọc toàn bộ request body từ HTTP request
+     * @param request HTTP request
+     * @return String chứa request body
+     * @throws IOException Nếu có lỗi đọc dữ liệu
+     */
     private String getRequestBody(HttpServletRequest request) throws IOException {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
@@ -494,10 +541,17 @@ public class GeminiChatServlet extends HttpServlet {
         return sb.toString();
     }
     
+    /**
+     * Gửi error response về client khi có lỗi xảy ra
+     * @param out PrintWriter để gửi response
+     * @param gson Gson object để serialize JSON
+     * @param userMessage Thông báo lỗi cho người dùng
+     * @param errorDetails Chi tiết lỗi cho developer
+     */
     private void sendErrorResponse(PrintWriter out, Gson gson, String userMessage, String errorDetails) {
         JsonObject errorResponse = new JsonObject();
         errorResponse.addProperty("success", false);
-        errorResponse.addProperty("response", "Xin lỗi, " + userMessage + ". Vui lòng thử lại sau hoặc liên hệ hotline 1900-1234.");
+        errorResponse.addProperty("response", "Xin lỗi, " + userMessage + ". Vui lòng thử lại sau hoặc liên hệ hotline 0854321230.");
         errorResponse.addProperty("error", errorDetails);
         
         out.print(gson.toJson(errorResponse));

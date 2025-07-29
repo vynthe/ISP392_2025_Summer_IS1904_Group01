@@ -410,11 +410,6 @@
                 z-index: 2;
             }
 
-            .service-card a {
-                text-decoration: none;
-                color: inherit;
-            }
-
             /* Enhanced Chatbot Styles */
             .chatbot-overlay {
                 display: none;
@@ -1014,53 +1009,53 @@
                 </div>
 
                 <div class="services-grid">
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=implant" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-tooth"></i>
                         </div>
-                        <h3>Cấy ghép Implant</h3>
+                        <h3>Niềng Răng</h3>
                         <p>Giải pháp phục hồi răng mất, đảm bảo thẩm mỹ và chức năng nhai tốt nhất cho người dùng với công nghệ tiên tiến.</p>
-                    </a>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=mắc cài" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-grip-lines"></i>
                         </div>
-                        <h3>Chỉnh nha mắc cài</h3>
-                        <p>Nắn chỉnh răng mọc lệch, giúp bạn có một nụ cười khỏe mạnh và tự tin với hàm răng đều đẹp.</p>
-                    </a>
+                        <h3>Cấy ghép Implant</h3>
+                        <p>Cấy ghép Implant mang đến giải pháp phục hồi răng tối ưu với công nghệ tiên tiến, đảm bảo thẩm mỹ và chức năng nhai hoàn hảo</p>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=trẻ em" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-child"></i>
                         </div>
                         <h3>Nha khoa trẻ em</h3>
                         <p>Mang đến nụ cười khỏe mạnh cho trẻ, giúp trẻ tự tin và có hàm răng đều đẹp từ nhỏ.</p>
-                    </a>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=xương hàm" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-user-md"></i>
                         </div>
                         <h3>Phẫu thuật chỉnh hình xương hàm</h3>
                         <p>Giải quyết các vấn đề chỉnh nắn thẩm mỹ và chức năng hàm, nâng cao chất lượng cuộc sống.</p>
-                    </a>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=thẩm mỹ" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-smile"></i>
                         </div>
                         <h3>Nha khoa thẩm mỹ</h3>
                         <p>Mang đến nụ cười tự nhiên, giúp bạn tự tin với nụ cười trắng sáng và hoàn hảo.</p>
-                    </a>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=răng khôn" class="service-card">
+                    <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-procedures"></i>
                         </div>
                         <h3>Nhổ răng khôn</h3>
                         <p>Tiến hành an toàn, nhẹ nhàng với công nghệ hiện đại, đảm bảo không đau và nhanh chóng.</p>
-                    </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1094,11 +1089,6 @@
                         <i class="fas fa-hand-paper" style="margin-right: 8px; color: #ffd700;"></i>
                         Xin chào! Tôi là trợ lý ảo của Nha Khoa PDC. Tôi có thể giúp bạn trả lời các câu hỏi về dịch vụ nha khoa. Bạn cần hỗ trợ gì?
                     </p>
-                    <c:forEach var="message" items="${sessionScope.chatHistory}">
-                        <p class="${fn:startsWith(message, 'Bạn:') ? 'user' : 'bot'}">
-                            ${message}
-                        </p>
-                    </c:forEach>
                 </div>
 
                 <div class="chatbot-input-container">
@@ -1326,7 +1316,7 @@
                         appendMessage(data.response, 'bot');
                         playSuccessSound();
                     } else {
-                        appendMessage(data.response || 'Có lỗi xảy ra', 'error-message');
+                        appendMessage(data.response || 'Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ hotline 0854321230.', 'error-message');
                         playErrorSound();
                         if (data.error) {
                             console.error('🔍 Server error details:', data.error);
@@ -1336,16 +1326,8 @@
                 } catch (error) {
                     console.error('💥 Error details:', error);
                     typingMessage.remove();
-
-                    let errorMsg = '❌ Lỗi: ' + error.message;
-                    appendMessage(errorMsg, 'error-message');
+                    appendMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ hotline 0854321230.', 'error-message');
                     playErrorSound();
-
-                    // Fallback response with delay for better UX
-                    setTimeout(() => {
-                        const fallback = getFallbackResponse(userMessage);
-                        appendMessage('🤖 Dùng câu trả lời có sẵn: ' + fallback, 'bot');
-                    }, 1000);
                 }
 
                 // Re-enable input and button
@@ -1353,25 +1335,6 @@
                 sendButton.disabled = false;
                 sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 userInput.focus();
-            }
-
-            // Enhanced fallback responses
-            function getFallbackResponse(userMessage) {
-                const message = userMessage.toLowerCase();
-
-                if (message.includes('implant') || message.includes('cấy ghép')) {
-                    return 'Cấy ghép Implant tại PDC sử dụng công nghệ tiên tiến với bảo hành 10 năm. Quy trình an toàn và thẩm mỹ cao. Bạn có thể đặt lịch tư vấn miễn phí để được thăm khám chi tiết. 🦷✨';
-                } else if (message.includes('mắc cài') || message.includes('niềng') || message.includes('chỉnh nha')) {
-                    return 'PDC cung cấp các loại mắc cài: kim loại, sứ, trong suốt. Thời gian điều trị 18-24 tháng. Chúng tôi có chuyên gia chỉnh nha giàu kinh nghiệm để mang lại nụ cười hoàn hảo cho bạn. 😊🦷';
-                } else if (message.includes('trẻ em') || message.includes('bé')) {
-                    return 'Nha khoa trẻ em tại PDC có không gian thân thiện, bác sĩ chuyên khoa nhi. Chăm sóc răng miệng cho bé từ 6 tháng tuổi với phương pháp nhẹ nhàng, không đau. 👶🦷';
-                } else if (message.includes('giá') || message.includes('chi phí')) {
-                    return 'Giá dịch vụ tại PDC phụ thuộc từng trường hợp. Chúng tôi có chính sách tư vấn và báo giá miễn phí. Bạn có thể đặt lịch để được thăm khám và báo giá chi tiết. 💰📋';
-                } else if (message.includes('địa chỉ') || message.includes('ở đâu')) {
-                    return 'Nha Khoa PDC có nhiều chi nhánh tại TP.HCM và các tỉnh thành. Bạn có thể gọi hotline để được tư vấn chi nhánh gần nhất. 📍🏥';
-                } else {
-                    return 'Xin chào! Tôi có thể hỗ trợ bạn về các dịch vụ: Cấy ghép Implant, Chỉnh nha mắc cài, Nha khoa trẻ em, Phẫu thuật xương hàm, Nha khoa thẩm mỹ, Nhổ răng khôn. Bạn cần tư vấn dịch vụ nào? 🦷😊';
-                }
             }
 
             // Sound effects (optional - can be disabled)
@@ -1417,8 +1380,6 @@
                     chatbotOverlay.classList.remove('active');
                 }
             });
-            
         </script>
-        
     </body>
 </html>
