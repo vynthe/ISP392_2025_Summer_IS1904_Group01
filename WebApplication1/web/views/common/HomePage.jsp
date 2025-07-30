@@ -1111,7 +1111,6 @@
 
         <!-- Include Footer -->
         <jsp:include page="/assets/footer.jsp" />
-
         <script>
             // Loading animation
             window.addEventListener('load', function () {

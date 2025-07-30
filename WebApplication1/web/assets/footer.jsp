@@ -23,22 +23,21 @@
                 <h3><i class="fas fa-link"></i> Liên Kết Nhanh</h3>
                 <ul class="footer-links">
                     <li><a href="${pageContext.request.contextPath}/views/common/HomePage.jsp"><i class="fas fa-home"></i> Trang Chủ</a></li>
-                    <li><a href="${pageContext.request.contextPath}/BookMedicalGuestServlet"><i class="fas fa-calendar-check"></i> Đặt Lịch Khám</a></li>
-                    <li><a href="#"><i class="fas fa-info-circle"></i> Giới Thiệu</a></li>
-                    <li><a href="#"><i class="fas fa-diagnoses"></i> Dịch Vụ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/BookAppointmentGuestServlet"><i class="fas fa-calendar-check"></i> Đăng Kí Tư Vấn</a></li>
+                    <li><a href="#"><i class="fas fa-info-circle"></i> Giới Thiệu</a></li>               
                     <li><a href="#"><i class="fas fa-question-circle"></i> Hỏi Đáp</a></li>
-                    <li><a href="#"><i class="fas fa-envelope"></i> Liên Hệ</a></li>
+                    
                 </ul>
             </div>
 
             <div class="footer-section">
                 <h3><i class="fas fa-handshake"></i> Dịch Vụ Nổi Bật</h3>
                 <ul class="footer-links">
-                    <li><a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=implant"><i class="fas fa-tooth"></i> Cấy Ghép Implant</a></li>
-                    <li><a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=mắc cài"><i class="fas fa-grip-lines"></i> Chỉnh Nha Mắc Cài</a></li>
-                    <li><a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=trẻ em"><i class="fas fa-child"></i> Nha Khoa Trẻ Em</a></li>
-                    <li><a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=răng khôn"><i class="fas fa-procedures"></i> Nhổ Răng Khôn</a></li>
-                    <li><a href="${pageContext.request.contextPath}/ViewServiceByCategoryServlet?category=thẩm mỹ"><i class="fas fa-smile"></i> Nha Khoa Thẩm Mỹ</a></li>
+                    <li><i class="fas fa-tooth"></i> Cấy Ghép Implant</li>
+                    <li><i class="fas fa-grip-lines"></i> Chỉnh Nha Mắc Cài</li>
+                    <li><i class="fas fa-child"></i> Nha Khoa Trẻ Em</li>
+                    <li><i class="fas fa-procedures"></i> Nhổ Răng Khôn</li>
+                    <li><i class="fas fa-smile"></i> Nha Khoa Thẩm Mỹ</li>
                 </ul>
             </div>
 

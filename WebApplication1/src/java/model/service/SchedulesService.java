@@ -220,76 +220,7 @@ public void generateSchedule(List<Integer> userIds, List<String> roles, int crea
 
         return assignedCount;
     }
-    // Gán phòng cho lịch bác sĩ trong khoảng thời gian cho slot sáng hoặc chiều
-    public int assignRoomToDoctorSchedulesInDateRange(int slotId, int morningRoomId, int afternoonRoomId, int userId, LocalDate startDate, LocalDate endDate) throws SQLException {
-        // Kiểm tra các tham số đầu vào
-        if (slotId <= 0 || userId <= 0) {
-            throw new IllegalArgumentException("ID lịch trình và người dùng phải là số dương.");
-        }
-        if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("Ngày bắt đầu và ngày kết thúc không hợp lệ.");
-        }
-        if (morningRoomId <= 0 && afternoonRoomId <= 0) {
-            throw new IllegalArgumentException("Phải cung cấp ít nhất một ID phòng hợp lệ cho slot sáng hoặc chiều.");
-        }
 
-        // Lấy thông tin lịch được chọn
-        ScheduleEmployee selectedSchedule = scheduleDAO.getScheduleById(slotId);
-        if (selectedSchedule == null || selectedSchedule.getUserId() != userId) {
-            throw new IllegalArgumentException("Lịch trình không hợp lệ hoặc không thuộc về người dùng ID: " + userId);
-        }
-        if (!"Doctor".equalsIgnoreCase(selectedSchedule.getRole())) {
-            throw new IllegalArgumentException("Lịch trình không phải của bác sĩ.");
-        }
-
-        // Xác định slot là sáng hay chiều dựa trên thời gian bắt đầu
-        LocalTime startTime = selectedSchedule.getStartTime();
-        boolean isMorningSlot = startTime.isBefore(LocalTime.of(12, 30));
-        int roomIdToAssign = isMorningSlot ? morningRoomId : afternoonRoomId;
-
-        if (roomIdToAssign <= 0) {
-            throw new IllegalArgumentException("ID phòng không hợp lệ cho slot " + (isMorningSlot ? "sáng" : "chiều") + ".");
-        }
-
-        // Kiểm tra xem phòng có tồn tại không
-        Rooms room = roomDAO.getRoomByID(roomIdToAssign);
-        if (room == null) {
-            throw new IllegalArgumentException("Phòng không tồn tại với ID: " + roomIdToAssign);
-        }
-
-        // Kiểm tra ràng buộc phòng cho tất cả các ngày trong khoảng thời gian
-        LocalTime endTime = selectedSchedule.getEndTime();
-        String role = selectedSchedule.getRole();
-        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            boolean canAssign = scheduleDAO.checkRoomAssignmentConstraints(roomIdToAssign, date, startTime, endTime, role);
-            if (!canAssign) {
-                throw new IllegalArgumentException("Không thể gán phòng " + roomIdToAssign + " cho bác sĩ vào ngày " + date + 
-                                                  " từ " + startTime + " đến " + endTime + ": Phòng đã có bác sĩ.");
-            }
-        }
-
-        // Lấy các lịch phù hợp trong khoảng thời gian cho slot sáng hoặc chiều
-        List<ScheduleEmployee> schedulesToAssign = scheduleDAO.getSchedulesByUserIdAndDateRange(
-            userId, startDate, endDate, startTime, endTime, role
-        );
-
-        if (schedulesToAssign == null || schedulesToAssign.isEmpty()) {
-            throw new IllegalArgumentException("Không tìm thấy lịch trình phù hợp trong khoảng thời gian từ " + startDate + " đến " + endDate);
-        }
-
-        // Gán phòng cho các lịch chưa có phòng
-        int assignedCount = 0;
-        for (ScheduleEmployee schedule : schedulesToAssign) {
-            if (schedule.getRoomId() == null) {
-                boolean success = scheduleDAO.assignRoomToSchedule(schedule.getSlotId(), roomIdToAssign);
-                if (success) {
-                    assignedCount++;
-                }
-            }
-        }
-
-        return assignedCount;
-    }
    public List<ScheduleEmployee> getScheduleByDate(int userId, LocalDate date) throws SQLException {
     List<ScheduleEmployee> schedules = scheduleDAO.getScheduleByDate(userId, date);
     for (ScheduleEmployee schedule : schedules) {
