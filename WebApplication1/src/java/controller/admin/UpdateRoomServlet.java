@@ -9,7 +9,6 @@ import model.entity.Rooms;
 import model.service.RoomService;
 
 import java.io.IOException;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +16,7 @@ import java.util.logging.Logger;
 @WebServlet(name = "UpdateRoomServlet", urlPatterns = {"/UpdateRoomServlet"})
 public class UpdateRoomServlet extends HttpServlet {
 
-    private RoomService  roomService;
+    private RoomService roomService;
 
     @Override
     public void init() throws ServletException {
@@ -39,8 +38,15 @@ public class UpdateRoomServlet extends HttpServlet {
                     request.setAttribute("error", "Không tìm thấy phòng để chỉnh sửa.");
                     request.getRequestDispatcher("/views/admin/UpdateRoom.jsp").forward(request, response);
                 }
-            } catch (NumberFormatException | SQLException e) {
-                request.setAttribute("error", "Lỗi khi tải thông tin phòng: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "ID phòng không hợp lệ: " + e.getMessage());
+                request.getRequestDispatcher("/views/admin/UpdateRoom.jsp").forward(request, response);
+            } catch (SQLException e) {
+                Logger.getLogger(UpdateRoomServlet.class.getName()).log(Level.SEVERE, "Database error", e);
+                request.setAttribute("error", "Lỗi cơ sở dữ liệu khi tải thông tin phòng.");
+                request.getRequestDispatcher("/views/admin/UpdateRoom.jsp").forward(request, response);
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("error", "Lỗi: " + e.getMessage());
                 request.getRequestDispatcher("/views/admin/UpdateRoom.jsp").forward(request, response);
             }
         } else {
@@ -56,13 +62,12 @@ public class UpdateRoomServlet extends HttpServlet {
         String roomIDParam = request.getParameter("roomID");
         String roomName = request.getParameter("roomName");
         String description = request.getParameter("description");
-        String doctorIDParam = request.getParameter("doctorID");
-        String nurseIDParam = request.getParameter("nurseID");
         String status = request.getParameter("status");
 
+        // Validate roomID first
         if (roomIDParam == null || roomIDParam.trim().isEmpty()) {
             handleError(request, response, "ID phòng không hợp lệ.", null,
-                    roomName, description, doctorIDParam, nurseIDParam, status);
+                    roomName, description, status);
             return;
         }
 
@@ -74,38 +79,29 @@ public class UpdateRoomServlet extends HttpServlet {
             existingRoom = roomService.getRoomByID(roomID);
             if (existingRoom == null) {
                 handleError(request, response, "Không tìm thấy phòng với ID: " + roomID, null,
-                        roomName, description, doctorIDParam, nurseIDParam, status);
+                        roomName, description, status);
                 return;
             }
-        } catch (NumberFormatException | SQLException e) {
-            handleError(request, response, "Lỗi khi tải thông tin phòng: " + e.getMessage(), null,
-                    roomName, description, doctorIDParam, nurseIDParam, status);
+        } catch (NumberFormatException e) {
+            handleError(request, response, "ID phòng phải là số nguyên hợp lệ.", null,
+                    roomName, description, status);
+            return;
+        } catch (SQLException e) {
+            Logger.getLogger(UpdateRoomServlet.class.getName()).log(Level.SEVERE, "Database error", e);
+            handleError(request, response, "Lỗi cơ sở dữ liệu khi tải thông tin phòng.", null,
+                    roomName, description, status);
+            return;
+        } catch (IllegalArgumentException e) {
+            handleError(request, response, "Lỗi: " + e.getMessage(), null,
+                    roomName, description, status);
             return;
         }
 
         try {
+            // Validate input data
             if (roomName == null || roomName.trim().isEmpty()) {
                 throw new IllegalArgumentException("Tên phòng không được để trống.");
             }
-
-                            Integer doctorID = null;
-                 if (doctorIDParam != null && !doctorIDParam.trim().isEmpty()) {
-                     try {
-                         doctorID = Integer.parseInt(doctorIDParam.trim());
-                     } catch (NumberFormatException e) {
-                         throw new IllegalArgumentException("Mã bác sĩ phải là số hoặc để trống.");
-                     }
-                 }
-
-                 Integer nurseID = null;
-                 if (nurseIDParam != null && !nurseIDParam.trim().isEmpty()) {
-                     try {
-                         nurseID = Integer.parseInt(nurseIDParam.trim());
-                     } catch (NumberFormatException e) {
-                         throw new IllegalArgumentException("Mã y tá phải là số hoặc để trống.");
-                     }
-                 }
-
 
             // Validate và chuẩn hóa status theo constraint DB
             String[] validStatuses = {"Completed", "In Progress", "Not Available", "Available"};
@@ -122,44 +118,51 @@ public class UpdateRoomServlet extends HttpServlet {
                     }
                 }
                 if (!valid) {
-                    throw new IllegalArgumentException("Trạng thái không hợp lệ. Vui lòng chọn trong các giá trị hợp lệ.");
+                    throw new IllegalArgumentException("Trạng thái không hợp lệ. Vui lòng chọn: Available, In Progress, Completed, hoặc Not Available.");
                 }
             }
 
+            // Create updated room object
             Rooms room = new Rooms();
             room.setRoomID(roomID);
             room.setRoomName(roomName.trim());
             room.setDescription(description != null ? description.trim() : "");
-            room.setDoctorID(doctorID);
-            room.setNurseID(nurseID);
             room.setStatus(status);
-            room.setUpdatedAt(new Date(System.currentTimeMillis()));
+            // Note: CreatedBy, CreatedAt, UpdatedAt will be handled by DAO
 
+            // Update room using service layer
             boolean updated = roomService.updateRoom(room);
             if (updated) {
+                // Success - redirect to view rooms page
                 response.sendRedirect(request.getContextPath() + "/ViewRoomServlet");
             } else {
                 handleError(request, response, "Không thể cập nhật thông tin phòng. Vui lòng thử lại.", existingRoom,
-                        roomName, description, doctorIDParam, nurseIDParam, status);
+                        roomName, description, status);
             }
+
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            // Handle validation errors from service layer
             handleError(request, response, "Lỗi: " + e.getMessage(), existingRoom,
-                    roomName, description, doctorIDParam, nurseIDParam, status);
-        } catch (SQLException ex) {
-            Logger.getLogger(UpdateRoomServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    roomName, description, status);
+        } catch (SQLException e) {
+            // Handle database errors
+            Logger.getLogger(UpdateRoomServlet.class.getName()).log(Level.SEVERE, "Database error during update", e);
+            handleError(request, response, "Lỗi cơ sở dữ liệu khi cập nhật phòng.", existingRoom,
+                    roomName, description, status);
         }
     }
 
+    /**
+     * Helper method to handle errors by setting appropriate request attributes
+     * and forwarding to the update page.
+     */
     private void handleError(HttpServletRequest request, HttpServletResponse response, String errorMessage, Rooms room,
-                             String roomName, String description, String doctorID, String nurseID, String status)
+                             String roomName, String description, String status)
             throws ServletException, IOException {
         request.setAttribute("room", room);
         request.setAttribute("error", errorMessage);
         request.setAttribute("formRoomName", roomName);
         request.setAttribute("formDescription", description);
-        request.setAttribute("formDoctorID", doctorID);
-        request.setAttribute("formNurseID", nurseID);
         request.setAttribute("formStatus", status != null ? status : "Available");
         request.getRequestDispatcher("/views/admin/UpdateRoom.jsp").forward(request, response);
     }

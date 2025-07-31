@@ -176,13 +176,6 @@ public class AppointmentService {
         return details;
     }
 
-    public Rooms getRoomByID(int roomId) throws SQLException {
-        if (roomId <= 0) {
-            throw new IllegalArgumentException("ID phòng không hợp lệ: " + roomId);
-        }
-
-        return appointmentDAO.getRoomByID(roomId);
-    }
 
     public List<Services> getServicesByRoom(int roomId) throws SQLException {
         if (roomId <= 0) {
@@ -408,35 +401,5 @@ public class AppointmentService {
         } catch (SQLException e) {
             throw new SQLException("Error getting detailed appointments by patient ID: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Lấy danh sách các phòng liên quan đến một bác sĩ dựa trên lịch trình
-     * @param doctorId ID của bác sĩ
-     * @return Danh sách các phòng với roomId và roomName
-     * @throws SQLException Nếu có lỗi khi truy vấn cơ sở dữ liệu
-     */
-    public List<Map<String, Object>> getRoomsByDoctorId(int doctorId) throws SQLException {
-        if (doctorId <= 0) {
-            throw new IllegalArgumentException("ID bác sĩ không hợp lệ: " + doctorId);
-        }
-
-        List<Map<String, Object>> rooms = new ArrayList<>();
-        List<ScheduleEmployee> schedules = appointmentDAO.getSchedulesByRoleAndUserId("Doctor", doctorId);
-        for (ScheduleEmployee schedule : schedules) {
-            Integer roomId = schedule.getRoomId();
-            if (roomId != null) {
-                Rooms room = appointmentDAO.getRoomByID(roomId);
-                if (room != null && room.getRoomName() != null) {
-                    Map<String, Object> roomMap = new HashMap<>();
-                    roomMap.put("roomId", roomId);
-                    roomMap.put("roomName", room.getRoomName());
-                    if (rooms.stream().noneMatch(r -> r.get("roomId").equals(roomId))) {
-                        rooms.add(roomMap);
-                    }
-                }
-            }
-        }
-        return rooms.isEmpty() ? List.of(Map.of("roomId", "N/A", "roomName", "N/A")) : rooms;
     }
 }

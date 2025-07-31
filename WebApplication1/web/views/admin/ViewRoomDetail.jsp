@@ -503,9 +503,9 @@
                     </div>
                     <ul class="list" id="service-list">
                         <c:choose>
-                            <c:when test="${not empty services}">
-                                <c:forEach var="service" items="${services}">
-                                    <li class="list-item">${service}</li>
+                            <c:when test="${not empty serviceNames}">
+                                <c:forEach var="serviceName" items="${serviceNames}">
+                                    <li class="list-item">${serviceName}</li>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>

@@ -154,32 +154,6 @@ public List<String> getSchedulesByDoctorId(int doctorId) throws SQLException {
     }
     return schedules.isEmpty() ? List.of("N/A") : schedules;
 }
-    // Lấy thông tin chi tiết phòng theo RoomID
-    public Rooms getRoomByID(int roomID) throws SQLException {
-        String sql = "SELECT * FROM Rooms WHERE RoomID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, roomID);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Rooms room = new Rooms();
-                    room.setRoomID(rs.getInt("RoomID"));
-                    room.setRoomName(rs.getString("RoomName"));
-                    room.setDescription(rs.getString("Description"));
-                    room.setDoctorID(rs.getObject("DoctorID") != null ? rs.getInt("DoctorID") : null);
-                    room.setNurseID(rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
-                    room.setStatus(rs.getString("Status"));
-                    room.setCreatedBy(rs.getInt("CreatedBy"));
-                    room.setCreatedAt(rs.getDate("CreatedAt"));
-                    room.setUpdatedAt(rs.getDate("UpdatedAt"));
-                    return room;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in getRoomByID: " + e.getMessage());
-            throw e;
-        }
-        return null;
-    }
 
     // Lấy danh sách dịch vụ theo RoomID
     public List<Services> getServicesByRoom(int roomId) throws SQLException {

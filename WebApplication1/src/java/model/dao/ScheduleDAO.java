@@ -299,21 +299,33 @@ public class ScheduleDAO {
     }
 
     public boolean assignRoomToSchedule(int slotId, Integer roomId) throws SQLException {
-        String sql = "UPDATE ScheduleEmployee SET RoomID = ?, UpdatedAt = GETDATE() WHERE SlotID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            if (roomId != null && roomId > 0) {
-                stmt.setInt(1, roomId);
-            } else {
-                stmt.setNull(1, java.sql.Types.INTEGER);
+    String updateScheduleSql = "UPDATE ScheduleEmployee SET RoomID = ?, UpdatedAt = GETDATE() WHERE SlotID = ?";
+    String updateRoomSql = "UPDATE Rooms SET UserID = (SELECT UserID FROM ScheduleEmployee WHERE SlotID = ?), " +
+                          "Role = (SELECT Role FROM ScheduleEmployee WHERE SlotID = ?), UpdatedAt = GETDATE() WHERE RoomID = ?";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement stmtSchedule = conn.prepareStatement(updateScheduleSql);
+         PreparedStatement stmtRoom = conn.prepareStatement(updateRoomSql)) {
+        conn.setAutoCommit(false);
+        stmtSchedule.setInt(1, roomId != null ? roomId : 0);
+        stmtSchedule.setInt(2, slotId);
+        int scheduleRows = stmtSchedule.executeUpdate();
+
+        if (roomId != null && roomId > 0 && scheduleRows > 0) {
+            stmtRoom.setInt(1, slotId);
+            stmtRoom.setInt(2, slotId);
+            stmtRoom.setInt(3, roomId);
+            int roomRows = stmtRoom.executeUpdate();
+            if (roomRows == 0) {
+                throw new SQLException("Không thể cập nhật thông tin phòng trong Rooms.");
             }
-            stmt.setInt(2, slotId);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("SQLException in assignRoomToSchedule: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
         }
+        conn.commit();
+        return scheduleRows > 0;
+    } catch (SQLException e) {
+        System.err.println("SQLException in assignRoomToSchedule: " + e.getMessage());
+        throw e;
     }
+}
 
     public List<ScheduleEmployee> getSchedulesWithoutRoom(int userId, LocalDate slotDate) throws SQLException {
         List<ScheduleEmployee> schedules = new ArrayList<>();
