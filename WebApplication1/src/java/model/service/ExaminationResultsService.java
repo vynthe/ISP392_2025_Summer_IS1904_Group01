@@ -154,4 +154,7 @@ public Map<String, Object> getExaminationResultDetailForPatient(int resultId, in
         throw e;
     }
 }
+public List<Map<String, Object>> getAllActiveNurses() throws SQLException {
+    return examinationResultsDAO.getAllActiveNurses();
+}
 }

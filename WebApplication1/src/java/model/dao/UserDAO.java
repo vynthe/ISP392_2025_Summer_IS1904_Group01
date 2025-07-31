@@ -213,7 +213,7 @@ public class UserDAO {
             // Set all parameters using the trimmed keyword or search pattern
             stmt.setString(1, searchPattern); // UserID
             stmt.setString(2, searchPattern); // fullName
-            stmt.setString(3, searchPattern); // gender
+            stmt.setString(3, keyword); // gender
             stmt.setString(4, searchPattern); // address
             stmt.setString(5, searchPattern); // YEAR(dob)
             stmt.setString(6, searchPattern); // phone

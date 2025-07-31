@@ -46,6 +46,37 @@
             padding: 0.8rem;
         }
         
+        /* New styles for patient and nurse info */
+        .patient-info {
+            background-color: #e8f4fd;
+            border-radius: 8px;
+            padding: 0.8rem;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .nurse-info {
+            background-color: #f0f9f0;
+            border-radius: 8px;
+            padding: 0.8rem;
+            border-left: 4px solid #198754;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 0.5rem;
+        }
+        
         /* Enhanced Pagination Styles */
         .custom-pagination {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -238,21 +269,46 @@
                                         </span>
                                     </div>
 
+                                    <!-- Patient Info -->
+                                    <div class="patient-info mb-3">
+                                        <div class="info-item">
+                                            <i class="fas fa-user info-icon text-primary"></i>
+                                            <strong>Bệnh nhân: ${result.patientName}</strong>
+                                        </div>
+                                    </div>
+
                                     <!-- Doctor and Service Info -->
                                     <div class="doctor-info mb-3">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-user-md text-primary me-2"></i>
-                                            <strong>${result.doctorName}</strong>
+                                        <div class="info-item">
+                                            <i class="fas fa-user-md info-icon text-primary"></i>
+                                            <strong>BS: ${result.doctorName}</strong>
                                         </div>
                                         <c:if test="${not empty result.doctorSpecialization}">
-                                            <div class="small text-muted mb-2">
-                                                <i class="fas fa-stethoscope me-2"></i>
-                                                ${result.doctorSpecialization}
+                                            <div class="info-item">
+                                                <i class="fas fa-stethoscope info-icon text-muted"></i>
+                                                <small class="text-muted">${result.doctorSpecialization}</small>
                                             </div>
                                         </c:if>
-                                        <div class="small">
-                                            <i class="fas fa-medical-bag text-info me-2"></i>
-                                            ${result.serviceName}
+                                        <div class="info-item">
+                                            <i class="fas fa-medical-bag info-icon text-info"></i>
+                                            <small>${result.serviceName}</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Nurse Info -->
+                                    <div class="nurse-info mb-3">
+                                        <div class="info-item">
+                                            <i class="fas fa-user-nurse info-icon text-success"></i>
+                                            <strong>Y tá: 
+                                                <c:choose>
+                                                    <c:when test="${not empty result.nurseName and result.nurseName != 'N/A' and result.nurseName != 'Chưa gán y tá'}">
+                                                        ${result.nurseName}
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-muted">Chưa gán y tá</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </strong>
                                         </div>
                                     </div>
 

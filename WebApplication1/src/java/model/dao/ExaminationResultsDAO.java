@@ -68,8 +68,9 @@ public List<Map<String, Object>> getAppointmentsWithPatientByDoctorId(int doctor
             u1.Phone AS PatientPhone,
             u1.Email AS PatientEmail,
             u2.FullName AS DoctorName,
-            u3.FullName AS NurseName,
-            u3.UserID AS NurseID,
+            -- Lấy thông tin Y tá từ Room
+            room_nurse.UserID AS NurseID,
+            room_nurse.FullName AS NurseName,
             s.ServiceName,
             s.ServiceID,
             r.RoomName,
@@ -84,8 +85,8 @@ public List<Map<String, Object>> getAppointmentsWithPatientByDoctorId(int doctor
         JOIN Services s ON a.ServiceID = s.ServiceID
         JOIN Rooms r ON a.RoomID = r.RoomID
         JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
-        LEFT JOIN ScheduleEmployee se_nurse ON se.SlotID = se_nurse.SlotID AND se_nurse.Role = 'Nurse'
-        LEFT JOIN Users u3 ON se_nurse.UserID = u3.UserID
+        -- Join để lấy thông tin Y tá từ bảng Rooms
+        LEFT JOIN Users room_nurse ON r.UserID = room_nurse.UserID AND r.Role = 'Nurse'
         WHERE a.DoctorID = ?
         ORDER BY a.AppointmentTime DESC
         OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
@@ -107,7 +108,7 @@ public List<Map<String, Object>> getAppointmentsWithPatientByDoctorId(int doctor
                 appointment.put("patientEmail", rs.getString("PatientEmail") != null ? rs.getString("PatientEmail") : "N/A");
                 appointment.put("doctorName", rs.getString("DoctorName"));
                 
-                // Thêm thông tin Y tá
+                // Thêm thông tin Y tá từ Room
                 appointment.put("nurseId", rs.getObject("NurseID") != null ? rs.getInt("NurseID") : null);
                 appointment.put("nurseName", rs.getString("NurseName")); // Không set "N/A" ở đây, để JSP xử lý
                 
@@ -899,5 +900,36 @@ public Map<String, Object> getExaminationResultDetailForPatient(int resultId, in
         }
         return result;
     }
-
+public List<Map<String, Object>> getAllActiveNurses() throws SQLException {
+    List<Map<String, Object>> nurses = new ArrayList<>();
+    
+    String sql = """
+        SELECT UserID, FullName, Phone, Email
+        FROM Users
+        WHERE Role = 'Nurse' AND Status = 'Active'
+        ORDER BY FullName ASC
+        """;
+    
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> nurse = new HashMap<>();
+                nurse.put("userID", rs.getInt("UserID"));
+                nurse.put("fullName", rs.getString("FullName"));
+                nurse.put("phone", rs.getString("Phone"));
+                nurse.put("email", rs.getString("Email"));
+                nurses.add(nurse);
+            }
+        }
+    } catch (SQLException e) {
+        String errorMsg = String.format("SQLException in getAllActiveNurses at %s +07: %s, SQLState: %s",
+                LocalDateTime.now(), e.getMessage(), e.getSQLState());
+        System.err.println(errorMsg);
+        throw e;
+    }
+    
+    return nurses;
+}
 }

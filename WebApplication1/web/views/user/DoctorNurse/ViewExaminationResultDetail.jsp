@@ -406,6 +406,23 @@
 
                             <div class="detail-item">
                                 <div class="detail-label">
+                                    <i class="fas fa-user-nurse"></i>
+                                    Y Tá Hỗ Trợ
+                                </div>
+                                <div class="detail-value">
+                                    <c:choose>
+                                        <c:when test="${not empty resultDetails.nurseName}">
+                                            <strong><c:out value="${resultDetails.nurseName}" /></strong>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="no-data">Không có thông tin</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
                                     <i class="fas fa-user"></i>
                                     Bệnh Nhân
                                 </div>
@@ -491,6 +508,7 @@
                 if (resultDetails != null) {
                 %>
                     <div class="debug-item"><strong>Bác Sĩ (Debug):</strong> <%= resultDetails.get("doctorName") %></div>
+                    <div class="debug-item"><strong>Y Tá (Debug):</strong> <%= resultDetails.get("nurseName") %></div>
                     <div class="debug-item"><strong>Bệnh Nhân (Debug):</strong> <%= resultDetails.get("patientName") %></div>
                     <div class="debug-item"><strong>Chẩn Đoán (Debug):</strong> <%= resultDetails.get("diagnosis") %></div>
                     <div class="debug-item"><strong>Ghi Chú (Debug):</strong> <%= resultDetails.get("notes") %></div>

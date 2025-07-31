@@ -369,6 +369,16 @@
             align-items: center;
             gap: 10px;
         }
+
+        .nurse-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
     </style>
 </head>
 <body>
@@ -424,16 +434,23 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="nurseId">Mã Y Tá</label>
+                            <label for="nurseId">Y Tá Hỗ Trợ</label>
                             <div class="input-wrapper">
-                                <input type="number" 
-                                       id="nurseId" 
-                                       name="nurseId" 
-                                       value="${param.nurseId}"
-                                       min="1"
-                                       placeholder="Nhập mã y tá (tùy chọn)">
+                                <select id="nurseId" name="nurseId">
+                                    <option value="">-- Chọn y tá (tùy chọn) --</option>
+                                    <c:forEach var="nurse" items="${nurses}">
+                                        <option value="${nurse.userID}" 
+                                                ${param.nurseId eq nurse.userID ? 'selected' : ''}>
+                                            ${nurse.fullName}
+                                        </option>
+                                    </c:forEach>
+                                </select>
                             </div>
-                            <div class="form-hint">Để trống nếu không có y tá hỗ trợ</div>
+                            <div class="form-hint">Chọn y tá hỗ trợ trong quá trình khám bệnh</div>
+                            <div id="nurseInfo" class="nurse-info" style="display: none;">
+                                <strong>Thông tin y tá:</strong><br>
+                                <span id="nurseDetails"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -501,6 +518,42 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('examForm');
             const submitBtn = document.getElementById('submitBtn');
+            const nurseSelect = document.getElementById('nurseId');
+            const nurseInfo = document.getElementById('nurseInfo');
+            const nurseDetails = document.getElementById('nurseDetails');
+            
+            // Nurse selection handler
+            const nurses = [
+                <c:forEach var="nurse" items="${nurses}" varStatus="status">
+                {
+                    id: '${nurse.userID}',
+                    name: '${nurse.fullName}',
+                    phone: '${nurse.phone}',
+                    email: '${nurse.email}'
+                }<c:if test="${!status.last}">,</c:if>
+                </c:forEach>
+            ];
+            
+            nurseSelect.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (selectedId) {
+                    const selectedNurse = nurses.find(nurse => nurse.id === selectedId);
+                    if (selectedNurse) {
+                        nurseDetails.innerHTML = `
+                            📞 ${selectedNurse.phone || 'Chưa có SĐT'}<br>
+                            📧 ${selectedNurse.email || 'Chưa có email'}
+                        `;
+                        nurseInfo.style.display = 'block';
+                    }
+                } else {
+                    nurseInfo.style.display = 'none';
+                }
+            });
+            
+            // Trigger change event if there's a pre-selected value
+            if (nurseSelect.value) {
+                nurseSelect.dispatchEvent(new Event('change'));
+            }
             
             // Form submission handling
             form.addEventListener('submit', function(e) {

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import model.entity.Users;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servlet to handle adding examination results for a doctor.
@@ -27,31 +28,47 @@ public class AddExaminationResultServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+   protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    HttpSession session = request.getSession(false);
 
-        if (session == null || session.getAttribute("user") == null) {
-            request.setAttribute("error", "Bạn cần đăng nhập để truy cập trang này.");
-            request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
-            return;
-        }
+    if (session == null || session.getAttribute("user") == null) {
+        request.setAttribute("error", "Bạn cần đăng nhập để truy cập trang này.");
+        request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
+        return;
+    }
 
-        Users user = (Users) session.getAttribute("user");
-        System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole() + " at " + LocalDateTime.now() + " +07");
-        if (!"Doctor".equalsIgnoreCase(user.getRole())) {
-            request.setAttribute("error", "Chỉ bác sĩ mới có quyền truy cập vào trang này.");
-            request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
-            return;
-        }
+    Users user = (Users) session.getAttribute("user");
+    System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole() + " at " + LocalDateTime.now() + " +07");
+    if (!"Doctor".equalsIgnoreCase(user.getRole())) {
+        request.setAttribute("error", "Chỉ bác sĩ mới có quyền truy cập vào trang này.");
+        request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
+        return;
+    }
 
+    try {
+        // Lấy danh sách y tá
+        List<Map<String, Object>> nurses = examinationResultsService.getAllActiveNurses();
+        request.setAttribute("nurses", nurses);
+        
         // Lấy appointmentId từ request
         String appointmentIdParam = request.getParameter("appointmentId");
         if (appointmentIdParam != null && !appointmentIdParam.trim().isEmpty()) {
             request.setAttribute("appointmentId", appointmentIdParam.trim());
         }
+        
+        request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
+        
+    } catch (SQLException e) {
+        System.err.println("SQLException in AddExaminationResultServlet doGet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+        request.setAttribute("errorMessage", "Không thể tải danh sách y tá: " + e.getMessage());
+        request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
+    } catch (Exception e) {
+        System.err.println("Unexpected error in AddExaminationResultServlet doGet at " + LocalDateTime.now() + " +07: " + e.getMessage());
+        request.setAttribute("errorMessage", "Lỗi hệ thống: " + e.getMessage());
         request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
     }
+}
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
