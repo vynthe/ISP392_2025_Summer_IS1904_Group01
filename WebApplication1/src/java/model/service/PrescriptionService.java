@@ -581,4 +581,80 @@ public Map<String, Object> getPrescriptionDetailById(int id) throws SQLException
             throw e;
         }
     }
+     public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws SQLException {
+        if (nurseId <= 0) {
+            throw new IllegalArgumentException("Patient ID must be positive");
+        }
+
+        System.out.println("DEBUG - Calling getPrescriptionsByPatientId for patientId: " + nurseId + 
+                           " at " + LocalDateTime.now() + " +07");
+
+        try {
+            List<Map<String, Object>> prescriptions = prescriptionDAO.getPrescriptionsByNurseId(nurseId);
+            System.out.println("DEBUG - Total prescriptions retrieved: " + prescriptions.size() + 
+                              " for patientId: " + nurseId + " at " + LocalDateTime.now() + " +07");
+            return prescriptions;
+        } catch (SQLException e) {
+            System.err.println("SQLException in getPrescriptionsByPatientId for patientId " + nurseId + 
+                               " at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+     
+    /**
+     * Get examination results by nurse ID with optional patient name filter and pagination
+     * @param nurseId The nurse ID
+     * @param patientName The patient name to filter (can be null or empty)
+     * @param page Page number (1-based)
+     * @param pageSize Number of results per page
+     * @return List of examination results with patient and doctor information
+     * @throws SQLException if database operation fails
+     * @throws IllegalArgumentException if nurseId or pagination parameters are invalid
+     */
+    public List<Map<String, Object>> getResultWithPatientByNurseId(int nurseId, String patientName, int page, int pageSize) throws SQLException {
+        validatePositiveId(nurseId, "Nurse ID");
+        validatePaginationParameters(page, pageSize);
+
+        try {
+            String trimmedPatientName = trimString(patientName);
+            List<Map<String, Object>> results = prescriptionDAO.getResultWithPatientByNurseId(nurseId, trimmedPatientName, page, pageSize);
+            long countWithNurse = results.stream().filter(r -> r.get("nurseId") != null).count();
+            log.info("Retrieved " + results.size() + " examination results for nurse ID: " + nurseId + 
+                     (trimmedPatientName != null ? ", patient name: '" + trimmedPatientName + "'" : "") + 
+                     " (" + countWithNurse + " with nurse involvement) at " + LocalDateTime.now() + " +07");
+            return results;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving examination results for nurse ID " + nurseId + 
+                     (patientName != null ? ", patient name '" + patientName + "'" : "") + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Get total count of examination results for a nurse with optional patient name filter
+     * @param nurseId The nurse ID
+     * @param patientName The patient name to filter (can be null or empty)
+     * @return Total count of matching examination results
+     * @throws SQLException if database operation fails
+     * @throws IllegalArgumentException if nurseId is invalid
+     */
+    public int getTotalResultByNurseId(int nurseId, String patientName) throws SQLException {
+        validatePositiveId(nurseId, "Nurse ID");
+
+        try {
+            String trimmedPatientName = trimString(patientName);
+            int total = prescriptionDAO.getTotalResultByNurseId(nurseId, trimmedPatientName);
+            log.info("Retrieved total examination results count: " + total + " for nurse ID: " + nurseId + 
+                     (trimmedPatientName != null ? ", patient name: '" + trimmedPatientName + "'" : "") + 
+                     " at " + LocalDateTime.now() + " +07");
+            return total;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving total examination results for nurse ID " + nurseId + 
+                     (patientName != null ? ", patient name '" + patientName + "'" : "") + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
 }

@@ -957,4 +957,169 @@ public List<Map<String, Object>> getPrescriptionsByPatientId(int patientId) thro
             throw e;
         }
     }
+public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws SQLException {
+        if (nurseId <= 0) {
+            throw new IllegalArgumentException("Nurse ID must be positive");
+        }
+
+        String sql = "SELECT p.PrescriptionID, p.ResultID, p.PatientID, p.AppointmentID, p.DoctorID, p.NurseID, " +
+                     "p.PrescriptionDosage, p.Instruct, p.Quantity, p.CreatedAt, p.UpdatedAt, p.Signature, " +
+                     "u.FullName AS patientName, d.FullName AS doctorName, n.FullName AS nurseName, " +
+                     "r.Diagnosis, r.Notes " +
+                     "FROM Prescriptions p " +
+                     "LEFT JOIN Users u ON p.PatientID = u.UserID " +
+                     "LEFT JOIN Users d ON p.DoctorID = d.UserID " +
+                     "LEFT JOIN Users n ON p.NurseID = n.UserID " +
+                     "LEFT JOIN ExaminationResults r ON p.ResultID = r.ResultID " +
+                     "WHERE p.NurseID = ?";
+
+        System.out.println("DEBUG - SQL Query for getPrescriptionsByNurseId: " + sql);
+        System.out.println("DEBUG - NurseID parameter: " + nurseId);
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, nurseId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<Map<String, Object>> prescriptions = new ArrayList<>();
+                while (rs.next()) {
+                    Map<String, Object> prescription = new HashMap<>();
+                    prescription.put("prescriptionId", rs.getInt("PrescriptionID"));
+                    prescription.put("resultId", rs.getInt("ResultID"));
+                    prescription.put("patientId", rs.getInt("PatientID"));
+                    
+                    // Handle AppointmentID with null check
+                    int appointmentId = rs.getInt("AppointmentID");
+                    prescription.put("appointmentId", rs.wasNull() ? null : appointmentId);
+                    
+                    prescription.put("doctorId", rs.getInt("DoctorID"));
+                    
+                    // Handle NurseID with null check
+                    int resultNurseId = rs.getInt("NurseID");
+                    prescription.put("nurseId", rs.wasNull() ? null : resultNurseId);
+                    
+                    prescription.put("prescriptionDosage", rs.getString("PrescriptionDosage"));
+                    prescription.put("instruct", rs.getString("Instruct"));
+                    prescription.put("quantity", rs.getString("Quantity"));
+                    prescription.put("signature", rs.getString("Signature"));
+                    
+                    // Handle timestamps
+                    Timestamp created = rs.getTimestamp("CreatedAt");
+                    prescription.put("createdAt", created != null ? created.toLocalDateTime() : null);
+                    
+                    Timestamp updated = rs.getTimestamp("UpdatedAt");
+                    prescription.put("updatedAt", updated != null ? updated.toLocalDateTime() : null);
+                    
+                    // Add user names
+                    prescription.put("patientName", rs.getString("patientName"));
+                    prescription.put("doctorName", rs.getString("doctorName"));
+                    prescription.put("nurseName", rs.getString("nurseName"));
+                    
+                    // Add examination result details
+                    prescription.put("diagnosis", rs.getString("Diagnosis"));
+                    prescription.put("notes", rs.getString("Notes"));
+
+                    System.out.println("DEBUG - Prescription added: " + prescription);
+                    prescriptions.add(prescription);
+                }
+                System.out.println("DEBUG - Total prescriptions found: " + prescriptions.size());
+                return prescriptions;
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getPrescriptionsByNurseId for nurseId " + nurseId + 
+                               " at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+ public List<Map<String, Object>> getResultWithPatientByNurseId(int nurseId, String patientName, int page, int pageSize) throws SQLException {
+        List<Map<String, Object>> results = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT er.resultId, er.appointmentId, er.createdAt, er.updatedAt, er.diagnosis, er.description, er.doctorId, er.patientId, " +
+            "p.fullName AS patientName, d.fullName AS doctorName " +
+            "FROM ExaminationResults er " +
+            "INNER JOIN Prescriptions pr ON er.resultId = pr.resultId " +
+            "LEFT JOIN Users p ON er.patientId = p.userID " +
+            "LEFT JOIN Users d ON er.doctorId = d.userID " +
+            "WHERE pr.nurseId = ?"
+        );
+        
+        if (patientName != null && !patientName.isEmpty()) {
+            sql.append(" AND p.fullName LIKE ?");
+        }
+        
+        sql.append(" ORDER BY er.createdAt DESC");
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, nurseId);
+            
+            if (patientName != null && !patientName.isEmpty()) {
+                stmt.setString(paramIndex++, "%" + patientName + "%");
+            }
+            
+            int offset = (page - 1) * pageSize;
+            stmt.setInt(paramIndex++, offset);
+            stmt.setInt(paramIndex, pageSize);
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("resultId", rs.getInt("resultId"));
+                result.put("appointmentId", rs.getInt("appointmentId"));
+                result.put("createdAt", rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt").toLocalDateTime() : null);
+                result.put("updatedAt", rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
+                result.put("diagnosis", rs.getString("diagnosis"));
+                result.put("description", rs.getString("description"));
+                result.put("doctorId", rs.getInt("doctorId"));
+                result.put("patientId", rs.getInt("patientId"));
+                result.put("patientName", rs.getString("patientName"));
+                result.put("doctorName", rs.getString("doctorName"));
+                results.add(result);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getResultWithPatientByNurseId for nurseId " + nurseId + 
+                             ", patientName: " + patientName + " at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            throw e;
+        }
+        
+        return results;
+    }
+
+    public int getTotalResultByNurseId(int nurseId, String patientName) throws SQLException {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) AS total " +
+            "FROM ExaminationResults er " +
+            "INNER JOIN Prescriptions pr ON er.resultId = pr.resultId " +
+            "LEFT JOIN Users p ON er.patientId = p.userID " +
+            "WHERE pr.nurseId = ?"
+        );
+        
+        if (patientName != null && !patientName.isEmpty()) {
+            sql.append(" AND p.fullName LIKE ?");
+        }
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            stmt.setInt(1, nurseId);
+            if (patientName != null && !patientName.isEmpty()) {
+                stmt.setString(2, "%" + patientName + "%");
+            }
+            
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getTotalResultByNurseId for nurseId " + nurseId + 
+                             ", patientName: " + patientName + " at " + LocalDateTime.now() + " +07: " + e.getMessage());
+            throw e;
+        }
+        
+        return 0;
+    }
 }

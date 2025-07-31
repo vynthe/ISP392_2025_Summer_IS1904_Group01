@@ -32,18 +32,20 @@ public class ViewPatientResultServlet extends HttpServlet {
 
         Users user = (Users) session.getAttribute("user");
         System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole());
-        if (!"Doctor".equalsIgnoreCase(user.getRole())) {
-            request.setAttribute("error", "Chỉ bác sĩ mới có quyền truy cập vào trang này.");
+        
+        String role = user.getRole();
+        if (!"Doctor".equalsIgnoreCase(role) && !"Nurse".equalsIgnoreCase(role)) {
+            request.setAttribute("error", "Chỉ bác sĩ hoặc y tá mới có quyền truy cập vào trang này.");
             request.getRequestDispatcher("/error.jsp").forward(request, response);
             return;
         }
 
         try {
-            int doctorId = user.getUserID();
+            int userId = user.getUserID();
             String patientName = request.getParameter("patientName");
             String pageStr = request.getParameter("page");
             
-            System.out.println("DEBUG - doctorId: " + doctorId + ", patientName: '" + patientName + "', pageStr: '" + pageStr + "' at " + LocalDateTime.now() + " +07");
+            System.out.println("DEBUG - userId: " + userId + ", role: " + role + ", patientName: '" + patientName + "', pageStr: '" + pageStr + "' at " + LocalDateTime.now() + " +07");
             
             String trimmedPatientName = null;
             if (patientName != null && !patientName.trim().isEmpty()) {
@@ -64,9 +66,22 @@ public class ViewPatientResultServlet extends HttpServlet {
             
             System.out.println("DEBUG - Trimmed patientName: " + trimmedPatientName + ", currentPage: " + currentPage + " at " + LocalDateTime.now() + " +07");
 
-            List<Map<String, Object>> results = prescriptionService.getResultWithPatientByDoctorId(doctorId, trimmedPatientName, currentPage, pageSize);
-            int totalRecords = prescriptionService.getTotalResultByDoctorId(doctorId, trimmedPatientName);
-            int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+            List<Map<String, Object>> results;
+            int totalRecords;
+            int totalPages;
+            String forwardJsp;
+
+            if ("Doctor".equalsIgnoreCase(role)) {
+                results = prescriptionService.getResultWithPatientByDoctorId(userId, trimmedPatientName, currentPage, pageSize);
+                totalRecords = prescriptionService.getTotalResultByDoctorId(userId, trimmedPatientName);
+                forwardJsp = "/views/user/DoctorNurse/ViewPatientResult.jsp";
+            } else {
+                results = prescriptionService.getResultWithPatientByNurseId(userId, trimmedPatientName, currentPage, pageSize);
+                totalRecords = prescriptionService.getTotalResultByNurseId(userId, trimmedPatientName);
+                forwardJsp = "/views/user/Nurse/ViewPatientResultNurse.jsp";
+            }
+            
+            totalPages = (int) Math.ceil((double) totalRecords / pageSize);
             
             System.out.println("DEBUG - Raw results size: " + results.size() + ", totalRecords: " + totalRecords + " at " + LocalDateTime.now() + " +07");
             
@@ -89,7 +104,7 @@ public class ViewPatientResultServlet extends HttpServlet {
 
             request.setAttribute("results", results);
             request.setAttribute("patientName", trimmedPatientName != null ? trimmedPatientName : "");
-            request.setAttribute("doctorId", doctorId);
+            request.setAttribute("userId", userId);
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("pageSize", pageSize);
             request.setAttribute("totalRecords", totalRecords);
@@ -98,7 +113,7 @@ public class ViewPatientResultServlet extends HttpServlet {
             System.out.println("DEBUG - Setting request attributes at " + LocalDateTime.now() + " +07:");
             System.out.println("  - results size: " + results.size());
             System.out.println("  - patientName: " + (trimmedPatientName != null ? trimmedPatientName : ""));
-            System.out.println("  - doctorId: " + doctorId);
+            System.out.println("  - userId: " + userId);
             System.out.println("  - currentPage: " + currentPage);
             System.out.println("  - totalRecords: " + totalRecords);
             System.out.println("  - totalPages: " + totalPages);
@@ -114,10 +129,10 @@ public class ViewPatientResultServlet extends HttpServlet {
                 request.getSession().removeAttribute("statusMessage");
             }
 
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewPatientResult.jsp").forward(request, response);
+            request.getRequestDispatcher(forwardJsp).forward(request, response);
             
         } catch (SQLException e) {
-            System.err.println("DEBUG - SQLException for doctorId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("DEBUG - SQLException for userId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             e.printStackTrace();
             request.setAttribute("message", "Database error: Unable to retrieve examination results. Please check the database connection or contact the administrator.");
             request.setAttribute("results", List.of());
@@ -125,9 +140,12 @@ public class ViewPatientResultServlet extends HttpServlet {
             request.setAttribute("currentPage", 1);
             request.setAttribute("totalRecords", 0);
             request.setAttribute("totalPages", 0);
-            request.getRequestDispatcher("/views/user/DoctorNurse/ViewPatientResult.jsp").forward(request, response);
+            String forwardJsp = "Doctor".equalsIgnoreCase(role) ? 
+                "/views/user/DoctorNurse/ViewPatientResult.jsp" : 
+                "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp";
+            request.getRequestDispatcher(forwardJsp).forward(request, response);
         } catch (Exception e) {
-            System.err.println("DEBUG - Unexpected exception for doctorId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            System.err.println("DEBUG - Unexpected exception for userId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
         }
