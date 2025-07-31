@@ -45,10 +45,93 @@
             border-radius: 8px;
             padding: 0.8rem;
         }
+        
+        /* Enhanced Pagination Styles */
+        .custom-pagination {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .custom-pagination .pagination {
+            margin: 0;
+            gap: 8px;
+        }
+        
+        .custom-pagination .page-link {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #4a5568;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .custom-pagination .page-link:hover {
+            background: #fff;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .custom-pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .custom-pagination .page-item.disabled .page-link {
+            background: rgba(255, 255, 255, 0.4);
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 10px 20px;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .pagination-info-text {
+            color: white;
+            font-weight: 500;
+            margin: 0;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Navigation improvements */
+        .pagination-nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 16px;
+        }
+        
+        .pagination-ellipsis {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 45px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-light">
-    <!-- Navigation Bar -->
+    <!-- Navigation Bar (removed logout button) -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="#">
@@ -56,11 +139,8 @@
                 Phòng khám ABC
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="${pageContext.request.contextPath}/patient/dashboard">
+                <a class="nav-link" href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp">
                     <i class="fas fa-home me-1"></i>Trang chủ
-                </a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/logout">
-                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
                 </a>
             </div>
         </div>
@@ -196,18 +276,12 @@
                                     </div>
                                 </div>
 
-                                <!-- Card Footer -->
+                                <!-- Card Footer - Chỉ hiển thị thời gian tạo -->
                                 <div class="card-footer bg-transparent">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>
-                                            <fmt:formatDate value="${result.resultCreatedAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                        </small>
-                                        <a href="?action=detail&resultId=${result.resultId}" 
-                                           class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-eye me-1"></i>Xem chi tiết
-                                        </a>
-                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <fmt:formatDate value="${result.resultCreatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -216,64 +290,71 @@
             </c:choose>
         </div>
 
-        <!-- Pagination -->
+        <!-- Enhanced Pagination -->
         <c:if test="${totalPages > 1}">
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <!-- Previous Button -->
-                    <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="?page=${currentPage - 1}&pageSize=${pageSize}">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </li>
-
-                    <!-- First Page -->
-                    <c:if test="${startPage > 1}">
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1&pageSize=${pageSize}">1</a>
+            <div class="custom-pagination text-center">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <!-- Previous Button -->
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link pagination-nav-btn" href="?page=${currentPage - 1}&pageSize=${pageSize}" title="Trang trước">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
                         </li>
-                        <c:if test="${startPage > 2}">
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
+
+                        <!-- First Page -->
+                        <c:if test="${startPage > 1}">
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&pageSize=${pageSize}">1</a>
+                            </li>
+                            <c:if test="${startPage > 2}">
+                                <li class="page-item disabled">
+                                    <span class="page-link pagination-ellipsis">⋯</span>
+                                </li>
+                            </c:if>
+                        </c:if>
+
+                        <!-- Page Numbers -->
+                        <c:forEach begin="${startPage}" end="${endPage}" var="pageNum">
+                            <li class="page-item ${pageNum == currentPage ? 'active' : ''}">
+                                <a class="page-link" href="?page=${pageNum}&pageSize=${pageSize}">${pageNum}</a>
+                            </li>
+                        </c:forEach>
+
+                        <!-- Last Page -->
+                        <c:if test="${endPage < totalPages}">
+                            <c:if test="${endPage < totalPages - 1}">
+                                <li class="page-item disabled">
+                                    <span class="page-link pagination-ellipsis">⋯</span>
+                                </li>
+                            </c:if>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=${totalPages}&pageSize=${pageSize}">${totalPages}</a>
                             </li>
                         </c:if>
-                    </c:if>
 
-                    <!-- Page Numbers -->
-                    <c:forEach begin="${startPage}" end="${endPage}" var="pageNum">
-                        <li class="page-item ${pageNum == currentPage ? 'active' : ''}">
-                            <a class="page-link" href="?page=${pageNum}&pageSize=${pageSize}">${pageNum}</a>
+                        <!-- Next Button -->
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link pagination-nav-btn" href="?page=${currentPage + 1}&pageSize=${pageSize}" title="Trang sau">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
                         </li>
-                    </c:forEach>
+                    </ul>
+                </nav>
 
-                    <!-- Last Page -->
-                    <c:if test="${endPage < totalPages}">
-                        <c:if test="${endPage < totalPages - 1}">
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        </c:if>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=${totalPages}&pageSize=${pageSize}">${totalPages}</a>
-                        </li>
-                    </c:if>
-
-                    <!-- Next Button -->
-                    <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                        <a class="page-link" href="?page=${currentPage + 1}&pageSize=${pageSize}">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-
-            <!-- Pagination Info -->
-            <div class="text-center mt-3">
-                <small class="text-muted">
-                    Hiển thị ${(currentPage - 1) * pageSize + 1} - 
-                    ${currentPage * pageSize > totalResults ? totalResults : currentPage * pageSize} 
-                    trong tổng số ${totalResults} kết quả
-                </small>
+                <!-- Enhanced Pagination Info -->
+                <div class="pagination-info">
+                    <p class="pagination-info-text">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Hiển thị <strong>${(currentPage - 1) * pageSize + 1}</strong> - 
+                        <strong>${currentPage * pageSize > totalResults ? totalResults : currentPage * pageSize}</strong> 
+                        trong tổng số <strong>${totalResults}</strong> kết quả
+                        <span class="ms-3">
+                            <i class="fas fa-file-alt me-1"></i>
+                            Trang <strong>${currentPage}</strong>/<strong>${totalPages}</strong>
+                        </span>
+                    </p>
+                </div>
             </div>
         </c:if>
     </div>
@@ -284,6 +365,25 @@
             const pageSize = document.getElementById('pageSize').value;
             window.location.href = '?page=1&pageSize=' + pageSize;
         }
+
+        // Enhanced pagination animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageLinks = document.querySelectorAll('.custom-pagination .page-link');
+            pageLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    if (!this.closest('.page-item').classList.contains('active') && 
+                        !this.closest('.page-item').classList.contains('disabled')) {
+                        this.style.transform = 'translateY(-2px) scale(1.05)';
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    if (!this.closest('.page-item').classList.contains('active')) {
+                        this.style.transform = '';
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

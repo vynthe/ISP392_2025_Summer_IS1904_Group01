@@ -22,7 +22,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -151,6 +151,7 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
+            min-width: 1200px;
         }
 
         th {
@@ -200,6 +201,12 @@
             background: linear-gradient(135deg, #C6F6D5, #9AE6B4);
             color: #2F855A;
             border: 1px solid #68D391;
+        }
+
+        .status-approved {
+            background: linear-gradient(135deg, #FED7A3, #F6AD55);
+            color: #C05621;
+            border: 1px solid #F6AD55;
         }
 
         .status-pending {
@@ -270,6 +277,18 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(128, 90, 213, 0.3);
             background: linear-gradient(135deg, #6B46C1, #553C9A);
+        }
+
+        .action-button.disabled {
+            background: linear-gradient(135deg, #E2E8F0, #CBD5E0);
+            color: #A0AEC0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .action-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         .stats {
@@ -374,6 +393,33 @@
             background: linear-gradient(135deg, #718096, #4A5568);
         }
 
+        /* Styling cho cột nhân viên */
+        .staff-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .staff-info i {
+            color: #4299E1;
+        }
+
+        .doctor-info {
+            color: #2C5282;
+            font-weight: 600;
+        }
+
+        .nurse-info {
+            color: #38A169;
+            font-weight: 600;
+        }
+
+        .not-assigned {
+            color: #A0AEC0;
+            font-style: italic;
+            font-size: 13px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -409,6 +455,10 @@
 
             .header-title h2 {
                 font-size: 24px;
+            }
+
+            table {
+                min-width: 1000px;
             }
         }
 
@@ -504,21 +554,54 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 80px;"><i class="fas fa-hashtag"></i> ID</th>
-                                    <th style="width: 150px;"><i class="fas fa-user"></i> Bệnh Nhân</th>
-                                    <th style="width: 120px;"><i class="fas fa-tooth"></i> Dịch Vụ</th>
-                                    <th style="width: 100px;"><i class="fas fa-door-open"></i> Phòng</th>
-                                    <th style="width: 100px;"><i class="fas fa-calendar"></i> Ngày</th>
-                                    <th style="width: 120px;"><i class="fas fa-clock"></i> Thời Gian</th>
+                                    <th style="width: 70px;"><i class="fas fa-hashtag"></i> ID</th>
+                                    <th style="width: 140px;"><i class="fas fa-user"></i> Bệnh Nhân</th>
+                                    <th style="width: 140px;"><i class="fas fa-user-md"></i> Bác Sĩ</th>
+                                    <th style="width: 140px;"><i class="fas fa-user-nurse"></i> Y Tá</th>
+                                    <th style="width: 110px;"><i class="fas fa-tooth"></i> Dịch Vụ</th>
+                                    <th style="width: 90px;"><i class="fas fa-door-open"></i> Phòng</th>
+                                    <th style="width: 90px;"><i class="fas fa-calendar"></i> Ngày</th>
+                                    <th style="width: 100px;"><i class="fas fa-clock"></i> Thời Gian</th>
                                     <th style="width: 100px;"><i class="fas fa-info-circle"></i> Trạng Thái</th>
-                                    <th style="width: 220px;"><i class="fas fa-cogs"></i> Thao Tác</th>
+                                    <th style="width: 200px;"><i class="fas fa-cogs"></i> Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="appointment" items="${appointments}">
                                     <tr>
                                         <td><strong style="color: #2C5282;">#${appointment.appointmentId}</strong></td>
-                                        <td><strong>${appointment.patientName}</strong></td>
+                                        <td>
+                                            <div class="staff-info">
+                                                <i class="fas fa-user"></i>
+                                                <strong>${appointment.patientName}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="staff-info">
+                                                <i class="fas fa-user-md"></i>
+                                                <c:choose>
+                                                    <c:when test="${not empty appointment.doctorName}">
+                                                        <span class="doctor-info">${appointment.doctorName}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="not-assigned">Chưa phân công</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="staff-info">
+                                                <i class="fas fa-user-nurse"></i>
+                                                <c:choose>
+                                                   <c:when test="${not empty appointment.nurseName}">
+                                                        <span class="nurse-info">${appointment.nurseName}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="not-assigned">Chưa phân công</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </td>
                                         <td>${appointment.serviceName}</td>
                                         <td><i class="fas fa-door-open" style="color: #63B3ED; margin-right: 5px;"></i>${appointment.roomName}</td>
                                         <td>
@@ -538,12 +621,17 @@
                                                         <i class="fas fa-check-circle"></i>Hoàn thành
                                                     </span>
                                                 </c:when>
+                                                <c:when test="${appointment.status == 'Approved' || appointment.status == 'APPROVED'}">
+                                                    <span class="status status-approved">
+                                                        <i class="fas fa-thumbs-up"></i>Approved
+                                                    </span>
+                                                </c:when>
                                                 <c:when test="${appointment.status == 'Pending' || appointment.status == 'Chờ xử lý'}">
                                                     <span class="status status-pending">
                                                         <i class="fas fa-clock"></i>Chờ xử lý
                                                     </span>
                                                 </c:when>
-                                                <c:when test="${appointment.status == 'Cancelled' || appointment.status == 'Đã hủy'}">
+                                                <c:when test="${appointment.status == 'Cancelled' || appointment.status == 'Đã hủy' || appointment.status == 'ĐÃ HỦY'}">
                                                     <span class="status status-cancelled">
                                                         <i class="fas fa-times-circle"></i>Đã hủy
                                                     </span>
@@ -556,23 +644,56 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <!-- Chỉ hiển thị nút "Thêm kết quả" khi appointment đã hoàn thành và chưa có kết quả khám -->
-                                                <c:if test="${examinationResultDAO.getDiagnosisByAppointmentId(appointment.appointmentId) == null}">
-                                                    <a href="${pageContext.request.contextPath}/AddExaminationResultServlet?appointmentId=${appointment.appointmentId}" 
-                                                       class="action-button add" title="Thêm kết quả khám">
-                                                        <i class="fas fa-plus"></i>Thêm kết quả
-                                                    </a>
-                                                </c:if>
-                                                <a href="${pageContext.request.contextPath}/EditExaminationResultServlet?appointmentId=${appointment.appointmentId}" 
-                                                   class="action-button edit" title="Chỉnh sửa kết quả khám">
-                                                    <i class="fas fa-edit"></i>Chỉnh sửa
-                                                </a>
-                                                <a href="${pageContext.request.contextPath}/ViewExaminationResultDetailServlet?appointmentId=${appointment.appointmentId}" 
-                                                   class="action-button view" title="Xem chi tiết">
-                                                    <i class="fas fa-eye"></i>Chi tiết
-                                                </a>
-                                            </div>
+                                            <c:choose>
+                                                <%-- Nếu trạng thái là "Approved" thì hiển thị đầy đủ các button --%>
+                                                <c:when test="${appointment.status == 'Approved' || appointment.status == 'APPROVED'}">
+                                                    <div class="action-buttons">
+                                                        <!-- Chỉ hiển thị nút "Thêm kết quả" khi chưa có kết quả khám -->
+                                                        <c:if test="${examinationResultDAO.getDiagnosisByAppointmentId(appointment.appointmentId) == null}">
+                                                            <a href="${pageContext.request.contextPath}/AddExaminationResultServlet?appointmentId=${appointment.appointmentId}" 
+                                                               class="action-button add" title="Thêm kết quả khám">
+                                                                <i class="fas fa-plus"></i>Thêm kết quả
+                                                            </a>
+                                                        </c:if>
+                                                        <a href="${pageContext.request.contextPath}/EditExaminationResultServlet?appointmentId=${appointment.appointmentId}" 
+                                                           class="action-button edit" title="Chỉnh sửa kết quả khám">
+                                                            <i class="fas fa-edit"></i>Chỉnh sửa
+                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/ViewExaminationResultDetailServlet?appointmentId=${appointment.appointmentId}" 
+                                                           class="action-button view" title="Xem chi tiết">
+                                                            <i class="fas fa-eye"></i>Chi tiết
+                                                        </a>
+                                                    </div>
+                                                </c:when>
+                                                <%-- Nếu trạng thái là "Đã hủy" thì chỉ hiển thị nút xem chi tiết --%>
+                                                <c:when test="${appointment.status == 'Cancelled' || appointment.status == 'Đã hủy' || appointment.status == 'ĐÃ HỦY'}">
+                                                    <div class="action-buttons">
+                                                        <a href="${pageContext.request.contextPath}/ViewExaminationResultDetailServlet?appointmentId=${appointment.appointmentId}" 
+                                                           class="action-button view" title="Xem chi tiết">
+                                                            <i class="fas fa-eye"></i>Chi tiết
+                                                        </a>
+                                                    </div>
+                                                </c:when>
+                                                <%-- Các trạng thái khác (Pending, Completed) chỉ hiển thị button xem chi tiết --%>
+                                                <c:otherwise>
+                                                    <div class="action-buttons">
+                                                        <a href="${pageContext.request.contextPath}/ViewExaminationResultDetailServlet?appointmentId=${appointment.appointmentId}" 
+                                                           class="action-button view" title="Xem chi tiết">
+                                                            <i class="fas fa-eye"></i>Chi tiết
+                                                        </a>
+                                                        <c:if test="${appointment.status == 'Pending' || appointment.status == 'Chờ xử lý'}">
+                                                            <span class="action-button disabled" title="Chỉ khả dụng khi đã được duyệt">
+                                                                <i class="fas fa-clock"></i>Chờ duyệt
+                                                            </span>
+                                                        </c:if>
+                                                        <c:if test="${appointment.status == 'Completed' || appointment.status == 'Hoàn thành'}">
+                                                            <span class="action-button disabled" title="Lịch hẹn đã hoàn thành">
+                                                                <i class="fas fa-check-circle"></i>Đã hoàn thành
+                                                            </span>
+                                                        </c:if>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                     </tr>
                                 </c:forEach>

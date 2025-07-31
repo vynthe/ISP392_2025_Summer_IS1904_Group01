@@ -257,10 +257,14 @@
             font-size: 18px;
         }
 
-        .status-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
             margin-top: 8px;
         }
 
@@ -269,27 +273,35 @@
         }
 
         .status-label {
-            display: block;
-            padding: 12px 16px;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
             transition: all 0.3s ease;
-            font-size: 13px;
-            font-weight: 500;
         }
 
-        .status-option:checked + .status-label {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: #667eea;
+        .status-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .status-label:hover {
-            border-color: #667eea;
-            transform: translateY(-1px);
+        .status-option:checked + .status-label .status-checkbox {
+            background: white;
+            color: #51cf66;
+        }
+
+        .status-option:checked + .status-label .status-checkbox::after {
+            content: '✓';
+            font-weight: bold;
+            font-size: 14px;
         }
 
         @keyframes slideIn {
@@ -329,10 +341,6 @@
             .button-group {
                 flex-direction: column;
                 align-items: stretch;
-            }
-
-            .status-options {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -425,7 +433,7 @@
                                        min="1"
                                        placeholder="Nhập mã y tá (tùy chọn)">
                             </div>
-                                       <div class="form-hint">Để trống nếu không có y tá hỗ trợ</div>
+                            <div class="form-hint">Để trống nếu không có y tá hỗ trợ</div>
                         </div>
                     </div>
                 </div>
@@ -434,21 +442,29 @@
                     <div class="section-title">
                         🔄 Trạng thái khám
                     </div>
-                    <input type="radio" id="completed" name="status" value="Completed" class="status-option" ${param.status == 'Completed' ? 'checked' : ''}>
-                    <label for="completed" class="status-label">✅ Hoàn thành</label>
+                    <div class="status-container">
+                        <input type="radio" 
+                               id="completed" 
+                               name="status" 
+                               value="Completed" 
+                               class="status-option" 
+                               checked>
+                        <label for="completed" class="status-label">
+                            <div class="status-checkbox"></div>
+                            Hoàn thành khám bệnh
+                        </label>
+                    </div>
                 </div>
-        </div>
-    </div>
 
-    <div class="form-section">
-        <div class="section-title">
-            🩺 Thông tin y khoa
-        </div>
+                <div class="form-section">
+                    <div class="section-title">
+                        🩺 Thông tin y khoa
+                    </div>
 
-        <div class="form-group">
-            <label for="diagnosis">Chuẩn đoán</label>
-            <div class="input-wrapper">
-                <textarea id="diagnosis" 
+                    <div class="form-group">
+                        <label for="diagnosis">Chuẩn đoán</label>
+                        <div class="input-wrapper">
+                            <textarea id="diagnosis" 
                                       name="diagnosis" 
                                       rows="4"
                                       placeholder="Nhập chuẩn đoán chi tiết của bác sĩ...">${param.diagnosis}</textarea>
@@ -497,20 +513,6 @@
                 if (!appointmentId) {
                     e.preventDefault();
                     alert('Vui lòng nhập mã lịch hẹn!');
-                    resetSubmitButton();
-                    return;
-                }
-                
-                // Check if at least one status is selected
-                const statusInputs = document.querySelectorAll('input[name="status"]');
-                let statusSelected = false;
-                statusInputs.forEach(input => {
-                    if (input.checked) statusSelected = true;
-                });
-                
-                if (!statusSelected) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn trạng thái!');
                     resetSubmitButton();
                     return;
                 }

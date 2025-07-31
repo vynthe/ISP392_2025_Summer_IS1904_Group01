@@ -226,12 +226,6 @@
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            color: white;
-            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
-        }
-
         .btn::before {
             content: '';
             position: absolute;
@@ -478,10 +472,6 @@
                     <button class="btn btn-primary" onclick="window.location.href='${pageContext.request.contextPath}/ViewExaminationResults'">
                         <i class="fas fa-arrow-left"></i>
                         Quay Lại Danh Sách
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.print()">
-                        <i class="fas fa-print"></i>
-                        In Kết Quả
                     </button>
                 </div>
             </div>
