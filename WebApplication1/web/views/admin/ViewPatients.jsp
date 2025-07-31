@@ -3,6 +3,7 @@
 <%@ page import="model.entity.Users" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -547,12 +548,16 @@
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
+                                                    <!-- Fixed Gender Display Logic -->
                                                     <c:choose>
-                                                        <c:when test="${patient.gender eq 'Nam'}">
+                                                        <c:when test="${fn:toLowerCase(patient.gender) eq 'nam' || fn:toLowerCase(patient.gender) eq 'male'}">
                                                             <i class="fas fa-mars text-primary"></i> Nam
                                                         </c:when>
-                                                        <c:otherwise>
+                                                        <c:when test="${fn:toLowerCase(patient.gender) eq 'nữ' || fn:toLowerCase(patient.gender) eq 'female'}">
                                                             <i class="fas fa-venus text-danger"></i> Nữ
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <i class="fas fa-question-circle text-secondary"></i> ${patient.gender != null ? patient.gender : 'Chưa xác định'}
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
