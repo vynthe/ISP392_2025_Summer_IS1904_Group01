@@ -80,8 +80,8 @@
         /* Header Section */
         .page-header {
             background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-light) 100%);
-            padding: 2.5rem;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
             box-shadow: var(--shadow-md);
             border-left: 4px solid var(--primary-color);
             border-top: 1px solid var(--border-color);
@@ -90,15 +90,15 @@
         }
 
         .page-title {
-            font-size: 2.25rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             letter-spacing: -0.025em;
         }
 
         .page-subtitle {
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             font-weight: 400;
             margin-bottom: 0;
@@ -107,9 +107,9 @@
         .total-badge {
             background-color: var(--info-color);
             color: white;
-            padding: 0.875rem 1.75rem;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             border: none;
             box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
@@ -123,13 +123,13 @@
 
         /* Statistics Cards */
         .stats-section {
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
             background-color: var(--bg-white);
             border: 1px solid var(--border-color);
-            padding: 2rem;
+            padding: 1.5rem;
             text-align: center;
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
@@ -166,13 +166,13 @@
         }
 
         .stat-icon {
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
             color: white;
         }
 
@@ -189,7 +189,7 @@
         }
 
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
@@ -197,7 +197,7 @@
         }
 
         .stat-title {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: var(--text-secondary);
             margin-bottom: 0;
@@ -207,14 +207,14 @@
         .controls-section {
             background-color: var(--bg-white);
             border: 1px solid var(--border-color);
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
         }
 
         .form-select {
             border: 2px solid var(--border-color);
-            padding: 0.75rem 1rem;
+            padding: 0.6rem 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
             background-color: var(--bg-white);
@@ -225,16 +225,17 @@
             box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
         }
 
-        .btn-refresh {
+        .btn-refresh, .btn-print {
             background-color: var(--primary-color);
             border: 2px solid var(--primary-color);
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             font-weight: 600;
             transition: all 0.3s ease;
+            margin-left: 0.5rem;
         }
 
-        .btn-refresh:hover {
+        .btn-refresh:hover, .btn-print:hover {
             background-color: var(--primary-light);
             border-color: var(--primary-light);
             transform: translateY(-2px);
@@ -252,7 +253,7 @@
         }
 
         .prescription-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-color);
         }
@@ -260,41 +261,42 @@
         .card-header {
             background-color: var(--bg-light);
             border-bottom: 2px solid var(--border-color);
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 1.5rem;
         }
 
         .prescription-id {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--primary-color);
             margin-bottom: 0;
         }
 
         .card-body {
-            padding: 2rem;
+            padding: 1.5rem;
         }
 
         .doctor-info {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
             border-left: 4px solid var(--primary-color);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
         }
 
         .doctor-name {
             font-weight: 700;
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: var(--primary-color);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .info-item {
             display: flex;
             align-items: center;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .info-item:last-child {
@@ -302,8 +304,8 @@
         }
 
         .info-icon {
-            width: 20px;
-            margin-right: 12px;
+            width: 18px;
+            margin-right: 10px;
             color: var(--primary-color);
         }
 
@@ -311,33 +313,34 @@
             background-color: #f0fdf4;
             border: 1px solid #bbf7d0;
             border-left: 4px solid var(--success-color);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
         }
 
         .diagnosis-title {
             font-weight: 700;
             color: var(--success-color);
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
         }
 
         .diagnosis-preview {
-            max-height: 4em;
+            max-height: 3.5em;
             overflow: hidden;
             line-height: 1.4;
             color: var(--text-secondary);
             margin-bottom: 0;
+            font-size: 0.9rem;
         }
 
         .card-footer {
             background-color: var(--bg-light);
             border-top: 1px solid var(--border-color);
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 1.5rem;
         }
 
         .timestamp {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 500;
             margin-bottom: 0.5rem;
@@ -347,7 +350,7 @@
             background-color: var(--primary-color);
             border: 2px solid var(--primary-color);
             color: white;
-            padding: 0.75rem 1.25rem;
+            padding: 0.6rem 1rem;
             font-weight: 600;
             transition: all 0.3s ease;
         }
@@ -368,26 +371,24 @@
         }
 
         .detail-header {
-            padding: 2.5rem;
+            padding: 1.5rem;
             background-color: var(--bg-light);
             border-bottom: 2px solid var(--border-color);
             border-left: 4px solid var(--primary-color);
         }
 
         .detail-body {
-            padding: 2.5rem;
+            padding: 1.5rem;
         }
 
         .info-grid {
-            display: grid;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.2rem;
         }
 
         .info-card {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
-            padding: 1.5rem;
+            padding: 1rem;
             transition: all 0.3s ease;
         }
 
@@ -400,76 +401,65 @@
             background-color: #fef3c7;
             border: 1px solid #fbbf24;
             border-left: 4px solid var(--warning-color);
-            padding: 2rem;
-            margin-bottom: 2rem;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
         }
 
         .prescription-details h6 {
             color: var(--warning-color);
             font-weight: 700;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
         }
 
-        .detail-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .detail-content {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
         }
 
-        .detail-list-item {
-            background-color: var(--bg-white);
-            border: 1px solid var(--border-color);
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .detail-list-item:hover {
-            transform: translateX(5px);
-            box-shadow: var(--shadow-sm);
-            border-color: var(--primary-color);
-        }
-
-        .detail-list-item:last-child {
-            margin-bottom: 0;
+        .detail-item {
+            flex: 1 1 auto;
+            font-size: 0.9rem;
         }
 
         .detail-label {
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            display: inline;
         }
 
         .detail-value {
             color: var(--text-secondary);
-            margin-bottom: 0;
+            display: inline;
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 3rem 1.5rem;
             background-color: var(--bg-white);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
         }
 
         .empty-icon {
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             opacity: 0.6;
         }
 
         .empty-title {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-secondary);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .empty-subtitle {
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: var(--text-muted);
             margin-bottom: 0;
         }
@@ -490,8 +480,8 @@
             font-weight: 600;
             transition: all 0.3s ease;
             border-width: 2px;
-            min-width: 44px;
-            height: 44px;
+            min-width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -510,10 +500,10 @@
         .pagination-info {
             background-color: var(--bg-white);
             border: 1px solid var(--border-color);
-            padding: 1rem 2rem;
+            padding: 0.75rem 1.5rem;
             box-shadow: var(--shadow-sm);
             display: inline-block;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         /* Error Alert */
@@ -524,50 +514,175 @@
             box-shadow: var(--shadow-sm);
         }
 
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: #fff;
+                color: #000;
+                font-size: 8pt;
+                margin: 0;
+                padding: 0;
+            }
+            .navbar, .controls-section, .pagination, .btn-refresh, .btn-print, .btn-detail {
+                display: none;
+            }
+            .page-header {
+                border: none;
+                box-shadow: none;
+                padding: 0.3cm;
+                background: none;
+                margin: 0;
+            }
+            .prescription-card, .detail-card, .info-card, .prescription-details, .diagnosis-section, .doctor-info {
+                border: 1px solid #000;
+                box-shadow: none;
+                transform: none;
+                transition: none;
+                margin: 0;
+                padding: 0.3cm;
+            }
+            .prescription-card:hover, .detail-card:hover, .info-card:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            .stat-card {
+                display: none;
+            }
+            .page-title {
+                font-size: 11pt;
+                color: #000;
+                margin-bottom: 0.2cm;
+            }
+            .page-subtitle {
+                font-size: 8pt;
+                color: #333;
+                margin-bottom: 0;
+            }
+            .prescription-id, .doctor-name, .diagnosis-title {
+                color: #000;
+                font-size: 9pt;
+            }
+            .timestamp, .info-item, .detail-value, .diagnosis-preview {
+                color: #333;
+                font-size: 8pt;
+            }
+            .detail-content {
+                display: flex;
+                gap: 0.5cm;
+                flex-wrap: nowrap;
+            }
+            .detail-item {
+                flex: 1 1 33%;
+                font-size: 8pt;
+            }
+            .detail-label {
+                font-size: 8pt;
+            }
+            .detail-value {
+                font-size: 8pt;
+            }
+            .container {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+            .row {
+                margin: 0;
+            }
+            .col-md-6, .col-lg-6, .col-xl-4 {
+                margin-bottom: 0.2cm;
+            }
+            .col-md-6 {
+                width: 50%;
+                float: left;
+            }
+            .detail-card {
+                page-break-inside: avoid;
+                max-height: 29.7cm; /* A4 height */
+                overflow: hidden;
+            }
+            .info-grid {
+                margin-bottom: 0.3cm;
+            }
+            .info-card {
+                padding: 0.3cm;
+            }
+            .prescription-details {
+                padding: 0.3cm;
+            }
+            .prescription-details h6 {
+                font-size: 9pt;
+                margin-bottom: 0.2cm;
+            }
+            .diagnosis-section {
+                padding: 0.3cm;
+            }
+            .diagnosis-preview {
+                max-height: none;
+            }
+            @page {
+                size: A4;
+                margin: 0.4cm;
+            }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .page-header {
-                padding: 2rem 1.5rem;
-                margin-bottom: 1.5rem;
+                padding: 1.2rem;
+                margin-bottom: 1rem;
             }
             
             .page-title {
-                font-size: 1.875rem;
+                font-size: 1.5rem;
             }
             
             .controls-section {
-                padding: 1.25rem 1.5rem;
+                padding: 0.9rem 1.2rem;
             }
             
             .card-body {
-                padding: 1.5rem;
+                padding: 1.2rem;
             }
             
             .card-footer {
-                padding: 1.25rem 1.5rem;
+                padding: 0.9rem 1.2rem;
             }
             
             .prescription-card:hover {
-                transform: translateY(-4px);
+                transform: translateY(-3px);
             }
 
             .stat-number {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
 
             .stat-icon {
-                width: 56px;
-                height: 56px;
-                font-size: 1.5rem;
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+            }
+
+            .detail-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .detail-item {
+                flex: 1 1 100%;
+            }
+
+            .col-md-6 {
+                width: 100%;
             }
         }
 
         /* Loading Animation */
         .loading {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255,255,255,.3);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
         }
@@ -646,10 +761,10 @@
                 Phòng khám ABC
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="${pageContext.request.contextPath}/patient/dashboard">
+                <a class="nav-link" href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp">
                     <i class="fas fa-home me-2"></i>Trang chủ
                 </a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/ViewPrescriptionPatient " class="nav-item active">
+                <a class="nav-link" href="${pageContext.request.contextPath}/ViewPrescriptionPatient" class="nav-item active">
                     Xem đơn thuốc
                 </a>
             </div>
@@ -753,36 +868,24 @@
                     </div>
 
                     <div class="prescription-details border-left-warning">
-                        <h5>
+                        <h6>
                             <i class="fas fa-pills me-2"></i>
                             Thông Tin Đơn Thuốc
-                        </h5>
-                        <ul class="detail-list">
-                            <li class="detail-list-item">
-                                <div class="detail-label">
-                                    <i class="fas fa-syringe me-2"></i>Liều lượng
-                                </div>
-                                <div class="detail-value">
-                                    ${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}
-                                </div>
-                            </li>
-                            <li class="detail-list-item">
-                                <div class="detail-label">
-                                    <i class="fas fa-clipboard-list me-2"></i>Hướng dẫn sử dụng
-                                </div>
-                                <div class="detail-value">
-                                    ${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có hướng dẫn'}
-                                </div>
-                            </li>
-                            <li class="detail-list-item">
-                                <div class="detail-label">
-                                    <i class="fas fa-sort-numeric-up me-2"></i>Số lượng
-                                </div>
-                                <div class="detail-value">
-                                    ${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}
-                                </div>
-                            </li>
-                        </ul>
+                        </h6>
+                        <div class="detail-content">
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-syringe me-1"></i>Thuốc:</span>
+                                <span class="detail-value">${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-clipboard-list me-1"></i>Hướng dẫn sử dụng:</span>
+                                <span class="detail-value">${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có hướng dẫn'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-sort-numeric-up me-1"></i>Số lượng:</span>
+                                <span class="detail-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="text-center">
@@ -790,6 +893,9 @@
                            class="btn btn-detail btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
                         </a>
+                        <button class="btn btn-print btn-lg" onclick="printPage()">
+                            <i class="fas fa-print me-2"></i>In thành PDF
+                        </button>
                     </div>
                 </div>
             </div>
@@ -850,6 +956,9 @@
                     <div class="col-md-6 text-md-end mt-3 mt-md-0">
                         <button class="btn btn-refresh" onclick="location.reload()">
                             <i class="fas fa-sync-alt me-2"></i>Làm mới dữ liệu
+                        </button>
+                        <button class="btn btn-print" onclick="printPage()">
+                            <i class="fas fa-print me-2"></i>In thành PDF
                         </button>
                     </div>
                 </div>
@@ -1013,24 +1122,32 @@
             window.location.href = url.toString();
         }
 
-        // Enhanced JavaScript functionality
+        function printPage() {
+            const printButtons = document.querySelectorAll('.btn-print');
+            printButtons.forEach(button => {
+                const icon = button.querySelector('i');
+                const originalClass = icon.className;
+                icon.className = 'loading me-2';
+                window.print();
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 1000);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Add loading state to buttons
             const detailButtons = document.querySelectorAll('.btn-detail');
             detailButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     const icon = this.querySelector('i');
                     const originalClass = icon.className;
                     icon.className = 'loading me-2';
-                    
-                    // Restore icon after delay if navigation fails
                     setTimeout(() => {
                         icon.className = originalClass;
                     }, 3000);
                 });
             });
 
-            // Smooth scroll for pagination
             const pageLinks = document.querySelectorAll('.page-link');
             pageLinks.forEach(link => {
                 link.addEventListener('click', function() {
@@ -1038,7 +1155,6 @@
                 });
             });
 
-            // Card animations on scroll
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -1053,7 +1169,6 @@
                 });
             }, observerOptions);
 
-            // Apply scroll animations to cards
             const cards = document.querySelectorAll('.prescription-card, .stat-card');
             cards.forEach((card, index) => {
                 card.style.opacity = '0';
@@ -1062,7 +1177,6 @@
                 observer.observe(card);
             });
 
-            // Enhanced hover effects for stat cards
             const statCards = document.querySelectorAll('.stat-card');
             statCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
@@ -1076,7 +1190,6 @@
                 });
             });
 
-            // Page size change with loading indicator
             const pageSelect = document.getElementById('pageSize');
             if (pageSelect) {
                 pageSelect.addEventListener('change', function() {
@@ -1088,27 +1201,28 @@
                 });
             }
 
-            // Refresh button animation
             const refreshButton = document.querySelector('.btn-refresh');
             if (refreshButton) {
                 refreshButton.addEventListener('click', function() {
                     const icon = this.querySelector('i');
                     icon.style.animation = 'spin 1s linear infinite';
-                    
                     setTimeout(() => {
                         icon.style.animation = '';
                     }, 1000);
                 });
             }
 
-            // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'r') {
                     e.preventDefault();
                     location.reload();
                 }
                 
-                // Navigate pages with arrow keys
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    printPage();
+                }
+                
                 if (e.altKey) {
                     if (e.key === 'ArrowLeft') {
                         const prevLink = document.querySelector('.page-item:not(.disabled) .page-link[href*="page=' + (parseInt('${currentPage}') - 1) + '"]');
@@ -1120,11 +1234,10 @@
                 }
             });
 
-            // Card interaction effects
             const prescriptionCards = document.querySelectorAll('.prescription-card');
             prescriptionCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-8px)';
+                    this.style.transform = 'translateY(-5px)';
                     this.style.boxShadow = 'var(--shadow-lg)';
                     this.style.borderColor = 'var(--primary-color)';
                 });
@@ -1136,7 +1249,6 @@
                 });
             });
 
-            // Info cards hover effects
             const infoCards = document.querySelectorAll('.info-card');
             infoCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
@@ -1150,23 +1262,6 @@
                 });
             });
 
-            // Detail list items interaction
-            const detailListItems = document.querySelectorAll('.detail-list-item');
-            detailListItems.forEach(item => {
-                item.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateX(5px)';
-                    this.style.boxShadow = 'var(--shadow-sm)';
-                    this.style.borderColor = 'var(--primary-color)';
-                });
-                
-                item.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateX(0)';
-                    this.style.boxShadow = 'none';
-                    this.style.borderColor = 'var(--border-color)';
-                });
-            });
-
-            // Add tooltips for truncated text
             const diagnosisPreviews = document.querySelectorAll('.diagnosis-preview');
             diagnosisPreviews.forEach(preview => {
                 if (preview.scrollHeight > preview.clientHeight) {
@@ -1174,7 +1269,6 @@
                 }
             });
 
-            // Auto-hide alerts
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -1186,15 +1280,8 @@
             });
         });
 
-        // Print functionality
-        function printPage() {
-            window.print();
-        }
-
-        // Export functionality placeholder
         function exportData(format) {
             console.log('Exporting data in format:', format);
-            // Implementation would go here
         }
     </script>
 </body>
