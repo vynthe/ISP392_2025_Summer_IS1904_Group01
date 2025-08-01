@@ -676,32 +676,6 @@ public class PrescriptionDAO {
             return affectedRows > 0;
         }
     }
-
-    public boolean hasPrescription(int resultId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Prescriptions WHERE ResultID = ?";
-        
-        System.out.println("DEBUG - SQL Query for hasPrescription: " + sql);
-        System.out.println("DEBUG - ResultID parameter: " + resultId);
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, resultId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    boolean exists = rs.getInt(1) > 0;
-                    System.out.println("DEBUG - Prescription exists for ResultID " + resultId + ": " + exists + 
-                                     " at " + LocalDateTime.now() + " +07");
-                    return exists;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("SQLException in hasPrescription for ResultID " + resultId + ": " + 
-                              e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            e.printStackTrace();
-            throw e;
-        }
-        return false;
-    }
 public Map<String, Object> getPrescriptionDetailById(int prescriptionId) throws SQLException {
         String sql = "SELECT p.PrescriptionID, p.ResultID, p.PatientID, p.AppointmentID, p.DoctorID, p.NurseID, " +
                      "p.PrescriptionDosage, p.Instruct, p.Quantity, p.CreatedAt, p.UpdatedAt, p.Signature, " +
@@ -1031,16 +1005,16 @@ public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws S
             throw e;
         }
     }
- public List<Map<String, Object>> getResultWithPatientByNurseId(int nurseId, String patientName, int page, int pageSize) throws SQLException {
+  public List<Map<String, Object>> getResultWithPatientByNurseId(int nurseId, String patientName, int page, int pageSize) throws SQLException {
         List<Map<String, Object>> results = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT er.resultId, er.appointmentId, er.createdAt, er.updatedAt, er.diagnosis, er.description, er.doctorId, er.patientId, " +
+            "SELECT er.resultId, er.appointmentId, er.createdAt, er.updatedAt, er.diagnosis, er.Notes, er.doctorId, er.patientId, er.NurseID, " +
             "p.fullName AS patientName, d.fullName AS doctorName " +
             "FROM ExaminationResults er " +
-            "INNER JOIN Prescriptions pr ON er.resultId = pr.resultId " +
+            "LEFT JOIN Prescriptions pr ON er.resultId = pr.resultId " +
             "LEFT JOIN Users p ON er.patientId = p.userID " +
             "LEFT JOIN Users d ON er.doctorId = d.userID " +
-            "WHERE pr.nurseId = ?"
+            "WHERE er.NurseID = ?"
         );
         
         if (patientName != null && !patientName.isEmpty()) {
@@ -1049,6 +1023,10 @@ public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws S
         
         sql.append(" ORDER BY er.createdAt DESC");
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        
+        System.out.println("DEBUG - SQL Query for getResultWithPatientByNurseId: " + sql.toString());
+        System.out.println("DEBUG - Parameters: nurseId=" + nurseId + ", patientName=" + patientName + 
+                         ", page=" + page + ", pageSize=" + pageSize);
         
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
@@ -1073,13 +1051,18 @@ public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws S
                 result.put("createdAt", rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt").toLocalDateTime() : null);
                 result.put("updatedAt", rs.getTimestamp("updatedAt") != null ? rs.getTimestamp("updatedAt").toLocalDateTime() : null);
                 result.put("diagnosis", rs.getString("diagnosis"));
-                result.put("description", rs.getString("description"));
+                result.put("Notes", rs.getString("Notes"));
                 result.put("doctorId", rs.getInt("doctorId"));
                 result.put("patientId", rs.getInt("patientId"));
                 result.put("patientName", rs.getString("patientName"));
                 result.put("doctorName", rs.getString("doctorName"));
+                result.put("nurseId", rs.getInt("NurseID"));
                 results.add(result);
+                System.out.println("DEBUG - Added result: resultId=" + rs.getInt("resultId") + 
+                                  ", nurseId=" + rs.getInt("NurseID") + 
+                                  ", patientName=" + rs.getString("patientName"));
             }
+            System.out.println("DEBUG - Total results retrieved: " + results.size());
         } catch (SQLException e) {
             System.err.println("SQLException in getResultWithPatientByNurseId for nurseId " + nurseId + 
                              ", patientName: " + patientName + " at " + LocalDateTime.now() + " +07: " + e.getMessage());
@@ -1091,35 +1074,66 @@ public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws S
 
     public int getTotalResultByNurseId(int nurseId, String patientName) throws SQLException {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) AS total " +
+            "SELECT COUNT(*) " +
             "FROM ExaminationResults er " +
-            "INNER JOIN Prescriptions pr ON er.resultId = pr.resultId " +
             "LEFT JOIN Users p ON er.patientId = p.userID " +
-            "WHERE pr.nurseId = ?"
+            "WHERE er.NurseID = ?"
         );
         
         if (patientName != null && !patientName.isEmpty()) {
             sql.append(" AND p.fullName LIKE ?");
         }
         
+        System.out.println("DEBUG - SQL Query for getTotalResultByNurseId: " + sql.toString());
+        System.out.println("DEBUG - Parameters: nurseId=" + nurseId + ", patientName=" + patientName);
+        
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
             
-            stmt.setInt(1, nurseId);
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, nurseId);
+            
             if (patientName != null && !patientName.isEmpty()) {
-                stmt.setString(2, "%" + patientName + "%");
+                stmt.setString(paramIndex++, "%" + patientName + "%");
             }
             
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt("total");
+                int total = rs.getInt(1);
+                System.out.println("DEBUG - Total results for nurseId " + nurseId + ": " + total);
+                return total;
             }
         } catch (SQLException e) {
             System.err.println("SQLException in getTotalResultByNurseId for nurseId " + nurseId + 
                              ", patientName: " + patientName + " at " + LocalDateTime.now() + " +07: " + e.getMessage());
             throw e;
         }
-        
         return 0;
     }
+
+    public boolean hasPrescription(int resultId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Prescriptions WHERE ResultID = ?";
+        
+        System.out.println("DEBUG - SQL Query for hasPrescription: " + sql);
+        System.out.println("DEBUG - ResultID parameter: " + resultId);
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, resultId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    boolean exists = rs.getInt(1) > 0;
+                    System.out.println("DEBUG - Prescription exists for ResultID " + resultId + ": " + exists + 
+                                     " at " + LocalDateTime.now() + " +07");
+                    return exists;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in hasPrescription for ResultID " + resultId + ": " + 
+                              e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            throw e;
+        }
+        return false;
+    }
+
 }

@@ -32,7 +32,7 @@ public class ViewPatientResultServlet extends HttpServlet {
 
         Users user = (Users) session.getAttribute("user");
         System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole());
-        
+
         String role = user.getRole();
         if (!"Doctor".equalsIgnoreCase(role) && !"Nurse".equalsIgnoreCase(role)) {
             request.setAttribute("error", "Chỉ bác sĩ hoặc y tá mới có quyền truy cập vào trang này.");
@@ -44,14 +44,11 @@ public class ViewPatientResultServlet extends HttpServlet {
             int userId = user.getUserID();
             String patientName = request.getParameter("patientName");
             String pageStr = request.getParameter("page");
-            
+
             System.out.println("DEBUG - userId: " + userId + ", role: " + role + ", patientName: '" + patientName + "', pageStr: '" + pageStr + "' at " + LocalDateTime.now() + " +07");
-            
-            String trimmedPatientName = null;
-            if (patientName != null && !patientName.trim().isEmpty()) {
-                trimmedPatientName = patientName.trim();
-            }
-            
+
+            String trimmedPatientName = patientName != null && !patientName.trim().isEmpty() ? patientName.trim() : null;
+
             int currentPage = 1;
             if (pageStr != null && !pageStr.trim().isEmpty()) {
                 try {
@@ -61,9 +58,9 @@ public class ViewPatientResultServlet extends HttpServlet {
                     System.out.println("DEBUG - Invalid page format: " + pageStr + " at " + LocalDateTime.now() + " +07");
                 }
             }
-            
+
             int pageSize = 10;
-            
+
             System.out.println("DEBUG - Trimmed patientName: " + trimmedPatientName + ", currentPage: " + currentPage + " at " + LocalDateTime.now() + " +07");
 
             List<Map<String, Object>> results;
@@ -74,31 +71,26 @@ public class ViewPatientResultServlet extends HttpServlet {
             if ("Doctor".equalsIgnoreCase(role)) {
                 results = prescriptionService.getResultWithPatientByDoctorId(userId, trimmedPatientName, currentPage, pageSize);
                 totalRecords = prescriptionService.getTotalResultByDoctorId(userId, trimmedPatientName);
-                forwardJsp = "/views/user/DoctorNurse/ViewPatientResult.jsp";
+                forwardJsp = "/views/user/DoctorNurse/ViewPatientResult.jsp"; // Chuyển hướng rõ ràng cho Doctor
             } else {
                 results = prescriptionService.getResultWithPatientByNurseId(userId, trimmedPatientName, currentPage, pageSize);
                 totalRecords = prescriptionService.getTotalResultByNurseId(userId, trimmedPatientName);
-                forwardJsp = "/views/user/Nurse/ViewPatientResultNurse.jsp";
+                forwardJsp = "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp"; // Chuyển hướng rõ ràng cho Nurse
             }
-            
+
             totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-            
+
             System.out.println("DEBUG - Raw results size: " + results.size() + ", totalRecords: " + totalRecords + " at " + LocalDateTime.now() + " +07");
-            
+
             if (!results.isEmpty()) {
                 System.out.println("DEBUG - First result keys: " + results.get(0).keySet() + " at " + LocalDateTime.now() + " +07");
                 System.out.println("DEBUG - First result data: " + results.get(0) + " at " + LocalDateTime.now() + " +07");
-                
+
                 for (Map<String, Object> result : results) {
                     Integer resultId = (Integer) result.get("resultId");
-                    if (resultId != null) {
-                        boolean hasPrescription = prescriptionService.hasPrescription(resultId);
-                        result.put("hasPrescription", hasPrescription);
-                        System.out.println("DEBUG - ResultId: " + resultId + ", hasPrescription: " + hasPrescription + " at " + LocalDateTime.now() + " +07");
-                    } else {
-                        result.put("hasPrescription", false);
-                        System.out.println("DEBUG - ResultId is null, setting hasPrescription to false at " + LocalDateTime.now() + " +07");
-                    }
+                    boolean hasPrescription = resultId != null && prescriptionService.hasPrescription(resultId);
+                    result.put("hasPrescription", hasPrescription);
+                    System.out.println("DEBUG - ResultId: " + resultId + ", hasPrescription: " + hasPrescription + " at " + LocalDateTime.now() + " +07");
                 }
             }
 
@@ -109,7 +101,7 @@ public class ViewPatientResultServlet extends HttpServlet {
             request.setAttribute("pageSize", pageSize);
             request.setAttribute("totalRecords", totalRecords);
             request.setAttribute("totalPages", totalPages);
-            
+
             System.out.println("DEBUG - Setting request attributes at " + LocalDateTime.now() + " +07:");
             System.out.println("  - results size: " + results.size());
             System.out.println("  - patientName: " + (trimmedPatientName != null ? trimmedPatientName : ""));
@@ -123,14 +115,14 @@ public class ViewPatientResultServlet extends HttpServlet {
                 request.setAttribute("message", message);
             }
 
-            String statusMessage = (String) request.getSession().getAttribute("statusMessage");
+            String statusMessage = (String) session.getAttribute("statusMessage");
             if (statusMessage != null) {
                 request.setAttribute("message", statusMessage);
-                request.getSession().removeAttribute("statusMessage");
+                session.removeAttribute("statusMessage");
             }
 
             request.getRequestDispatcher(forwardJsp).forward(request, response);
-            
+
         } catch (SQLException e) {
             System.err.println("DEBUG - SQLException for userId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
             e.printStackTrace();
@@ -140,9 +132,9 @@ public class ViewPatientResultServlet extends HttpServlet {
             request.setAttribute("currentPage", 1);
             request.setAttribute("totalRecords", 0);
             request.setAttribute("totalPages", 0);
-            String forwardJsp = "Doctor".equalsIgnoreCase(role) ? 
-                "/views/user/DoctorNurse/ViewPatientResult.jsp" : 
-                "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp";
+            String forwardJsp = "Doctor".equalsIgnoreCase(role) ?
+                    "/views/user/DoctorNurse/ViewPatientResult.jsp" :
+                    "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp";
             request.getRequestDispatcher(forwardJsp).forward(request, response);
         } catch (Exception e) {
             System.err.println("DEBUG - Unexpected exception for userId " + user.getUserID() + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
@@ -154,7 +146,7 @@ public class ViewPatientResultServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("DEBUG - POST request received, but this servlet does not handle POST operations at " + LocalDateTime.now() + " +07");
+        System.out.println("DEBUG - POST request received, redirecting to GET at " + LocalDateTime.now() + " +07");
         String patientName = request.getParameter("patientName");
         String redirectUrl = request.getContextPath() + "/ViewPatientResultServlet";
         if (patientName != null && !patientName.trim().isEmpty()) {

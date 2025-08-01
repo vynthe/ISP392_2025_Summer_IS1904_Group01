@@ -5,11 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn Thuốc - Y Tá - Hệ thống quản lý phòng khám</title>
+    <title>Kết Quả Khám - Y Tá - Hệ thống quản lý phòng khám</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Giữ nguyên toàn bộ CSS từ file gốc */
         :root {
             --primary-color: #1a365d;
             --primary-light: #2c5282;
@@ -346,79 +347,6 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Detail View */
-        .detail-card {
-            background-color: var(--bg-white);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        .detail-header {
-            padding: 1.5rem;
-            background-color: var(--bg-light);
-            border-bottom: 2px solid var(--border-color);
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .detail-body {
-            padding: 1.5rem;
-        }
-
-        .info-grid {
-            margin-bottom: 1.2rem;
-        }
-
-        .info-card {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            padding: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .prescription-details {
-            background-color: #fef3c7;
-            border: 1px solid #fbbf24;
-            border-left: 4px solid var(--warning-color);
-            padding: 1rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .prescription-details h6 {
-            color: var(--warning-color);
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .detail-content {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
-        .detail-item {
-            flex: 1 1 auto;
-            font-size: 0.9rem;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            display: inline;
-        }
-
-        .detail-value {
-            color: var(--text-secondary);
-            display: inline;
-        }
-
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -517,7 +445,7 @@
                 background: none;
                 margin: 0;
             }
-            .prescription-card, .detail-card, .info-card, .prescription-details, .diagnosis-section, .patient-info {
+            .prescription-card, .info-card, .diagnosis-section, .patient-info {
                 border: 1px solid #000;
                 box-shadow: none;
                 transform: none;
@@ -525,7 +453,7 @@
                 margin: 0;
                 padding: 0.3cm;
             }
-            .prescription-card:hover, .detail-card:hover, .info-card:hover {
+            .prescription-card:hover {
                 transform: none;
                 box-shadow: none;
             }
@@ -546,23 +474,8 @@
                 color: #000;
                 font-size: 9pt;
             }
-            .timestamp, .info-item, .detail-value, .diagnosis-preview {
+            .timestamp, .info-item, .diagnosis-preview {
                 color: #333;
-                font-size: 8pt;
-            }
-            .detail-content {
-                display: flex;
-                gap: 0.5cm;
-                flex-wrap: nowrap;
-            }
-            .detail-item {
-                flex: 1 1 33%;
-                font-size: 8pt;
-            }
-            .detail-label {
-                font-size: 8pt;
-            }
-            .detail-value {
                 font-size: 8pt;
             }
             .container {
@@ -580,23 +493,11 @@
                 width: 50%;
                 float: left;
             }
-            .detail-card {
-                page-break-inside: avoid;
-                max-height: 29.7cm; /* A4 height */
-                overflow: hidden;
-            }
             .info-grid {
                 margin-bottom: 0.3cm;
             }
             .info-card {
                 padding: 0.3cm;
-            }
-            .prescription-details {
-                padding: 0.3cm;
-            }
-            .prescription-details h6 {
-                font-size: 9pt;
-                margin-bottom: 0.2cm;
             }
             .diagnosis-section {
                 padding: 0.3cm;
@@ -647,15 +548,6 @@
                 font-size: 1.2rem;
             }
 
-            .detail-content {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .detail-item {
-                flex: 1 1 100%;
-            }
-
             .col-md-6 {
                 width: 100%;
             }
@@ -690,10 +582,6 @@
 
         .border-left-success {
             border-left: 4px solid var(--success-color);
-        }
-
-        .border-left-warning {
-            border-left: 4px solid var(--warning-color);
         }
 
         .text-primary-custom {
@@ -748,8 +636,8 @@
                 <a class="nav-link" href="${pageContext.request.contextPath}/views/user/Nurse/NurseDashBoard.jsp">
                     <i class="fas fa-home me-2"></i>Trang chủ
                 </a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/ViewPrescriptionNurse" class="nav-item active">
-                    Xem đơn thuốc
+                <a class="nav-link active" href="${pageContext.request.contextPath}/ViewPatientResultServlet">
+                    <i class="fas fa-notes-medical me-2"></i>Xem kết quả khám
                 </a>
             </div>
         </div>
@@ -761,319 +649,228 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h1 class="page-title">
-                        <i class="fas fa-prescription-bottle-alt me-3"></i>
-                        <c:choose>
-                            <c:when test="${isDetailView}">Chi Tiết Đơn Thuốc</c:when>
-                            <c:otherwise>Đơn Thuốc Được Gán</c:otherwise>
-                        </c:choose>
+                        <i class="fas fa-notes-medical me-3"></i>
+                        Kết Quả Khám Bệnh
                     </h1>
                     <p class="page-subtitle">
-                        <c:choose>
-                            <c:when test="${isDetailView}">Thông tin chi tiết về đơn thuốc được giao</c:when>
-                            <c:otherwise>Quản lý và theo dõi các đơn thuốc được giao cho bạn</c:otherwise>
-                        </c:choose>
+                        Quản lý và theo dõi các kết quả khám bệnh được gán cho bạn
                     </p>
                 </div>
-                <c:if test="${not isDetailView}">
-                    <div class="mt-3 mt-md-0">
-                        <span class="badge total-badge">
-                            <i class="fas fa-pills me-2"></i>
-                            ${totalPrescriptions} đơn thuốc
-                        </span>
-                    </div>
-                </c:if>
+                <div class="mt-3 mt-md-0">
+                    <span class="badge total-badge">
+                        <i class="fas fa-notes-medical me-2"></i>
+                        ${totalRecords} kết quả khám
+                    </span>
+                </div>
             </div>
         </div>
 
         <!-- Error Message -->
-        <c:if test="${not empty errorMessage}">
+        <c:if test="${not empty message}">
             <div class="alert alert-danger alert-dismissible fade show fade-in" role="alert">
                 <i class="fas fa-exclamation-triangle me-3"></i>
-                <strong>Lỗi!</strong> ${errorMessage}
+                <strong>Lỗi!</strong> ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>
 
-        <!-- Detail View -->
-        <c:if test="${isDetailView}">
-            <div class="detail-card fade-in">
-                <div class="detail-header">
-                    <h2 class="prescription-id">
-                        <i class="fas fa-prescription-bottle-alt me-3"></i>
-                        Đơn Thuốc #${prescriptionDetail.prescriptionId}
-                    </h2>
+        <!-- Statistics -->
+        <div class="stats-section slide-in">
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon icon-primary">
+                            <i class="fas fa-notes-medical"></i>
+                        </div>
+                        <div class="stat-number">${totalRecords}</div>
+                        <div class="stat-title">Tổng số kết quả khám được gán</div>
+                    </div>
                 </div>
-                <div class="detail-body">
-                    <div class="row info-grid">
-                        <div class="col-md-6">
-                            <div class="info-card border-left-primary">
-                                <h5 class="mb-3 text-primary-custom fw-bold">
-                                    <i class="fas fa-user me-2"></i>Thông tin bệnh nhân
-                                </h5>
-                                <div class="info-item">
-                                    <i class="fas fa-user info-icon"></i>
-                                    <span class="patient-name">${prescriptionDetail.patientName}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-user-md info-icon"></i>
-                                    <span>Bác sĩ: ${prescriptionDetail.doctorName}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-card border-left-primary">
-                                <h5 class="mb-3 text-primary-custom fw-bold">
-                                    <i class="fas fa-info-circle me-2"></i>Thông tin khác
-                                </h5>
-                                <div class="info-item">
-                                    <i class="fas fa-calendar-plus info-icon"></i>
-                                    <span>Ngày tạo: ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-calendar-check info-icon"></i>
-                                    <span>Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-calendar-day info-icon"></i>
-                                    <span>Mã lịch hẹn: ${prescriptionDetail.appointmentId != null ? prescriptionDetail.appointmentId : 'Không có'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+        </div>
 
-                    <div class="diagnosis-section border-left-success">
-                        <h5 class="diagnosis-title">
-                            <i class="fas fa-notes-medical me-2"></i>
-                            Chẩn đoán
-                        </h5>
-                        <p class="diagnosis-preview">
-                            ${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin chẩn đoán'}
-                        </p>
-                    </div>
-
-                    <div class="prescription-details border-left-warning">
-                        <h6>
-                            <i class="fas fa-pills me-2"></i>
-                            Thông Tin Đơn Thuốc
-                        </h6>
-                        <div class="detail-content">
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-syringe me-1"></i>Thuốc:</span>
-                                <span class="detail-value">${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-clipboard-list me-1"></i>Hướng dẫn sử dụng:</span>
-                                <span class="detail-value">${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có hướng dẫn'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-sort-numeric-up me-1"></i>Số lượng:</span>
-                                <span class="detail-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <a href="${pageContext.request.contextPath}/ViewPrescriptionNurse" 
-                           class="btn btn-detail btn-lg">
-                            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
-                        </a>
-                        <button class="btn btn-print btn-lg" onclick="printPage()">
-                            <i class="fas fa-print me-2"></i>In thành PDF
+        <!-- Controls -->
+        <div class="controls-section fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <form action="${pageContext.request.contextPath}/ViewPatientResultServlet" method="get" class="d-flex align-items-center flex-wrap">
+                        <label for="patientName" class="form-label me-3 mb-0 fw-bold">
+                            <i class="fas fa-search me-2 text-primary-custom"></i>Tìm kiếm:
+                        </label>
+                        <input type="text" id="patientName" name="patientName" class="form-control form-control-sm w-auto me-3" 
+                               value="${patientName}" placeholder="Tên bệnh nhân">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-search me-2"></i>Tìm
                         </button>
-                    </div>
+                    </form>
                 </div>
-            </div>
-        </c:if>
-
-        <!-- List View -->
-        <c:if test="${not isDetailView}">
-            <!-- Statistics -->
-            <div class="stats-section slide-in">
-                <div class="row">
-                    <div class="col-md-12 mb-4">
-                        <div class="stat-card stat-primary">
-                            <div class="stat-icon icon-primary">
-                                <i class="fas fa-prescription-bottle-alt"></i>
-                            </div>
-                            <div class="stat-number">${totalPrescriptions}</div>
-                            <div class="stat-title">Tổng số đơn thuốc được gán</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="controls-section fade-in">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center flex-wrap">
-                            <label for="pageSize" class="form-label me-3 mb-0 fw-bold">
-                                <i class="fas fa-list me-2 text-primary-custom"></i>Hiển thị:
-                            </label>
-                            <select id="pageSize" class="form-select form-select-sm w-auto me-3" onchange="changePageSize()">
-                                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
-                                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
-                                <option value="30" ${pageSize == 30 ? 'selected' : ''}>30</option>
-                                <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
-                            </select>
-                            <span class="text-muted fw-semibold">đơn thuốc mỗi trang</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <label for="pageSize" class="form-label me-3 mb-0 fw-bold">
+                            <i class="fas fa-list me-2 text-primary-custom"></i>Hiển thị:
+                        </label>
+                        <select id="pageSize" class="form-select form-select-sm w-auto me-3" onchange="changePageSize()">
+                            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                            <option value="30" ${pageSize == 30 ? 'selected' : ''}>30</option>
+                            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                        </select>
                         <button class="btn btn-refresh" onclick="location.reload()">
-                            <i class="fas fa-sync-alt me-2"></i>Làm mới dữ liệu
+                            <i class="fas fa-sync-alt me-2"></i>Làm mới
                         </button>
                         <button class="btn btn-print" onclick="printPage()">
-                            <i class="fas fa-print me-2"></i>In thành PDF
+                            <i class="fas fa-print me-2"></i>In
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Prescriptions List -->
-            <div class="row">
-                <c:choose>
-                    <c:when test="${empty prescriptions}">
-                        <div class="col-12">
-                            <div class="empty-state fade-in">
-                                <div class="empty-icon">
-                                    <i class="fas fa-prescription-bottle-alt"></i>
+        <!-- Results List -->
+        <div class="row">
+            <c:choose>
+                <c:when test="${empty results}">
+                    <div class="col-12">
+                        <div class="empty-state fade-in">
+                            <div class="empty-icon">
+                                <i class="fas fa-notes-medical"></i>
+                            </div>
+                            <h3 class="empty-title">Chưa có kết quả khám nào</h3>
+                            <p class="empty-subtitle">
+                                Các kết quả khám bệnh được gán cho bạn sẽ xuất hiện tại đây.
+                            </p>
+                        </div>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach var="result" items="${results}" varStatus="status">
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="prescription-card fade-in" style="animation-delay: ${status.index * 0.1}s">
+                                <div class="card-header">
+                                    <h5 class="prescription-id">
+                                        <i class="fas fa-notes-medical me-2"></i>
+                                        Kết quả #${result.resultId}
+                                    </h5>
                                 </div>
-                                <h3 class="empty-title">Chưa có đơn thuốc nào</h3>
-                                <p class="empty-subtitle">
-                                    Các đơn thuốc được gán cho bạn sẽ xuất hiện tại đây.
-                                </p>
+                                <div class="card-body">
+                                    <!-- Patient Info -->
+                                    <div class="patient-info border-left-primary">
+                                        <div class="patient-name mb-3">
+                                            <i class="fas fa-user me-2"></i>
+                                            ${result.patientName != null ? result.patientName : 'Không có tên'}
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="fas fa-user-md info-icon"></i>
+                                            <span>Bác sĩ: ${result.doctorName != null ? result.doctorName : 'Không có'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="fas fa-calendar-day info-icon"></i>
+                                            <span>Mã lịch hẹn: ${result.appointmentId != null ? result.appointmentId : 'Không có'}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Diagnosis Preview -->
+                                    <div class="diagnosis-section border-left-success">
+                                        <h6 class="diagnosis-title">
+                                            <i class="fas fa-notes-medical me-2"></i>
+                                            Chẩn đoán
+                                        </h6>
+                                        <p class="diagnosis-preview">
+                                            ${result.diagnosis != null ? result.diagnosis : 'Không có thông tin chẩn đoán'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Card Footer -->
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="timestamp">
+                                                <i class="fas fa-calendar-plus me-2"></i>
+                                                <strong>Tạo:</strong> ${result.createdAt != null ? result.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
+                                            </div>
+                                            <div class="timestamp">
+                                                <i class="fas fa-clock me-2"></i>
+                                                <strong>Cập nhật:</strong> ${result.updatedAt != null ? result.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
+                                            </div>
+                                        </div>
+                                        <c:if test="${result.hasPrescription}">
+                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionNurse?action=detail&resultId=${result.resultId}" 
+                                               class="btn btn-detail">
+                                                <i class="fas fa-eye me-2"></i>Xem đơn thuốc
+                                            </a>
+                                        </c:if>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </c:when>
-                    <c:otherwise>
-                        <c:forEach var="prescription" items="${prescriptions}" varStatus="status">
-                            <div class="col-lg-6 col-xl-4 mb-4">
-                                <div class="prescription-card fade-in" style="animation-delay: ${status.index * 0.1}s">
-                                    <div class="card-header">
-                                        <h5 class="prescription-id">
-                                            <i class="fas fa-prescription-bottle-alt me-2"></i>
-                                            Đơn thuốc #${prescription.prescriptionId}
-                                        </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <!-- Patient Info -->
-                                        <div class="patient-info border-left-primary">
-                                            <div class="patient-name mb-3">
-                                                <i class="fas fa-user me-2"></i>
-                                                ${prescription.patientName}
-                                            </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-user-md info-icon"></i>
-                                                <span>Bác sĩ: ${prescription.doctorName}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-calendar-day info-icon"></i>
-                                                <span>Mã lịch hẹn: ${prescription.appointmentId != null ? prescription.appointmentId : 'Không có'}</span>
-                                            </div>
-                                        </div>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
+        </div>
 
-                                        <!-- Diagnosis Preview -->
-                                        <div class="diagnosis-section border-left-success">
-                                            <h6 class="diagnosis-title">
-                                                <i class="fas fa-notes-medical me-2"></i>
-                                                Chẩn đoán
-                                            </h6>
-                                            <p class="diagnosis-preview">
-                                                ${prescription.diagnosis != null ? prescription.diagnosis : 'Không có thông tin chẩn đoán'}
-                                            </p>
-                                        </div>
-                                    </div>
+        <!-- Pagination -->
+        <c:if test="${totalPages > 1}">
+            <div class="d-flex justify-content-center mb-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <!-- Previous Button -->
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="?page=${currentPage - 1}&pageSize=${pageSize}&patientName=${patientName}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
 
-                                    <!-- Card Footer -->
-                                    <div class="card-footer">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <div class="timestamp">
-                                                    <i class="fas fa-calendar-plus me-2"></i>
-                                                    <strong>Tạo:</strong> ${prescription.createdAt != null ? prescription.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
-                                                </div>
-                                                <div class="timestamp">
-                                                    <i class="fas fa-clock me-2"></i>
-                                                    <strong>Cập nhật:</strong> ${prescription.updatedAt != null ? prescription.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
-                                                </div>
-                                            </div>
-                                            <a href="${pageContext.request.contextPath}/ViewPrescriptionNurse?action=detail&prescriptionId=${prescription.prescriptionId}" 
-                                               class="btn btn-detail">
-                                                <i class="fas fa-eye me-2"></i>Chi tiết
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- First Page -->
+                        <c:if test="${startPage > 1}">
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&pageSize=${pageSize}&patientName=${patientName}">1</a>
+                            </li>
+                            <c:if test="${startPage > 2}">
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            </c:if>
+                        </c:if>
+
+                        <!-- Page Numbers -->
+                        <c:forEach begin="${startPage}" end="${endPage}" var="pageNum">
+                            <li class="page-item ${pageNum == currentPage ? 'active' : ''}">
+                                <a class="page-link" href="?page=${pageNum}&pageSize=${pageSize}&patientName=${patientName}">${pageNum}</a>
+                            </li>
                         </c:forEach>
-                    </c:otherwise>
-                </c:choose>
+
+                        <!-- Last Page -->
+                        <c:if test="${endPage < totalPages}">
+                            <c:if test="${endPage < totalPages - 1}">
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            </c:if>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=${totalPages}&pageSize=${pageSize}&patientName=${patientName}">${totalPages}</a>
+                            </li>
+                        </c:if>
+
+                        <!-- Next Button -->
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="?page=${currentPage + 1}&pageSize=${pageSize}&patientName=${patientName}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
-            <!-- Pagination -->
-            <c:if test="${totalPages > 1}">
-                <div class="d-flex justify-content-center mb-4">
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination">
-                            <!-- Previous Button -->
-                            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                                <a class="page-link" href="?page=${currentPage - 1}&pageSize=${pageSize}">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                            </li>
-
-                            <!-- First Page -->
-                            <c:if test="${startPage > 1}">
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1&pageSize=${pageSize}">1</a>
-                                </li>
-                                <c:if test="${startPage > 2}">
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                </c:if>
-                            </c:if>
-
-                            <!-- Page Numbers -->
-                            <c:forEach begin="${startPage}" end="${endPage}" var="pageNum">
-                                <li class="page-item ${pageNum == currentPage ? 'active' : ''}">
-                                    <a class="page-link" href="?page=${pageNum}&pageSize=${pageSize}">${pageNum}</a>
-                                </li>
-                            </c:forEach>
-
-                            <!-- Last Page -->
-                            <c:if test="${endPage < totalPages}">
-                                <c:if test="${endPage < totalPages - 1}">
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                </c:if>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=${totalPages}&pageSize=${pageSize}">${totalPages}</a>
-                                </li>
-                            </c:if>
-
-                            <!-- Next Button -->
-                            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                                <a class="page-link" href="?page=${currentPage + 1}&pageSize=${pageSize}">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
+            <!-- Pagination Info -->
+            <div class="text-center">
+                <div class="pagination-info">
+                    <i class="fas fa-info-circle me-2 text-primary-custom"></i>
+                    <strong>Hiển thị ${(currentPage - 1) * pageSize + 1} - 
+                    ${currentPage * pageSize > totalRecords ? totalRecords : currentPage * pageSize} 
+                    trong tổng số ${totalRecords} kết quả khám</strong>
                 </div>
-
-                <!-- Pagination Info -->
-                <div class="text-center">
-                    <div class="pagination-info">
-                        <i class="fas fa-info-circle me-2 text-primary-custom"></i>
-                        <strong>Hiển thị ${(currentPage - 1) * pageSize + 1} - 
-                        ${currentPage * pageSize > totalPrescriptions ? totalPrescriptions : currentPage * pageSize} 
-                        trong tổng số ${totalPrescriptions} đơn thuốc</strong>
-                    </div>
-                </div>
-            </c:if>
+            </div>
         </c:if>
     </div>
 
@@ -1214,19 +1011,6 @@
                 });
             });
 
-            const infoCards = document.querySelectorAll('.info-card');
-            infoCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-3px)';
-                    this.style.boxShadow = 'var(--shadow-md)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = 'none';
-                });
-            });
-
             const diagnosisPreviews = document.querySelectorAll('.diagnosis-preview');
             diagnosisPreviews.forEach(preview => {
                 if (preview.scrollHeight > preview.clientHeight) {
@@ -1244,10 +1028,6 @@
                 }, 5000);
             });
         });
-
-        function exportData(format) {
-            console.log('Exporting data in format:', format);
-        }
     </script>
 </body>
 </html>
