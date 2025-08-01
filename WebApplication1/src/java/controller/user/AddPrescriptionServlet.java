@@ -255,16 +255,20 @@ public class AddPrescriptionServlet extends HttpServlet {
                 throw new IllegalArgumentException("Phải chọn ít nhất một loại thuốc hợp lệ.");
             }
 
-            // Parse and validate quantities
+            // Validate quantities (now allowing text like "1 hộp", "2 vỉ")
             List<String> quantityList = Arrays.stream(quantities)
                     .map(q -> q != null ? q.trim() : "")
                     .collect(Collectors.toList());
             for (String q : quantityList) {
-                if (q.isEmpty() || !q.matches("\\d+")) {
-                    throw new IllegalArgumentException("Số lượng phải là số và không được để trống.");
+                if (q.isEmpty()) {
+                    throw new IllegalArgumentException("Số lượng không được để trống.");
+                }
+                // Allow any non-empty string for quantity
+                if (!q.matches(".+")) {
+                    throw new IllegalArgumentException("Số lượng phải là giá trị hợp lệ (ví dụ: '1 hộp', '2 vỉ').");
                 }
             }
-            // Ghép quantity thành chuỗi, ví dụ: "2; 1; 3"
+            // Join quantities into a string
             String quantityStr = String.join("; ", quantityList);
 
             System.out.println("DEBUG - Parsed medication IDs: " + medicationIds);
@@ -284,8 +288,13 @@ public class AddPrescriptionServlet extends HttpServlet {
                     .orElse(null);
                 
                 if (medication != null) {
-                    // Build prescriptionDosage (KHÔNG có số lượng)
-                    prescriptionDosage.append(medication.getName()).append(" - ").append(medication.getDosage());
+                    // Build prescriptionDosage (including quantity for clarity)
+                    prescriptionDosage.append(medication.getName())
+                                     .append(" - ")
+                                     .append(medication.getDosage())
+                                     .append(" (")
+                                     .append(quantityList.get(i))
+                                     .append(")");
                     prescriptionDosage.append("; ");
                     
                     // Build instruct
@@ -296,7 +305,8 @@ public class AddPrescriptionServlet extends HttpServlet {
                         instruct.append("Không có hướng dẫn cụ thể cho ").append(medication.getName()).append("; ");
                     }
                     
-                    System.out.println("DEBUG - Added medication: " + medication.getName() + " - Dosage: " + medication.getDosage() + 
+                    System.out.println("DEBUG - Added medication: " + medication.getName() + 
+                                       " - Dosage: " + medication.getDosage() + 
                                        ", Quantity: " + (quantities != null && i < quantities.length ? quantities[i] : "N/A") +
                                        ", Instruction: " + (instructions != null && i < instructions.length ? instructions[i] : "N/A"));
                 } else {
