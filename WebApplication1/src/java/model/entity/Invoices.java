@@ -18,6 +18,7 @@ public class Invoices {
     private Date createdAt;
     private Date updatedAt;
     private int resultID;
+    private boolean paymentRequested;
 
     public Invoices() {
     }
@@ -43,7 +44,12 @@ public class Invoices {
         this.resultID = resultID;
     }
 
-   
+    public boolean isPaymentRequested() {
+        return paymentRequested;
+    }
+    public void setPaymentRequested(boolean paymentRequested) {
+        this.paymentRequested = paymentRequested;
+    }
 
     public int getInvoiceID() {
         return invoiceID;
