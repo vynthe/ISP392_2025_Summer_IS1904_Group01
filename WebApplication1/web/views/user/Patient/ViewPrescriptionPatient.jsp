@@ -572,7 +572,7 @@
                 flex-wrap: nowrap;
             }
             .detail-item {
-                flex: 1 1 33%;
+                flex: 1 1 25%; /* Adjusted for four items */
                 font-size: 8pt;
             }
             .detail-label {
@@ -884,6 +884,10 @@
                             <div class="detail-item">
                                 <span class="detail-label"><i class="fas fa-sort-numeric-up me-1"></i>Số lượng:</span>
                                 <span class="detail-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-signature me-1"></i>Chữ ký:</span>
+                                <span class="detail-value">${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'}</span>
                             </div>
                         </div>
                     </div>

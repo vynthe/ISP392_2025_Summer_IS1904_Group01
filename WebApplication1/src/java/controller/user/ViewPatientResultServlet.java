@@ -42,6 +42,44 @@ public class ViewPatientResultServlet extends HttpServlet {
 
         try {
             int userId = user.getUserID();
+            String action = request.getParameter("action");
+
+            // Handle detail view for Nurse
+            if ("Nurse".equalsIgnoreCase(role) && "detail".equals(action)) {
+                String prescriptionIdStr = request.getParameter("prescriptionId");
+                if (prescriptionIdStr != null && !prescriptionIdStr.trim().isEmpty()) {
+                    try {
+                        int prescriptionId = Integer.parseInt(prescriptionIdStr.trim());
+                        System.out.println("DEBUG - Fetching prescription details for prescriptionId: " + prescriptionId + " at " + LocalDateTime.now() + " +07");
+                        Map<String, Object> prescriptionDetail = prescriptionService.getPrescriptionDetailById(prescriptionId);
+                        if (prescriptionDetail != null) {
+                            request.setAttribute("prescriptionDetail", prescriptionDetail);
+                            request.setAttribute("isDetailView", true);
+                            request.getRequestDispatcher("/views/user/DoctorNurse/ViewPrescriptionNurse.jsp").forward(request, response);
+                            return;
+                        } else {
+                            request.setAttribute("message", "Không tìm thấy đơn thuốc với ID: " + prescriptionId);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.err.println("DEBUG - Invalid prescriptionId format: " + prescriptionIdStr + " at " + LocalDateTime.now() + " +07");
+                        request.setAttribute("message", "ID đơn thuốc không hợp lệ.");
+                    } catch (SQLException e) {
+                        System.err.println("DEBUG - SQLException when fetching prescription details for prescriptionId " + prescriptionIdStr + ": " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
+                        e.printStackTrace();
+                        request.setAttribute("message", "Lỗi cơ sở dữ liệu khi lấy chi tiết đơn thuốc. Vui lòng thử lại sau.");
+                    }
+                    request.setAttribute("isDetailView", false);
+                    request.getRequestDispatcher("/views/user/DoctorNurse/ViewPrescriptionNurse.jsp").forward(request, response);
+                    return;
+                } else {
+                    request.setAttribute("message", "Không có ID đơn thuốc được cung cấp.");
+                    request.setAttribute("isDetailView", false);
+                    request.getRequestDispatcher("/views/user/DoctorNurse/ViewPrescriptionNurse.jsp").forward(request, response);
+                    return;
+                }
+            }
+
+            // Existing logic for list view
             String patientName = request.getParameter("patientName");
             String pageStr = request.getParameter("page");
 
@@ -71,11 +109,11 @@ public class ViewPatientResultServlet extends HttpServlet {
             if ("Doctor".equalsIgnoreCase(role)) {
                 results = prescriptionService.getResultWithPatientByDoctorId(userId, trimmedPatientName, currentPage, pageSize);
                 totalRecords = prescriptionService.getTotalResultByDoctorId(userId, trimmedPatientName);
-                forwardJsp = "/views/user/DoctorNurse/ViewPatientResult.jsp"; // Chuyển hướng rõ ràng cho Doctor
+                forwardJsp = "/views/user/DoctorNurse/ViewPatientResult.jsp";
             } else {
                 results = prescriptionService.getResultWithPatientByNurseId(userId, trimmedPatientName, currentPage, pageSize);
                 totalRecords = prescriptionService.getTotalResultByNurseId(userId, trimmedPatientName);
-                forwardJsp = "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp"; // Chuyển hướng rõ ràng cho Nurse
+                forwardJsp = "/views/user/DoctorNurse/ViewPrescriptionNurse.jsp";
             }
 
             totalPages = (int) Math.ceil((double) totalRecords / pageSize);
@@ -90,7 +128,8 @@ public class ViewPatientResultServlet extends HttpServlet {
                     Integer resultId = (Integer) result.get("resultId");
                     boolean hasPrescription = resultId != null && prescriptionService.hasPrescription(resultId);
                     result.put("hasPrescription", hasPrescription);
-                    System.out.println("DEBUG - ResultId: " + resultId + ", hasPrescription: " + hasPrescription + " at " + LocalDateTime.now() + " +07");
+                    result.put("prescriptionId", prescriptionService.getPrescriptionIdByResultId(resultId)); // Add prescriptionId to results
+                    System.out.println("DEBUG - ResultId: " + resultId + ", hasPrescription: " + hasPrescription + ", prescriptionId: " + result.get("prescriptionId") + " at " + LocalDateTime.now() + " +07");
                 }
             }
 

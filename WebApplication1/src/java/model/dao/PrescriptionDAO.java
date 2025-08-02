@@ -714,7 +714,7 @@ public Map<String, Object> getPrescriptionDetailById(int prescriptionId) throws 
                     detail.put("prescriptionDosage", rs.getString("PrescriptionDosage"));
                     detail.put("instruct", rs.getString("Instruct"));
                     detail.put("quantity", rs.getString("Quantity"));
-                    detail.put("signature", rs.getString("Signature"));
+                    detail.put("signature", rs.getString("Signature")); // Xác nhận rằng trường Signature đã được bao gồm
                     
                     // Handle timestamps
                     Timestamp created = rs.getTimestamp("CreatedAt");
@@ -1135,5 +1135,31 @@ public List<Map<String, Object>> getPrescriptionsByNurseId(int nurseId) throws S
         }
         return false;
     }
-
+ public Integer getPrescriptionIdByResultId(int resultId) throws SQLException {
+        String sql = "SELECT PrescriptionID FROM Prescriptions WHERE ResultID = ?";
+        
+        System.out.println("DEBUG - SQL Query for getPrescriptionIdByResultId: " + sql);
+        System.out.println("DEBUG - ResultID parameter: " + resultId);
+        
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, resultId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int prescriptionId = rs.getInt("PrescriptionID");
+                    System.out.println("DEBUG - PrescriptionID found for ResultID " + resultId + ": " + prescriptionId + 
+                                     " at " + LocalDateTime.now() + " +07");
+                    return prescriptionId;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException in getPrescriptionIdByResultId for ResultID " + resultId + ": " + 
+                              e.getMessage() + " at " + LocalDateTime.now() + " +07");
+            e.printStackTrace();
+            throw e;
+        }
+        System.out.println("DEBUG - No PrescriptionID found for ResultID: " + resultId + 
+                          " at " + LocalDateTime.now() + " +07");
+        return null;
+    }
 }

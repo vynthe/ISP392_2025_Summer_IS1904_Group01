@@ -657,4 +657,31 @@ public Map<String, Object> getPrescriptionDetailById(int id) throws SQLException
             throw e;
         }
     }
+     /**
+     * Get prescription ID by examination result ID
+     * @param resultId The examination result ID
+     * @return Prescription ID if found, null otherwise
+     * @throws SQLException if database operation fails
+     * @throws IllegalArgumentException if resultId is invalid
+     */
+    public Integer getPrescriptionIdByResultId(int resultId) throws SQLException {
+        validatePositiveId(resultId, "Result ID");
+
+        try {
+            Integer prescriptionId = prescriptionDAO.getPrescriptionIdByResultId(resultId);
+            if (prescriptionId != null) {
+                log.info("Retrieved PrescriptionID: " + prescriptionId + " for ResultID: " + resultId + 
+                         " at " + LocalDateTime.now() + " +07");
+            } else {
+                log.info("No PrescriptionID found for ResultID: " + resultId + 
+                         " at " + LocalDateTime.now() + " +07");
+            }
+            return prescriptionId;
+        } catch (SQLException e) {
+            log.error("SQLException retrieving PrescriptionID for ResultID " + resultId + ": " + 
+                     e.getMessage() + " at " + LocalDateTime.now() + " +07", e);
+            throw e;
+        }
+    }
+
 }
