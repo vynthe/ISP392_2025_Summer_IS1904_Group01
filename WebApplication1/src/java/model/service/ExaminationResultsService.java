@@ -154,7 +154,28 @@ public Map<String, Object> getExaminationResultDetailForPatient(int resultId, in
         throw e;
     }
 }
-public List<Map<String, Object>> getAllActiveNurses() throws SQLException {
-    return examinationResultsDAO.getAllActiveNurses();
+public Map<String, Object> getNurseByAppointmentId(int appointmentId) throws SQLException {
+    if (appointmentId <= 0) {
+        throw new IllegalArgumentException("Appointment ID must be positive");
+    }
+    
+    try {
+        return examinationResultsDAO.getNurseByAppointmentId(appointmentId);
+    } catch (SQLException e) {
+        System.err.println("Error in ExaminationResultsService.getNurseByAppointmentId: " + e.getMessage());
+        throw e;
+    }
+}
+public Map<String, Object> getAppointmentDetailsWithNurse(int appointmentId) throws SQLException {
+    if (appointmentId <= 0) {
+        throw new IllegalArgumentException("Appointment ID must be positive");
+    }
+    
+    try {
+        return examinationResultsDAO.getAppointmentDetailsWithNurse(appointmentId);
+    } catch (SQLException e) {
+        System.err.println("Error in ExaminationResultsService.getAppointmentDetailsWithNurse: " + e.getMessage());
+        throw e;
+    }
 }
 }

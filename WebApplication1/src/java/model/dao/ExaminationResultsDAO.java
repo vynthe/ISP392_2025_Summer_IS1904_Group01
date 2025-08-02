@@ -900,36 +900,178 @@ public Map<String, Object> getExaminationResultDetailForPatient(int resultId, in
         }
         return result;
     }
-public List<Map<String, Object>> getAllActiveNurses() throws SQLException {
-    List<Map<String, Object>> nurses = new ArrayList<>();
-    
+public Map<String, Object> getNurseByAppointmentId(int appointmentId) throws SQLException {
+    Map<String, Object> nurse = new HashMap<>();
+
     String sql = """
-        SELECT UserID, FullName, Phone, Email
-        FROM Users
-        WHERE Role = 'Nurse' AND Status = 'Active'
-        ORDER BY FullName ASC
+        SELECT DISTINCT
+            u.UserID,
+            u.FullName,
+            u.Phone,
+            u.Email,
+            u.Gender
+        FROM Appointments a
+        JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+        JOIN Users u ON se.UserID = u.UserID
+        WHERE a.AppointmentID = ? 
+        AND se.Role = 'Nurse'
+        AND u.Role = 'Nurse'
+        AND u.Status = 'Active'
+        
+        UNION
+        
+        SELECT DISTINCT
+            u.UserID,
+            u.FullName,
+            u.Phone,
+            u.Email,
+            u.Gender
+        FROM Appointments a
+        JOIN Rooms r ON a.RoomID = r.RoomID
+        JOIN Users u ON r.UserID = u.UserID
+        WHERE a.AppointmentID = ?
+        AND r.Role = 'Nurse'
+        AND u.Role = 'Nurse'
+        AND u.Status = 'Active'
         """;
-    
+
     try (Connection conn = dbContext.getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        
+        pstmt.setInt(1, appointmentId);
+        pstmt.setInt(2, appointmentId);
+
         try (ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> nurse = new HashMap<>();
+            if (rs.next()) {
                 nurse.put("userID", rs.getInt("UserID"));
                 nurse.put("fullName", rs.getString("FullName"));
                 nurse.put("phone", rs.getString("Phone"));
                 nurse.put("email", rs.getString("Email"));
-                nurses.add(nurse);
+                nurse.put("gender", rs.getString("Gender"));
+                return nurse;
             }
         }
     } catch (SQLException e) {
-        String errorMsg = String.format("SQLException in getAllActiveNurses at %s +07: %s, SQLState: %s",
-                LocalDateTime.now(), e.getMessage(), e.getSQLState());
+        String errorMsg = String.format("SQLException in getNurseByAppointmentId for appointmentId %d at %s +07: %s, SQLState: %s",
+                appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
         System.err.println(errorMsg);
         throw e;
     }
-    
-    return nurses;
+
+    return null; // Trả về null nếu không tìm thấy y tá
+}
+public Map<String, Object> getAppointmentDetailsWithNurse(int appointmentId) throws SQLException {
+    Map<String, Object> appointment = new HashMap<>();
+
+    String sql = """
+        SELECT
+            a.AppointmentID,
+            a.AppointmentTime,
+            a.Status,
+            a.CreatedAt,
+            a.UpdatedAt,
+            u1.UserID AS PatientID,
+            u1.FullName AS PatientName,
+            u1.Phone AS PatientPhone,
+            u1.Email AS PatientEmail,
+            u2.UserID AS DoctorID,
+            u2.FullName AS DoctorName,
+            s.ServiceName,
+            s.ServiceID,
+            r.RoomName,
+            r.RoomID,
+            se.SlotID,
+            se.SlotDate,
+            se.StartTime,
+            se.EndTime,
+            -- Lấy y tá từ ScheduleEmployee
+            se_nurse.UserID AS ScheduleNurseID,
+            u_nurse_schedule.FullName AS ScheduleNurseName,
+            u_nurse_schedule.Phone AS ScheduleNursePhone,
+            u_nurse_schedule.Email AS ScheduleNurseEmail,
+            -- Lấy y tá từ Room
+            room_nurse.UserID AS RoomNurseID,
+            u_nurse_room.FullName AS RoomNurseName,
+            u_nurse_room.Phone AS RoomNursePhone,
+            u_nurse_room.Email AS RoomNurseEmail
+        FROM Appointments a
+        LEFT JOIN Users u1 ON a.PatientID = u1.UserID
+        JOIN Users u2 ON a.DoctorID = u2.UserID
+        JOIN Services s ON a.ServiceID = s.ServiceID
+        JOIN Rooms r ON a.RoomID = r.RoomID
+        JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+        -- Join y tá từ ScheduleEmployee
+        LEFT JOIN ScheduleEmployee se_nurse ON se.SlotID = se_nurse.SlotID AND se_nurse.Role = 'Nurse'
+        LEFT JOIN Users u_nurse_schedule ON se_nurse.UserID = u_nurse_schedule.UserID AND u_nurse_schedule.Status = 'Active'
+        -- Join y tá từ Room
+        LEFT JOIN Users room_nurse ON r.UserID = room_nurse.UserID AND r.Role = 'Nurse'
+        LEFT JOIN Users u_nurse_room ON room_nurse.UserID = u_nurse_room.UserID AND u_nurse_room.Status = 'Active'
+        WHERE a.AppointmentID = ?
+        """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, appointmentId);
+
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                appointment.put("appointmentId", rs.getInt("AppointmentID"));
+                appointment.put("patientId", rs.getObject("PatientID") != null ? rs.getInt("PatientID") : null);
+                appointment.put("patientName", rs.getString("PatientName") != null ? rs.getString("PatientName") : "N/A");
+                appointment.put("patientPhone", rs.getString("PatientPhone") != null ? rs.getString("PatientPhone") : "N/A");
+                appointment.put("patientEmail", rs.getString("PatientEmail") != null ? rs.getString("PatientEmail") : "N/A");
+                appointment.put("doctorId", rs.getInt("DoctorID"));
+                appointment.put("doctorName", rs.getString("DoctorName"));
+                appointment.put("serviceId", rs.getInt("ServiceID"));
+                appointment.put("serviceName", rs.getString("ServiceName"));
+                appointment.put("roomId", rs.getInt("RoomID"));
+                appointment.put("roomName", rs.getString("RoomName"));
+                appointment.put("slotId", rs.getInt("SlotID"));
+                appointment.put("slotDate", rs.getDate("SlotDate") != null ? rs.getDate("SlotDate").toLocalDate() : null);
+                appointment.put("startTime", rs.getTime("StartTime") != null ? rs.getTime("StartTime").toLocalTime() : null);
+                appointment.put("endTime", rs.getTime("EndTime") != null ? rs.getTime("EndTime").toLocalTime() : null);
+                appointment.put("appointmentTime", rs.getTimestamp("AppointmentTime"));
+                appointment.put("status", rs.getString("Status"));
+                appointment.put("createdAt", rs.getTimestamp("CreatedAt"));
+                appointment.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+
+                // Xử lý thông tin y tá - ưu tiên y tá từ ScheduleEmployee trước
+                Integer nurseId = null;
+                String nurseName = null;
+                String nursePhone = null;
+                String nurseEmail = null;
+
+                // Kiểm tra y tá từ ScheduleEmployee trước
+                if (rs.getObject("ScheduleNurseID") != null) {
+                    nurseId = rs.getInt("ScheduleNurseID");
+                    nurseName = rs.getString("ScheduleNurseName");
+                    nursePhone = rs.getString("ScheduleNursePhone");
+                    nurseEmail = rs.getString("ScheduleNurseEmail");
+                }
+                // Nếu không có y tá từ ScheduleEmployee, kiểm tra y tá từ Room
+                else if (rs.getObject("RoomNurseID") != null) {
+                    nurseId = rs.getInt("RoomNurseID");
+                    nurseName = rs.getString("RoomNurseName");
+                    nursePhone = rs.getString("RoomNursePhone");
+                    nurseEmail = rs.getString("RoomNurseEmail");
+                }
+
+                appointment.put("nurseId", nurseId);
+                appointment.put("nurseName", nurseName);
+                appointment.put("nursePhone", nursePhone);
+                appointment.put("nurseEmail", nurseEmail);
+
+            } else {
+                throw new SQLException("No appointment found with ID: " + appointmentId);
+            }
+        }
+    } catch (SQLException e) {
+        String errorMsg = String.format("SQLException in getAppointmentDetailsWithNurse for appointmentId %d at %s +07: %s, SQLState: %s",
+                appointmentId, LocalDateTime.now(), e.getMessage(), e.getSQLState());
+        System.err.println(errorMsg);
+        throw e;
+    }
+
+    return appointment;
 }
 }
+

@@ -37,16 +37,6 @@
             position: relative;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.15"/><circle cx="20" cy="80" r="0.5" fill="white" opacity="0.15"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        }
-
         .header h1 {
             font-size: 28px;
             font-weight: 600;
@@ -92,28 +82,78 @@
             box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3);
         }
 
-        .message-box::before {
-            content: '';
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.2;
+        .info-box {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
         }
 
-        .message-box p {
-            font-weight: 500;
-            margin-left: 35px;
-            font-size: 15px;
+        .warning-box {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: white;
+            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
         }
 
-        .form-grid {
+        .form-section {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .appointment-details {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .appointment-details h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-grid {
             display: grid;
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
         .form-group {
@@ -184,10 +224,72 @@
             font-family: inherit;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .nurse-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .nurse-info.assigned {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-left-color: #4caf50;
+        }
+
+        .nurse-info strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            margin-top: 8px;
+        }
+
+        .status-option {
+            display: none;
+        }
+
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .status-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-option:checked + .status-label .status-checkbox {
+            background: white;
+            color: #51cf66;
+        }
+
+        .status-option:checked + .status-label .status-checkbox::after {
+            content: '✓';
+            font-weight: bold;
+            font-size: 14px;
         }
 
         .button-group {
@@ -244,66 +346,6 @@
             font-style: italic;
         }
 
-        .appointment-info {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        .appointment-info h3 {
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .status-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: linear-gradient(135deg, #51cf66, #40c057);
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            margin-top: 8px;
-        }
-
-        .status-option {
-            display: none;
-        }
-
-        .status-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .status-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid white;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .status-option:checked + .status-label .status-checkbox {
-            background: white;
-            color: #51cf66;
-        }
-
-        .status-option:checked + .status-label .status-checkbox::after {
-            content: '✓';
-            font-weight: bold;
-            font-size: 14px;
-        }
-
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -338,6 +380,10 @@
                 gap: 15px;
             }
 
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
             .button-group {
                 flex-direction: column;
                 align-items: stretch;
@@ -349,35 +395,14 @@
             pointer-events: none;
         }
 
-        .form-section {
-            margin-bottom: 35px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .form-section:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nurse-info {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 3px solid #667eea;
+        .no-nurse-message {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 8px;
+            text-align: center;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -404,11 +429,42 @@
                 </div>
             </c:if>
 
-            <!-- Thông tin lịch hẹn -->
-            <c:if test="${not empty param.appointmentId}">
-                <div class="appointment-info">
-                    <h3>📅 Thông tin lịch hẹn</h3>
-                    <p><strong>Mã lịch hẹn:</strong> #${param.appointmentId}</p>
+            <c:if test="${not empty noNurseMessage}">
+                <div class="message-box warning-box">
+                    <p>⚠️ ${noNurseMessage}</p>
+                </div>
+            </c:if>
+
+            <!-- Thông tin chi tiết lịch hẹn -->
+            <c:if test="${not empty appointmentDetails}">
+                <div class="appointment-details">
+                    <h3>📅 Thông tin lịch hẹn #${appointmentDetails.appointmentId}</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Bệnh nhân:</div>
+                            ${appointmentDetails.patientName}
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Bác sĩ:</div>
+                            ${appointmentDetails.doctorName}
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Dịch vụ:</div>
+                            ${appointmentDetails.serviceName}
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Phòng:</div>
+                            ${appointmentDetails.roomName}
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Ngày khám:</div>
+                            ${appointmentDetails.slotDate}
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Giờ khám:</div>
+                            ${appointmentDetails.startTime} - ${appointmentDetails.endTime}
+                        </div>
+                    </div>
                 </div>
             </c:if>
 
@@ -425,10 +481,11 @@
                                 <input type="number" 
                                        id="appointmentId" 
                                        name="appointmentId" 
-                                       value="${param.appointmentId}" 
+                                       value="${param.appointmentId != null ? param.appointmentId : appointmentDetails.appointmentId}" 
                                        required
                                        min="1"
-                                       placeholder="Nhập mã lịch hẹn">
+                                       placeholder="Nhập mã lịch hẹn"
+                                       ${not empty appointmentDetails ? 'readonly' : ''}>
                             </div>
                             <div class="form-hint">Mã định danh duy nhất của lịch hẹn</div>
                         </div>
@@ -436,21 +493,34 @@
                         <div class="form-group">
                             <label for="nurseId">Y Tá Hỗ Trợ</label>
                             <div class="input-wrapper">
-                                <select id="nurseId" name="nurseId">
-                                    <option value="">-- Chọn y tá (tùy chọn) --</option>
-                                    <c:forEach var="nurse" items="${nurses}">
-                                        <option value="${nurse.userID}" 
-                                                ${param.nurseId eq nurse.userID ? 'selected' : ''}>
-                                            ${nurse.fullName}
-                                        </option>
-                                    </c:forEach>
-                                </select>
+                                <c:choose>
+                                    <c:when test="${hasAssignedNurse}">
+                                        <select id="nurseId" name="nurseId">
+                                            <c:forEach var="nurse" items="${nurses}">
+                                                <option value="${nurse.userID}" selected>
+                                                    ${nurse.fullName}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                        <div class="nurse-info assigned">
+                                            <strong>✅ Y tá được gán cho lịch hẹn này:</strong>
+                                            <c:forEach var="nurse" items="${nurses}">
+                                                📞 ${nurse.phone != null ? nurse.phone : 'Chưa có SĐT'}<br>
+                                                📧 ${nurse.email != null ? nurse.email : 'Chưa có email'}
+                                            </c:forEach>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <select id="nurseId" name="nurseId" disabled>
+                                            <option value="">-- Chưa có y tá được gán --</option>
+                                        </select>
+                                        <div class="no-nurse-message">
+                                            ⚠️ Lịch hẹn này chưa được gán y tá hỗ trợ
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
-                            <div class="form-hint">Chọn y tá hỗ trợ trong quá trình khám bệnh</div>
-                            <div id="nurseInfo" class="nurse-info" style="display: none;">
-                                <strong>Thông tin y tá:</strong><br>
-                                <span id="nurseDetails"></span>
-                            </div>
+                            <div class="form-hint">Y tá được gán tự động theo lịch hẹn</div>
                         </div>
                     </div>
                 </div>
@@ -518,42 +588,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('examForm');
             const submitBtn = document.getElementById('submitBtn');
-            const nurseSelect = document.getElementById('nurseId');
-            const nurseInfo = document.getElementById('nurseInfo');
-            const nurseDetails = document.getElementById('nurseDetails');
-            
-            // Nurse selection handler
-            const nurses = [
-                <c:forEach var="nurse" items="${nurses}" varStatus="status">
-                {
-                    id: '${nurse.userID}',
-                    name: '${nurse.fullName}',
-                    phone: '${nurse.phone}',
-                    email: '${nurse.email}'
-                }<c:if test="${!status.last}">,</c:if>
-                </c:forEach>
-            ];
-            
-            nurseSelect.addEventListener('change', function() {
-                const selectedId = this.value;
-                if (selectedId) {
-                    const selectedNurse = nurses.find(nurse => nurse.id === selectedId);
-                    if (selectedNurse) {
-                        nurseDetails.innerHTML = `
-                            📞 ${selectedNurse.phone || 'Chưa có SĐT'}<br>
-                            📧 ${selectedNurse.email || 'Chưa có email'}
-                        `;
-                        nurseInfo.style.display = 'block';
-                    }
-                } else {
-                    nurseInfo.style.display = 'none';
-                }
-            });
-            
-            // Trigger change event if there's a pre-selected value
-            if (nurseSelect.value) {
-                nurseSelect.dispatchEvent(new Event('change'));
-            }
             
             // Form submission handling
             form.addEventListener('submit', function(e) {
@@ -597,6 +631,24 @@
                     this.style.height = this.scrollHeight + 'px';
                 });
             });
+
+            // Show appointment details if appointmentId is provided
+            const appointmentIdInput = document.getElementById('appointmentId');
+            if (appointmentIdInput.value && !appointmentIdInput.readOnly) {
+                // If there's an appointmentId but no details loaded, show a button to load
+                const loadBtn = document.createElement('button');
+                loadBtn.type = 'button';
+                loadBtn.className = 'btn btn-secondary';
+                loadBtn.innerHTML = '🔄 Tải thông tin lịch hẹn';
+                loadBtn.onclick = function() {
+                    window.location.href = '${pageContext.request.contextPath}/AddExaminationResultServlet?appointmentId=' + appointmentIdInput.value;
+                };
+                
+                const buttonGroup = document.querySelector('.button-group');
+                if (buttonGroup && !${not empty appointmentDetails}) {
+                    buttonGroup.insertBefore(loadBtn, buttonGroup.firstChild);
+                }
+            }
         });
     </script>
 </body>

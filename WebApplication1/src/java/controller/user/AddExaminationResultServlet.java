@@ -10,8 +10,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import model.entity.Users;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,46 +30,70 @@ public class AddExaminationResultServlet extends HttpServlet {
     }
 
     @Override
-   protected void doGet(HttpServletRequest request, HttpServletResponse response)
+  
+protected void doGet(HttpServletRequest request, HttpServletResponse response) 
         throws ServletException, IOException {
-    HttpSession session = request.getSession(false);
-
-    if (session == null || session.getAttribute("user") == null) {
-        request.setAttribute("error", "Bạn cần đăng nhập để truy cập trang này.");
-        request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
-        return;
-    }
-
-    Users user = (Users) session.getAttribute("user");
-    System.out.println("Session user: UserID=" + user.getUserID() + ", Role=" + user.getRole() + " at " + LocalDateTime.now() + " +07");
-    if (!"Doctor".equalsIgnoreCase(user.getRole())) {
-        request.setAttribute("error", "Chỉ bác sĩ mới có quyền truy cập vào trang này.");
-        request.getRequestDispatcher("/views/common/error.jsp").forward(request, response);
-        return;
-    }
-
     try {
-        // Lấy danh sách y tá
-        List<Map<String, Object>> nurses = examinationResultsService.getAllActiveNurses();
-        request.setAttribute("nurses", nurses);
-        
-        // Lấy appointmentId từ request
         String appointmentIdParam = request.getParameter("appointmentId");
+        
         if (appointmentIdParam != null && !appointmentIdParam.trim().isEmpty()) {
-            request.setAttribute("appointmentId", appointmentIdParam.trim());
+            try {
+                int appointmentId = Integer.parseInt(appointmentIdParam);
+                
+                // Lấy thông tin chi tiết lịch hẹn bao gồm y tá
+                Map<String, Object> appointmentDetails = 
+                    examinationResultsService.getAppointmentDetailsWithNurse(appointmentId);
+                
+                if (appointmentDetails != null && !appointmentDetails.isEmpty()) {
+                    // Set thông tin lịch hẹn vào request
+                    request.setAttribute("appointmentDetails", appointmentDetails);
+                    
+                    // Nếu có y tá được gán, tạo danh sách chỉ chứa y tá đó
+                    if (appointmentDetails.get("nurseId") != null) {
+                        List<Map<String, Object>> assignedNurse = new ArrayList<>();
+                        Map<String, Object> nurse = new HashMap<>();
+                        nurse.put("userID", appointmentDetails.get("nurseId"));
+                        nurse.put("fullName", appointmentDetails.get("nurseName"));
+                        nurse.put("phone", appointmentDetails.get("nursePhone"));
+                        nurse.put("email", appointmentDetails.get("nurseEmail"));
+                        assignedNurse.add(nurse);
+                        
+                        request.setAttribute("nurses", assignedNurse);
+                        request.setAttribute("hasAssignedNurse", true);
+                    } else {
+                        // Nếu không có y tá được gán, có thể để trống hoặc cho phép chọn từ danh sách
+                        request.setAttribute("nurses", new ArrayList<>());
+                        request.setAttribute("hasAssignedNurse", false);
+                        request.setAttribute("noNurseMessage", 
+                            "Lịch hẹn này chưa được gán y tá hỗ trợ.");
+                    }
+                } else {
+                    request.setAttribute("errorMessage", 
+                        "Không tìm thấy thông tin lịch hẹn với ID: " + appointmentId);
+                }
+                
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", 
+                    "Mã lịch hẹn không hợp lệ: " + appointmentIdParam);
+            } catch (SQLException e) {
+                request.setAttribute("errorMessage", 
+                    "Lỗi khi truy xuất thông tin lịch hẹn: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            // Nếu không có appointmentId, không load danh sách y tá
+            request.setAttribute("nurses", new ArrayList<>());
         }
         
-        request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
-        
-    } catch (SQLException e) {
-        System.err.println("SQLException in AddExaminationResultServlet doGet at " + LocalDateTime.now() + " +07: " + e.getMessage());
-        request.setAttribute("errorMessage", "Không thể tải danh sách y tá: " + e.getMessage());
-        request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
     } catch (Exception e) {
-        System.err.println("Unexpected error in AddExaminationResultServlet doGet at " + LocalDateTime.now() + " +07: " + e.getMessage());
-        request.setAttribute("errorMessage", "Lỗi hệ thống: " + e.getMessage());
-        request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp").forward(request, response);
+        request.setAttribute("errorMessage", 
+            "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
+        e.printStackTrace();
     }
+    
+    // Forward đến JSP
+    request.getRequestDispatcher("/views/user/DoctorNurse/AddExaminationResult.jsp")
+           .forward(request, response);
 }
 
     @Override
