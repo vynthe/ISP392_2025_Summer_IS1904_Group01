@@ -338,83 +338,92 @@ public class InvoiceDAO {
         }
         return 0;
     }
+    
 
-    public List<Invoices> searchInvoicesByPatientAndService(String patientNameKeyword, String serviceNameKeyword, int page, int pageSize) throws SQLException {
-        List<Invoices> invoices = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-                "SELECT i.* FROM Invoices i "
-                + "JOIN Users u ON i.PatientID = u.UserID "
-                + "LEFT JOIN Services s ON i.ServiceID = s.ServiceID "
-                + "WHERE i.Status != 'CANCELLED'"
-        );
-        
-        List<String> conditions = new ArrayList<>();
-        List<Object> parameters = new ArrayList<>();
-
-        if (patientNameKeyword != null && !patientNameKeyword.trim().isEmpty()) {
-            conditions.add("u.FullName LIKE ?");
-            parameters.add("%" + patientNameKeyword.trim() + "%");
-        }
-        
-        if (serviceNameKeyword != null && !serviceNameKeyword.trim().isEmpty()) {
-            conditions.add("s.ServiceName LIKE ?");
-            parameters.add("%" + serviceNameKeyword.trim() + "%");
-        }
-
-        if (!conditions.isEmpty()) {
-            sql.append(" AND ").append(String.join(" AND ", conditions));
-        }
-        
-        sql.append(" ORDER BY i.InvoiceID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+    public List<Map<String, Object>> searchExaminationResultsByPatientAndService(String keyword1, String keyword2, int page, int pageSize) throws SQLException {
+        String sql = "SELECT r.ResultID, r.AppointmentID, r.DoctorID, r.PatientID, r.NurseID, r.ServiceID, "
+                + "r.Status, r.CreatedBy, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes, "
+                + "d.FullName AS doctorName, p.FullName AS patientName, "
+                + "n.FullName AS nurseName, s.ServiceName, s.Price, "
+                + "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus "
+                + "FROM ExaminationResults r "
+                + "LEFT JOIN Users d ON r.DoctorID = d.UserID "
+                + "LEFT JOIN Users p ON r.PatientID = p.UserID "
+                + "LEFT JOIN Users n ON r.NurseID = n.UserID "
+                + "LEFT JOIN Services s ON r.ServiceID = s.ServiceID "
+                + "LEFT JOIN Invoices i ON r.ResultID = i.ResultID "
+                + "WHERE (p.FullName LIKE ? OR s.ServiceName LIKE ?) "
+                + "AND (CAST(r.ResultID AS VARCHAR) LIKE ? OR d.FullName LIKE ? OR r.Diagnosis LIKE ?) "
+                + "ORDER BY r.ResultID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = dbContext.getConnection(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            int paramIndex = 1;
-            for (Object param : parameters) {
-                pstmt.setObject(paramIndex++, param);
-            }
-            pstmt.setInt(paramIndex++, (page - 1) * pageSize);
-            pstmt.setInt(paramIndex, pageSize);
+            // Keyword1: Tên bệnh nhân hoặc dịch vụ
+            pstmt.setString(1, "%" + keyword1 + "%");
+            pstmt.setString(2, "%" + keyword1 + "%");
+            
+            // Keyword2: Mã kết quả, tên bác sĩ hoặc chẩn đoán
+            pstmt.setString(3, "%" + keyword2 + "%");
+            pstmt.setString(4, "%" + keyword2 + "%");
+            pstmt.setString(5, "%" + keyword2 + "%");
+            
+            // Phân trang
+            pstmt.setInt(6, (page - 1) * pageSize);
+            pstmt.setInt(7, pageSize);
 
             try (ResultSet rs = pstmt.executeQuery()) {
+                List<Map<String, Object>> results = new ArrayList<>();
                 while (rs.next()) {
-                    invoices.add(mapResultSetToInvoice(rs));
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("resultId", rs.getInt("ResultID"));
+                    row.put("appointmentId", rs.getInt("AppointmentID"));
+                    row.put("doctorId", rs.getInt("DoctorID"));
+                    row.put("patientId", rs.getInt("PatientID"));
+                    row.put("nurseId", rs.getObject("NurseID"));
+                    row.put("serviceId", rs.getInt("ServiceID"));
+                    row.put("status", rs.getString("Status"));
+                    row.put("createdBy", rs.getInt("CreatedBy"));
+                    row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    row.put("updatedAt", rs.getTimestamp("UpdatedAt"));
+                    row.put("diagnosis", rs.getString("Diagnosis"));
+                    row.put("notes", rs.getString("Notes"));
+                    row.put("doctorName", rs.getString("doctorName"));
+                    row.put("patientName", rs.getString("patientName"));
+                    row.put("nurseName", rs.getString("nurseName"));
+                    row.put("serviceName", rs.getString("ServiceName"));
+                    row.put("servicePrice", rs.getDouble("Price"));
+                    row.put("invoiceId", rs.getObject("InvoiceID"));
+                    row.put("totalAmount", rs.getObject("TotalAmount"));
+                    row.put("invoiceStatus", rs.getString("invoiceStatus"));
+                    results.add(row);
                 }
+                return results;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("SQLException in searchInvoicesByPatientAndService: " + e.getMessage() + " at " + LocalDateTime.now() + " +07");
-            throw e;
         }
-        return invoices;
     }
 
-    public int getTotalCountByPatientAndService(String patientKeyword, String serviceKeyword) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Invoices i "
-                + "JOIN Users u ON i.PatientID = u.UserID "
-                + "LEFT JOIN Services s ON i.ServiceID = s.ServiceID "
-                + "WHERE i.Status != 'CANCELLED'");
-        
-        List<Object> params = new ArrayList<>();
-        
-        if (patientKeyword != null && !patientKeyword.isEmpty()) {
-            sql.append(" AND u.FullName LIKE ?");
-            params.add("%" + patientKeyword + "%");
-        }
-        
-        if (serviceKeyword != null && !serviceKeyword.isEmpty()) {
-            sql.append(" AND s.ServiceName LIKE ?");
-            params.add("%" + serviceKeyword + "%");
-        }
+    public int getTotalCountExaminationResultsByPatientAndService(String keyword1, String keyword2) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM ExaminationResults r "
+                + "LEFT JOIN Users d ON r.DoctorID = d.UserID "
+                + "LEFT JOIN Users p ON r.PatientID = p.UserID "
+                + "LEFT JOIN Users n ON r.NurseID = n.UserID "
+                + "LEFT JOIN Services s ON r.ServiceID = s.ServiceID "
+                + "LEFT JOIN Invoices i ON r.ResultID = i.ResultID "
+                + "WHERE (p.FullName LIKE ? OR s.ServiceName LIKE ?) "
+                + "AND (CAST(r.ResultID AS VARCHAR) LIKE ? OR d.FullName LIKE ? OR r.Diagnosis LIKE ?)";
         
         try (Connection conn = dbContext.getConnection(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            int idx = 1;
-            for (Object param : params) {
-                pstmt.setObject(idx++, param);
-            }
+            // Keyword1: Tên bệnh nhân hoặc dịch vụ
+            pstmt.setString(1, "%" + keyword1 + "%");
+            pstmt.setString(2, "%" + keyword1 + "%");
+            
+            // Keyword2: Mã kết quả, tên bác sĩ hoặc chẩn đoán
+            pstmt.setString(3, "%" + keyword2 + "%");
+            pstmt.setString(4, "%" + keyword2 + "%");
+            pstmt.setString(5, "%" + keyword2 + "%");
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -424,6 +433,8 @@ public class InvoiceDAO {
         }
         return 0;
     }
+
+   
 
     // Xóa hóa đơn (hard delete)
     public boolean deleteInvoice(int invoiceId) throws SQLException {
@@ -469,19 +480,39 @@ public class InvoiceDAO {
         }
     }
 
-    // Lấy hóa đơn theo PatientID
-    public List<Invoices> getInvoicesByPatientId(int patientId) throws SQLException {
-        List<Invoices> invoices = new ArrayList<>();
-        String sql = "SELECT * FROM Invoices WHERE PatientID = ? AND Status != 'CANCELLED' ORDER BY CreatedAt DESC";
-        
-        try (Connection conn = dbContext.getConnection(); 
+    // Lấy hóa đơn theo PatientID (sửa lại trả về List<Map<String, Object>> với JOIN)
+    public List<Map<String, Object>> getInvoicesByPatientId(int patientId) throws SQLException {
+        List<Map<String, Object>> invoices = new ArrayList<>();
+        String sql = "SELECT i.InvoiceID, " +
+                "d.FullName AS doctorName, " +
+                "s.ServiceName AS serviceName, " +
+                "p.FullName AS patientName, " +
+                "a.AppointmentTime AS appointmentTime, " +
+                "i.TotalAmount, i.Status, i.CreatedAt " +
+                "FROM Invoices i " +
+                "LEFT JOIN Users d ON i.DoctorID = d.UserID " +
+                "LEFT JOIN Users p ON i.PatientID = p.UserID " +
+                "LEFT JOIN Services s ON i.ServiceID = s.ServiceID " +
+                "LEFT JOIN ExaminationResults r ON i.ResultID = r.ResultID " +
+                "LEFT JOIN Appointments a ON r.AppointmentID = a.AppointmentID " +
+                "WHERE i.PatientID = ? AND i.Status != 'CANCELLED' " +
+                "ORDER BY i.CreatedAt DESC";
+
+        try (Connection conn = dbContext.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
             pstmt.setInt(1, patientId);
-            
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    invoices.add(mapResultSetToInvoice(rs));
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("invoiceId", rs.getInt("InvoiceID"));
+                    row.put("doctorName", rs.getString("doctorName"));
+                    row.put("serviceName", rs.getString("serviceName"));
+                    row.put("patientName", rs.getString("patientName"));
+                    row.put("appointmentTime", rs.getTimestamp("appointmentTime"));
+                    row.put("totalAmount", rs.getDouble("TotalAmount"));
+                    row.put("status", rs.getString("Status"));
+                    row.put("createdAt", rs.getTimestamp("CreatedAt"));
+                    invoices.add(row);
                 }
             }
         }
@@ -559,59 +590,54 @@ public class InvoiceDAO {
         }
         return null;
     }
+        /**
+     * Đánh dấu hóa đơn đã được bệnh nhân yêu cầu thanh toán
+     */
+    public boolean markInvoicePaymentRequested(int invoiceId) throws SQLException {
+        String sql = "UPDATE Invoices SET paymentRequested = 1 WHERE InvoiceID = ?";
+        
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, invoiceId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
 
-//    // ✅ THÊM: Lấy thông tin chi tiết hóa đơn kèm thông tin kết quả khám
-//    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
-//        String sql = "SELECT i.*, r.AppointmentID, r.NurseID, r.Diagnosis, r.Notes, r.Status as resultStatus, "
-//                + "d.FullName as doctorName, p.FullName as patientName, "
-//                + "n.FullName as nurseName, s.ServiceName, s.Price "
-//                + "FROM Invoices i "
-//                + "LEFT JOIN ExaminationResults r ON i.ResultID = r.ResultID "
-//                + "LEFT JOIN Users d ON i.DoctorID = d.UserID "
-//                + "LEFT JOIN Users p ON i.PatientID = p.UserID "
-//                + "LEFT JOIN Users n ON r.NurseID = n.UserID "
-//                + "LEFT JOIN Services s ON i.ServiceID = s.ServiceID "
-//                + "WHERE i.InvoiceID = ?";
-//        
-//        try (Connection conn = dbContext.getConnection(); 
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            
-//            pstmt.setInt(1, invoiceId);
-//            
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//                    Map<String, Object> detail = new HashMap<>();
-//                    
-//                    // Thông tin hóa đơn
-//                    detail.put("invoiceId", rs.getInt("InvoiceID"));
-//                    detail.put("totalAmount", rs.getDouble("TotalAmount"));
-//                    detail.put("status", rs.getString("Status"));
-//                    detail.put("createdAt", rs.getTimestamp("CreatedAt"));
-//                    detail.put("updatedAt", rs.getTimestamp("UpdatedAt"));
-//                    
-//                    // Thông tin kết quả khám
-//                    detail.put("resultId", rs.getInt("ResultID"));
-//                    detail.put("appointmentId", rs.getInt("AppointmentID"));
-//                    detail.put("diagnosis", rs.getString("Diagnosis"));
-//                    detail.put("notes", rs.getString("Notes"));
-//                    detail.put("resultStatus", rs.getString("resultStatus"));
-//                    
-//                    // Thông tin người dùng
-//                    detail.put("doctorName", rs.getString("doctorName"));
-//                    detail.put("patientName", rs.getString("patientName"));
-//                    detail.put("nurseName", rs.getString("nurseName"));
-//                    detail.put("serviceName", rs.getString("ServiceName"));
-//                    detail.put("servicePrice", rs.getDouble("Price"));
-//                    
-//                    return detail;
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    /**
+     * Lấy danh sách hóa đơn PENDING đã được bệnh nhân yêu cầu thanh toán
+     */
+    public List<Invoices> getRequestedPendingInvoices() throws SQLException {
+        String sql = "SELECT * FROM Invoices WHERE Status = 'PENDING' AND paymentRequested = 1 ORDER BY InvoiceID DESC";
+        
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            List<Invoices> invoices = new ArrayList<>();
+            while (rs.next()) {
+                invoices.add(mapResultSetToInvoice(rs));
+            }
+            return invoices;
+        }
+    }
+     /**
+     * Xác nhận thanh toán hóa đơn (cập nhật Status = 'PAID')
+     */
+    public boolean confirmInvoicePaid(int invoiceId) throws SQLException {
+        String sql = "UPDATE Invoices SET Status = 'PAID', paymentRequested = 0 WHERE InvoiceID = ?";
+        
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, invoiceId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
 
-
-
+    // ✅ BỔ SUNG: Map trường paymentRequested cho entity Invoices trong hàm mapResultSetToInvoice
     private Invoices mapResultSetToInvoice(ResultSet rs) throws SQLException {
         Invoices invoice = new Invoices();
         invoice.setInvoiceID(rs.getInt("InvoiceID"));
@@ -621,21 +647,16 @@ public class InvoiceDAO {
         invoice.setStatus(rs.getString("Status"));
         invoice.setServiceID(rs.getInt("ServiceID"));
         invoice.setCreatedBy(rs.getInt("CreatedBy"));
-        
-        // ✅ THÊM: Map ResultID
         invoice.setResultID(rs.getInt("ResultID"));
-
-        // Xử lý CreatedAt và UpdatedAt từ Timestamp
         Timestamp created = rs.getTimestamp("CreatedAt");
-        if (created != null) {
-            invoice.setCreatedAt(new java.sql.Date(created.getTime()));
-        }
-
+        if (created != null) invoice.setCreatedAt(new java.sql.Date(created.getTime()));
         Timestamp updated = rs.getTimestamp("UpdatedAt");
-        if (updated != null) {
-            invoice.setUpdatedAt(new java.sql.Date(updated.getTime()));
-        }
-
+        if (updated != null) invoice.setUpdatedAt(new java.sql.Date(updated.getTime()));
+        // ✅ Map trường mới paymentRequested
+        invoice.setPaymentRequested(rs.getBoolean("paymentRequested"));
         return invoice;
     }
+
+    
+
 }

@@ -89,9 +89,11 @@ public class InvoiceService {
     }
 
     /**
-     * Tìm kiếm hóa đơn theo tên bệnh nhân và dịch vụ
+     * Tìm kiếm kết quả khám với 2 từ khóa
+     * @param keyword1 Tên bệnh nhân hoặc dịch vụ
+     * @param keyword2 Mã kết quả, tên bác sĩ hoặc chẩn đoán
      */
-    public List<Invoices> searchInvoicesByPatientAndService(String patientKeyword, String serviceKeyword, int page, int pageSize) throws SQLException {
+    public List<Map<String, Object>> searchExaminationResultsByPatientAndService(String keyword1, String keyword2, int page, int pageSize) throws SQLException {
         if (page <= 0) {
             throw new IllegalArgumentException("Số trang phải >= 1. Giá trị nhận được: " + page);
         }
@@ -102,7 +104,7 @@ public class InvoiceService {
             throw new IllegalArgumentException("Page size không được vượt quá 1000. Giá trị nhận được: " + pageSize);
         }
         
-        return invoiceDAO.searchInvoicesByPatientAndService(patientKeyword, serviceKeyword, page, pageSize);
+        return invoiceDAO.searchExaminationResultsByPatientAndService(keyword1, keyword2, page, pageSize);
     }
 
     /**
@@ -113,10 +115,12 @@ public class InvoiceService {
     }
 
     /**
-     * Đếm tổng số hóa đơn theo điều kiện tìm kiếm
+     * Đếm tổng số kết quả khám theo điều kiện tìm kiếm
+     * @param keyword1 Tên bệnh nhân hoặc dịch vụ
+     * @param keyword2 Mã kết quả, tên bác sĩ hoặc chẩn đoán
      */
-    public int getTotalCountByPatientAndService(String patientKeyword, String serviceKeyword) throws SQLException {
-        return invoiceDAO.getTotalCountByPatientAndService(patientKeyword, serviceKeyword);
+    public int getTotalCountExaminationResultsByPatientAndService(String keyword1, String keyword2) throws SQLException {
+        return invoiceDAO.getTotalCountExaminationResultsByPatientAndService(keyword1, keyword2);
     }
 
     /**
@@ -143,9 +147,9 @@ public class InvoiceService {
     }
 
     /**
-     * Lấy hóa đơn theo PatientID
+     * Lấy hóa đơn theo PatientID (sửa lại trả về List<Map<String, Object>>)
      */
-    public List<Invoices> getInvoicesByPatientId(int patientId) throws SQLException {
+    public List<Map<String, Object>> getInvoicesByPatientId(int patientId) throws SQLException {
         if (patientId <= 0) {
             throw new IllegalArgumentException("PatientID không hợp lệ: " + patientId);
         }
@@ -163,14 +167,33 @@ public class InvoiceService {
     }
 
     /**
-     * ✅ THÊM: Lấy thông tin chi tiết hóa đơn kèm thông tin kết quả khám
+     * ✅ BỔ SUNG: Đánh dấu hóa đơn đã được bệnh nhân yêu cầu thanh toán
      */
-//    public Map<String, Object> getInvoiceDetailWithExaminationResult(int invoiceId) throws SQLException {
-//        if (invoiceId <= 0) {
-//            throw new IllegalArgumentException("InvoiceID không hợp lệ: " + invoiceId);
-//        }
-//        return invoiceDAO.getInvoiceDetailWithExaminationResult(invoiceId);
-//    }
+    public boolean markInvoicePaymentRequested(int invoiceId) throws SQLException {
+        if (invoiceId <= 0) {
+            throw new IllegalArgumentException("InvoiceID không hợp lệ: " + invoiceId);
+        }
+        return invoiceDAO.markInvoicePaymentRequested(invoiceId);
+    }
+
+    /**
+     * ✅ BỔ SUNG: Lấy danh sách hóa đơn PENDING đã được bệnh nhân yêu cầu thanh toán
+     */
+    public List<Invoices> getRequestedPendingInvoices() throws SQLException {
+        return invoiceDAO.getRequestedPendingInvoices();
+    }
+
+    /**
+     * ✅ BỔ SUNG: Xác nhận thanh toán hóa đơn (cập nhật Status = 'PAID')
+     */
+    public boolean confirmInvoicePaid(int invoiceId) throws SQLException {
+        if (invoiceId <= 0) {
+            throw new IllegalArgumentException("InvoiceID không hợp lệ: " + invoiceId);
+        }
+        return invoiceDAO.confirmInvoicePaid(invoiceId);
+    }
+
+
 
     /**
      * ✅ Lấy chi tiết kết quả khám + hóa đơn theo resultId (JOIN 2 bảng)
@@ -183,6 +206,11 @@ public class InvoiceService {
         }
         return invoiceDAO.getExaminationResultWithInvoiceByResultId(resultId);
     }
+
+    
+
+
+  
 
 
     // ---------------------- Phương thức hỗ trợ ----------------------
@@ -247,4 +275,6 @@ public class InvoiceService {
     public boolean isValidPage(int page, int totalPages) {
         return page > 0 && page <= totalPages;
     }
+
+ 
 }
