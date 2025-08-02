@@ -20,11 +20,49 @@ public class ViewInvoiceServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // ✅ SỬA: Sử dụng getExaminationResultsWithInvoice() - có join với Invoices để biết kết quả nào đã có hóa đơn
-            List<Map<String, Object>> results = invoiceService.getExaminationResultsWithInvoice();
-
-            // Truyền sang JSP
+            // ✅ BỔ SUNG: Xử lý tìm kiếm với 2 từ khóa
+            String keyword1 = request.getParameter("keyword1");
+            String keyword2 = request.getParameter("keyword2");
+            
+            List<Map<String, Object>> results;
+            int totalRecords;
+            int currentPage = 1;
+            int pageSize = 10;
+            
+            // ✅ KIỂM TRA: Nếu có từ khóa tìm kiếm thì dùng hàm search, không thì dùng hàm get tất cả
+            if ((keyword1 != null && !keyword1.trim().isEmpty()) || 
+                (keyword2 != null && !keyword2.trim().isEmpty())) {
+                
+                // ✅ SỬ DỤNG HÀM SEARCH MỚI VỚI 2 TỪ KHÓA
+                results = invoiceService.searchExaminationResultsByPatientAndService(
+                    keyword1 != null ? keyword1.trim() : "", 
+                    keyword2 != null ? keyword2.trim() : "",
+                    currentPage, pageSize
+                );
+                
+                totalRecords = invoiceService.getTotalCountExaminationResultsByPatientAndService(
+                    keyword1 != null ? keyword1.trim() : "", 
+                    keyword2 != null ? keyword2.trim() : ""
+                );
+                
+                // ✅ TRUYỀN TỪ KHÓA TÌM KIẾM VỀ JSP
+                request.setAttribute("keyword1", keyword1);
+                request.setAttribute("keyword2", keyword2);
+                
+            } else {
+                // ✅ SỬ DỤNG HÀM GET TẤT CẢ (LOGIC CŨ)
+                results = invoiceService.getExaminationResultsWithInvoice();
+                totalRecords = results.size();
+            }
+            
+            // ✅ TÍNH TOÁN PHÂN TRANG
+            int totalPages = invoiceService.getTotalPages(totalRecords, pageSize);
+            
+            // ✅ TRUYỀN DỮ LIỆU SANG JSP
             request.setAttribute("results", results);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalRecords", totalRecords);
 
             // Forward sang trang JSP hiển thị danh sách hóa đơn
             request.getRequestDispatcher("/views/user/Receptionist/ViewInvoice.jsp").forward(request, response);

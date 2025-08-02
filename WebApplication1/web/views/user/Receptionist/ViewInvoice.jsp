@@ -521,6 +521,17 @@
         <div class="container">
             <div class="header">
                 <div class="header-content">
+                    <!-- Nút quay lại Dashboard -->
+                    <a href="${pageContext.request.contextPath}/views/user/Receptionist/ReceptionistDashBoard.jsp" 
+                       style="position: absolute; top: 20px; left: 20px; z-index: 10;
+                       display: inline-flex; align-items: center; gap: 8px;
+                       background: rgba(255, 255, 255, 0.2); color: white; padding: 10px 16px;
+                       border-radius: 10px; text-decoration: none; font-weight: 600;
+                       transition: all 0.3s ease;">
+                        <i class="fas fa-arrow-left"></i> Trang chủ
+                        
+                    </a>
+
                     <div class="header-icon">
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
@@ -573,6 +584,25 @@
                     </div>
                 </c:if>
 
+                <!-- ✅ BỔ SUNG: Hiển thị thông báo kết quả tìm kiếm -->
+                <c:if test="${not empty keyword1 or not empty keyword2}">
+                    <div class="message success" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); color: #1976d2; border-left: 5px solid #2196f3;">
+                        <i class="fas fa-search"></i>
+                        <span>
+                            <strong>Kết quả tìm kiếm:</strong>
+                            <c:if test="${not empty keyword1}">
+                                Từ khóa 1: <strong>"${keyword1}"</strong>
+                            </c:if>
+                            <c:if test="${not empty keyword1 and not empty keyword2}"> và </c:if>
+                            <c:if test="${not empty keyword2}">
+                                Từ khóa 2: <strong>"${keyword2}"</strong>
+                            </c:if>
+                            - Tìm thấy <strong>${totalRecords}</strong> kết quả
+                            <c:if test="${totalPages > 1}"> (Trang ${currentPage}/${totalPages})</c:if>
+                            </span>
+                        </div>
+                </c:if>
+
                 <!-- Form tìm kiếm -->
                 <div class="search-section">
                     <div class="search-title">
@@ -581,26 +611,26 @@
                     </div>
                     <form method="get" action="${pageContext.request.contextPath}/ViewInvoiceServlet" class="search-form">
                         <div class="form-group">
-                            <label for="patientNameKeyword">
-                                <i class="fas fa-user"></i>
-                                Tên Bệnh Nhân
-                            </label>
-                            <input type="text" id="patientNameKeyword" name="patientNameKeyword" 
-                                   value="${patientNameKeyword}" placeholder="Nhập tên bệnh nhân...">
+                            <input type="text" id="keyword1" name="keyword1" 
+                                   value="${keyword1}" placeholder="Nhập tên bệnh nhân hoặc dịch vụ...">
                         </div>
                         <div class="form-group">
-                            <label for="serviceNameKeyword">
-                                <i class="fas fa-stethoscope"></i>
-                                Tên Dịch Vụ
-                            </label>
-                            <input type="text" id="serviceNameKeyword" name="serviceNameKeyword" 
-                                   value="${serviceNameKeyword}" placeholder="Nhập tên dịch vụ...">
+                            <input type="text" id="keyword2" name="keyword2" 
+                                   value="${keyword2}" placeholder="Nhập mã kết quả, tên bác sĩ hoặc chẩn đoán...">
                         </div>
                         <div class="form-group">
                             <button type="submit" class="search-btn">
                                 <i class="fas fa-search"></i>
                                 Tìm Kiếm
                             </button>
+                            <!-- ✅ BỔ SUNG: Nút xóa tìm kiếm -->
+                            <c:if test="${not empty keyword1 or not empty keyword2}">
+                                <a href="${pageContext.request.contextPath}/ViewInvoiceServlet" class="search-btn" 
+                                   style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); margin-left: 10px; text-decoration: none;">
+                                    <i class="fas fa-times"></i>
+                                    Xóa tìm kiếm
+                                </a>
+                            </c:if>
                         </div>
                     </form>
                 </div>
@@ -680,7 +710,7 @@
                                                             </button>
                                                         </form>
                                                     </c:if>
-                                                    
+
                                                     <!-- ✅ THÊM: Hiển thị thông báo "Đã có hóa đơn" khi đã có hóa đơn -->
                                                     <c:if test="${result.status == 'Completed' && result.invoiceId != null}">
                                                         <span style="color: #27ae60; font-weight: bold; padding: 8px 12px; background: #e8f5e8; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
@@ -688,13 +718,50 @@
                                                             Đã có hóa đơn
                                                         </span>
                                                     </c:if>
-                                                    
+
+
+
+                                                    <!-- ✅ BỔ SUNG: Nút "Xác nhận thanh toán" cho hóa đơn đã được bệnh nhân yêu cầu thanh toán -->
+                                                    <c:if test="${result.invoiceStatus == 'PENDING' && result.paymentRequested == true}">
+                                                        <form method="post" action="${pageContext.request.contextPath}/ConfirmPaymentServlet" style="display:inline;">
+                                                            <input type="hidden" name="invoiceId" value="${result.invoiceId}" />
+                                                            <button type="submit" 
+                                                                    style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                                                                    color: white;
+                                                                    border: none;
+                                                                    padding: 10px 16px;
+                                                                    border-radius: 10px;
+                                                                    font-size: 0.85rem;
+                                                                    font-weight: 600;
+                                                                    cursor: pointer;
+                                                                    transition: all 0.3s ease;
+                                                                    display: flex;
+                                                                    align-items: center;
+                                                                    gap: 6px;
+                                                                    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);"
+                                                                    onmouseover="this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 25px rgba(76, 175, 80, 0.4)'"
+                                                                    onmouseout="this.style.transform = 'translateY(0)'; this.style.boxShadow = '0 4px 15px rgba(76, 175, 80, 0.3)'">
+                                                                <i class="fas fa-check-double"></i>
+                                                                Xác nhận thanh toán
+                                                            </button>
+                                                        </form>
+                                                    </c:if>
+                                                    <!-- ✅ THÊM MỚI: Hiển thị trạng thái "Đã thanh toán" khi hóa đơn đã được thanh toán -->
+                                                    <c:if test="${result.invoiceStatus == 'PAID'}">
+                                                        <span style="color: #27ae60; font-weight: bold; padding: 8px 12px; background: #e8f5e8; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                                                            <i class="fas fa-check-circle"></i> Đã thanh toán
+                                                        </span>
+                                                    </c:if>
+
                                                     <!-- ✅ THÊM: Nút xem chi tiết kết quả khám -->
                                                     <a href="${pageContext.request.contextPath}/ViewInvoiceDetailServlet?resultId=${result.resultId}" 
                                                        class="action-btn update-btn">
                                                         <i class="fas fa-eye"></i>
                                                         Xem chi tiết
                                                     </a>
+
+
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -719,20 +786,20 @@
                 <c:if test="${totalPages > 1}">
                     <div class="pagination">
                         <c:if test="${currentPage > 1}">
-                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${currentPage - 1}&patientNameKeyword=${patientNameKeyword}&serviceNameKeyword=${serviceNameKeyword}">
+                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${currentPage - 1}&keyword1=${keyword1}&keyword2=${keyword2}">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         </c:if>
 
                         <c:forEach begin="1" end="${totalPages}" var="i">
-                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${i}&patientNameKeyword=${patientNameKeyword}&serviceNameKeyword=${serviceNameKeyword}"
+                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${i}&keyword1=${keyword1}&keyword2=${keyword2}"
                                class="${i == currentPage ? 'active' : ''}">
                                 ${i}
                             </a>
                         </c:forEach>
 
                         <c:if test="${currentPage < totalPages}">
-                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${currentPage + 1}&patientNameKeyword=${patientNameKeyword}&serviceNameKeyword=${serviceNameKeyword}">
+                            <a href="${pageContext.request.contextPath}/ViewInvoiceServlet?page=${currentPage + 1}&keyword1=${keyword1}&keyword2=${keyword2}">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </c:if>
