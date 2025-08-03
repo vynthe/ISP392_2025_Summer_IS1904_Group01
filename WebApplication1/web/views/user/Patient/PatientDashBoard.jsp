@@ -934,8 +934,12 @@
                                 Xem kết quả khám
                             </a>
                             <a href="${pageContext.request.contextPath}/PatientInvoiceServlet">
-                                <i class="fas fa-file-medical-alt"></i>
+                                <i class="fas fa-file-invoice"></i>
                                 Xem hóa đơn
+                            </a>
+                            <a href="${pageContext.request.contextPath}/ViewPrescriptionPatient">
+                                <i class="fas fa-prescription-bottle-alt"></i>
+                                Xem đơn thuốc
                             </a>
                             <a href="${pageContext.request.contextPath}/LogoutServlet" 
                                class="danger" 
@@ -943,14 +947,6 @@
                                 <i class="fas fa-sign-out-alt"></i>
                                 Đăng xuất
                             </a>
-                            <a href="${pageContext.request.contextPath}/UserProfileController"><i class="fas fa-user-circle"></i> Xem hồ sơ</a>
-                            <a href="${pageContext.request.contextPath}/EditProfileUserController"><i class="fas fa-edit"></i> Chỉnh sửa hồ sơ</a>
-                            <a href="${pageContext.request.contextPath}/ChangePasswordController"><i class="fas fa-key"></i> Đổi mật khẩu</a>
-                            <a href="${pageContext.request.contextPath}/ViewAppointmentPatient"><i class="fas fa-calendar-check"></i> Xem lịch khám</a>
-                            <a href="${pageContext.request.contextPath}/ViewExaminationResultsPatient"><i class="fas fa-file-medical-alt"></i> Xem kết quả khám</a>
-                            <a href="${pageContext.request.contextPath}/ViewPrescriptionPatient"><i class="fas fa-prescription-bottle-alt"></i> Xem đơn thuốc</a>
-
-                            <a href="${pageContext.request.contextPath}/LogoutServlet" class="danger" onclick="return confirm('Bạn có chắc muốn đăng xuất?')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     </div>
                 </div>
