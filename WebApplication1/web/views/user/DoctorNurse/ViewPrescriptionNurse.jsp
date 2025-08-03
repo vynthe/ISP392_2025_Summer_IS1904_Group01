@@ -1012,7 +1012,7 @@
             <footer class="footer">
                 <div class="container">
                     <p>
-                        &copy; 2025 Phòng khám ABC.<br>
+                        &copy; 2025 Phòng khám Nha Khoa PDC.<br>
                         <a href="#">Chính sách bảo mật</a> | 
                         <a href="#">Điều khoản sử dụng</a> | 
                         <a href="#">Liên hệ hỗ trợ</a>
