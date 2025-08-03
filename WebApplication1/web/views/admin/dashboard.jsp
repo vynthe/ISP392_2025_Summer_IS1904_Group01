@@ -593,10 +593,10 @@
                         <div>
                             <h1 class="text-3xl font-bold text-gray-800 mb-2">
                                 <i class="fas fa-crown mr-3 icon-gradient"></i>
-                                Welcome Back, Admin!
+                                Chào Mừng , admin !
                             </h1>
                             <p class="text-gray-600 text-lg">
-                                Manage your dental clinic with ease and efficiency
+                                Quản lý phòng khám nha khoa của bạn một cách dễ dàng và hiệu quả     
                             </p>
                         </div>
                         <div class="hidden md:block">
@@ -625,7 +625,7 @@
                                     }
                                 %>
                                 <h3 class="text-2xl font-bold text-gray-800"><%= totalPatients %></h3>
-                                <p class="text-gray-600">Total Patients</p>
+                                <p class="text-gray-600">Tổng Số Bệnh Nhân</p>
                                 <c:if test="${errorMessagePatients != null}">
                                     <p class="text-red-500 text-sm">${errorMessagePatients}</p>
                                 </c:if>
@@ -651,7 +651,7 @@
                                     }
                                 %>
                                 <h3 class="text-2xl font-bold text-gray-800"><%= totalEmployees %></h3>
-                                <p class="text-gray-600">Staff Members</p>
+                                <p class="text-gray-600">Tổng Số Nhân Viên</p>
                                 <c:if test="${errorMessageEmployees != null}">
                                     <p class="text-red-500 text-sm">${errorMessageEmployees}</p>
                                 </c:if>
@@ -678,7 +678,7 @@
                                     }
                                 %>
                                 <h3 class="text-2xl font-bold text-gray-800"><%= availableRooms %></h3>
-                                <p class="text-gray-600">Available Rooms</p>
+                                <p class="text-gray-600">Tổng Số Phòng</p>
                                 <c:if test="${errorMessageRooms != null}">
                                     <p class="text-red-500 text-sm">${errorMessageRooms}</p>
                                 </c:if>
@@ -695,66 +695,66 @@
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-users mr-2 icon-gradient"></i>
-                            Patient Management
+                            Quản Lý Bệnh Nhân
                         </h3>
                         <a href="${pageContext.request.contextPath}/ViewPatientServlet" class="action-btn btn-primary">
                             <i class="fas fa-eye mr-2"></i>
-                            View All Patients
+                            Xem Tất Cả Bệnh Nhân
                         </a>
                     </div>
 
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-user-tie mr-2 icon-gradient"></i>
-                            Staff Management
+                            Quản Lý Nhân Viên
                         </h3>
                         <a href="${pageContext.request.contextPath}/ViewEmployeeServlet" class="action-btn btn-secondary">
                             <i class="fas fa-user-md mr-2"></i>
-                            View All Employees
+                            Xem Tất Cả Nhân Viên
                         </a>
                     </div>
 
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-cogs mr-2 icon-gradient"></i>
-                            Service Management
+                            Quản Lý Dịch Vụ
                         </h3>
                         <a href="${pageContext.request.contextPath}/ViewServiceServlet" class="action-btn btn-accent">
                             <i class="fas fa-tooth mr-2"></i>
-                            View All Services
+                            Xem Tất Cả Dịch Vụ
                         </a>
                     </div>
 
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-door-closed mr-2 icon-gradient"></i>
-                            Room Management
+                            Quản Lý Phòng
                         </h3>
                         <a href="${pageContext.request.contextPath}/ViewRoomServlet" class="action-btn btn-success">
                             <i class="fas fa-bed mr-2"></i>
-                            View All Rooms
+                            Xem Tất Cả Phòng
                         </a>
                     </div>
 
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-calendar-alt mr-2 icon-gradient"></i>
-                            Schedule Management
+                            Quản Lý Lịch Làm Việc
                         </h3>
                         <a href="${pageContext.request.contextPath}/ViewSchedulesServlet" class="action-btn btn-primary">
                             <i class="fas fa-calendar-check mr-2"></i>
-                            View All Schedules
+                            Xem Tất Cả Lịch Làm Việc
                         </a>
                     </div>
 
                     <div class="action-card">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
                             <i class="fas fa-star mr-2 icon-gradient"></i>
-                            Review Management
+                            Quản Lý Đánh Giá
                         </h3>
                         <a href="${pageContext.request.contextPath}/ReviewManagementServlet" class="action-btn btn-warning">
                             <i class="fas fa-comments mr-2"></i>
-                            Manage Reviews
+                            Xem Tất Cả Đánh Giá
                         </a>
                     </div>
                 </div>
@@ -900,6 +900,6 @@
             updateNotifications(); // Initial call
         </script>
         <div style="height: 400px;"></div>
-<jsp:include page="/assets/footer.jsp" />
+        <jsp:include page="/assets/footer.jsp" />
     </body>
 </html>
