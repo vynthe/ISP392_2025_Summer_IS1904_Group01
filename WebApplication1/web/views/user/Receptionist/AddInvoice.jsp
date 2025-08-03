@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -278,12 +279,12 @@
                             <div class="form-group">
                                 <label><i class="fas fa-money-bill-wave"></i> Phí Dịch Vụ (VNĐ):</label>
                                 <!-- ✅ HIỂN THỊ: Phí dịch vụ thực tế từ bảng Services -->
-                                <input type="number" value="${servicePrice}" readonly class="readonly-field">
+                                <input type="text" value="<fmt:formatNumber value="${servicePrice}" pattern="#,###" /> VNĐ" readonly class="readonly-field">
                             </div>
                             <div class="form-group">
                                 <label><i class="fas fa-calculator"></i> Tổng Tiền (VNĐ):</label>
                                 <!-- ✅ TỰ ĐỘNG: Tổng tiền = Phí dịch vụ (không cần nhập) -->
-                                <input type="number" value="${servicePrice}" readonly class="readonly-field">
+                                <input type="text" value="<fmt:formatNumber value="${servicePrice}" pattern="#,###" /> VNĐ" readonly class="readonly-field">
                                 <!-- ✅ QUAN TRỌNG: Hidden input để gửi totalAmount -->
                                 <input type="hidden" name="totalAmount" value="${servicePrice}">
                             </div>

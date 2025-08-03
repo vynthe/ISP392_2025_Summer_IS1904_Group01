@@ -18,29 +18,70 @@
 
             body {
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                background: linear-gradient(135deg, #bbdefb, #90caf9);
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
                 min-height: 100vh;
                 display: flex;
-                align-items: center;
-                justify-content: center;
+                flex-direction: column;
                 padding: 20px;
                 line-height: 1.6;
             }
 
+            /* Header Styles */
+            header {
+                background: linear-gradient(135deg, #1565C0, #42A5F5);
+                color: white;
+                padding: 20px 40px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .header-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .header-content h1 {
+                font-size: 24px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .header-content nav a {
+                color: white;
+                text-decoration: none;
+                margin-left: 20px;
+                font-size: 16px;
+                font-weight: 500;
+                transition: opacity 0.3s ease;
+            }
+
+            .header-content nav a:hover {
+                opacity: 0.8;
+            }
+
+            /* Form Container */
             .form-container {
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.97);
                 backdrop-filter: blur(20px);
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border-radius: 24px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
                 width: 100%;
-                max-width: 600px;
-                padding: 0;
+                max-width: 700px;
+                margin: 40px auto;
                 overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .form-header {
-                background: linear-gradient(135deg, #1976D2, #42A5F5);
+                background: linear-gradient(135deg, #1976D2, #64B5F6);
                 padding: 30px 40px;
                 text-align: center;
                 color: white;
@@ -54,16 +95,20 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: linear-gradient(135deg, rgba(25, 118, 210, 0.1), rgba(66, 165, 245, 0.1));
-                opacity: 0.3;
+                background: linear-gradient(135deg, rgba(25, 118, 210, 0.2), rgba(100, 181, 246, 0.2));
+                opacity: 0.4;
             }
 
             .form-header h2 {
-                font-size: 28px;
+                font-size: 30px;
                 font-weight: 700;
-                margin-bottom: 8px;
+                margin-bottom: 10px;
                 position: relative;
                 z-index: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
             }
 
             .form-header p {
@@ -79,16 +124,17 @@
 
             .error {
                 background: linear-gradient(135deg, #fee2e2, #fecaca);
-                color: #dc2626;
+                color: #b91c1c;
                 padding: 16px 20px;
                 border-radius: 12px;
                 margin-bottom: 24px;
                 text-align: center;
                 font-weight: 500;
-                border-left: 4px solid #dc2626;
+                border-left: 4px solid #b91c1c;
                 display: flex;
                 align-items: center;
                 gap: 12px;
+                box-shadow: 0 2px 8px rgba(185, 28, 28, 0.1);
             }
 
             .error i {
@@ -113,7 +159,7 @@
             .form-label {
                 display: block;
                 font-weight: 600;
-                color: #374151;
+                color: #1f2937;
                 margin-bottom: 8px;
                 font-size: 14px;
                 text-transform: uppercase;
@@ -129,20 +175,20 @@
             .form-input,
             .form-select {
                 width: 100%;
-                padding: 16px 20px 16px 50px;
+                padding: 14px 20px 14px 50px;
                 border: 2px solid #e5e7eb;
                 border-radius: 12px;
                 font-size: 16px;
-                background: #fafafa;
+                background: #f9fafb;
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 outline: none;
             }
 
             .form-input:focus,
             .form-select:focus {
-                border-color: #1976D2;
+                border-color: #1E88E5;
                 background: white;
-                box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+                box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.15);
                 transform: translateY(-1px);
             }
 
@@ -159,7 +205,7 @@
 
             .form-input:focus + .input-icon,
             .form-select:focus + .input-icon {
-                color: #1976D2;
+                color: #1E88E5;
             }
 
             .form-select {
@@ -189,7 +235,7 @@
             }
 
             .password-toggle:hover {
-                color: #1976D2;
+                color: #1E88E5;
             }
 
             .button-group {
@@ -211,38 +257,91 @@
                 letter-spacing: 0.5px;
                 position: relative;
                 overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
             }
 
             .btn-primary {
-                background: linear-gradient(135deg, #1976D2, #42A5F5);
+                background: linear-gradient(135deg, #1E88E5, #64B5F6);
                 color: white;
-                box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+                box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
             }
 
             .btn-primary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(25, 118, 210, 0.4);
+                box-shadow: 0 8px 20px rgba(30, 136, 229, 0.4);
+                background: linear-gradient(135deg, #1565C0, #42A5F5);
             }
 
             .btn-secondary {
                 background: #f3f4f6;
-                color: #374151;
+                color: #1f2937;
                 border: 2px solid #e5e7eb;
             }
 
             .btn-secondary:hover {
                 background: #e5e7eb;
                 transform: translateY(-1px);
+                border-color: #d1d5db;
             }
 
             .btn:active {
                 transform: translateY(0);
             }
 
+            /* Footer Styles */
+            footer {
+                background: linear-gradient(135deg, #1565C0, #42A5F5);
+                color: white;
+                padding: 40px 20px;
+                margin-top: auto;
+                text-align: center;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .footer-content p {
+                font-size: 16px;
+                margin-bottom: 16px;
+            }
+
+            .footer-links a {
+                color: white;
+                text-decoration: none;
+                margin: 0 12px;
+                font-size: 14px;
+                opacity: 0.9;
+                transition: opacity 0.3s ease;
+            }
+
+            .footer-links a:hover {
+                opacity: 1;
+            }
+
+            .footer-social {
+                margin-top: 16px;
+            }
+
+            .footer-social a {
+                color: white;
+                font-size: 20px;
+                margin: 0 12px;
+                transition: transform 0.3s ease;
+            }
+
+            .footer-social a:hover {
+                transform: scale(1.2);
+            }
+
             /* Responsive design */
             @media (max-width: 768px) {
                 .form-container {
-                    margin: 10px;
+                    margin: 20px 10px;
                     border-radius: 16px;
                 }
 
@@ -266,13 +365,22 @@
                 .button-group {
                     flex-direction: column;
                 }
+
+                .header-content {
+                    flex-direction: column;
+                    gap: 16px;
+                }
+
+                .header-content nav a {
+                    margin: 0 10px;
+                }
+
+                footer {
+                    padding: 30px 20px;
+                }
             }
 
             /* Animation cho form load */
-            .form-container {
-                animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
             @keyframes slideUp {
                 from {
                     opacity: 0;
@@ -283,34 +391,24 @@
                     transform: translateY(0);
                 }
             }
-
-            /* Floating labels effect */
-            .floating-label {
-                position: relative;
-            }
-
-            .floating-label .form-input:placeholder-shown + .form-label {
-                transform: translateY(40px);
-                opacity: 0.7;
-                font-size: 16px;
-                font-weight: 400;
-            }
-
-            .floating-label .form-label {
-                position: absolute;
-                top: -8px;
-                left: 12px;
-                background: white;
-                padding: 0 8px;
-                transition: all 0.3s ease;
-                z-index: 1;
-            }
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-hospital"></i> Quản Lý Bệnh Nhân</h1>
+                <nav>
+                    <a href="${pageContext.request.contextPath}/views/admin/dashboard.jsp">Trang Chủ</a>
+                    <a href="${pageContext.request.contextPath}/ViewPatientServlet">Quản Lý Bệnh Nhân</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Form Container -->
         <div class="form-container">
             <div class="form-header">
-                <h2><i class="fas fa-user-plus"></i> Thêm Bệnh Nhân </h2>
+                <h2><i class="fas fa-user-plus"></i> Thêm Bệnh Nhân</h2>
                 <p>Vui lòng điền đầy đủ thông tin bệnh nhân</p>
             </div>
 
@@ -322,7 +420,7 @@
                     </div>
                 </c:if>
 
-                <form action="${pageContext.request.contextPath}/AddPatientServlet" method="post" >
+                <form action="${pageContext.request.contextPath}/AddPatientServlet" method="post">
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="fullName" class="form-label">Họ và Tên</label>
@@ -423,6 +521,37 @@
             </div>
         </div>
 
-       
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2025 Hệ Thống Quản Lý Bệnh Nhân. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Chính Sách Bảo Mật</a>
+                    <a href="#">Điều Khoản Sử Dụng</a>
+                    <a href="#">Liên Hệ</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            function togglePassword(id) {
+                const input = document.getElementById(id);
+                const eye = document.getElementById(id + '-eye');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    eye.classList.remove('fa-eye');
+                    eye.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    eye.classList.remove('fa-eye-slash');
+                    eye.classList.add('fa-eye');
+                }
+            }
+        </script>
     </body>
 </html>

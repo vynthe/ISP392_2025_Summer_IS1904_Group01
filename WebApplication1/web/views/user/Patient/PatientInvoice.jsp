@@ -24,10 +24,9 @@
 
             /* Header */
             .header {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-                padding: 1rem 0;
+                background: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                padding: 15px 0;
                 position: sticky;
                 top: 0;
                 z-index: 1000;
@@ -45,28 +44,33 @@
             .logo {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                font-size: 24px;
-                font-weight: bold;
+                gap: 12px;
+                font-size: 22px;
+                font-weight: 700;
+                color: #2c3e50;
+                text-decoration: none;
+            }
+
+            .logo i {
                 color: #4CAF50;
+                font-size: 28px;
             }
 
-            .user-info {
+            .btn-homepage {
                 display: flex;
                 align-items: center;
-                gap: 15px;
-            }
-
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: linear-gradient(45deg, #4CAF50, #45a049);
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                gap: 8px;
+                padding: 10px 20px;
+                background: #4CAF50;
                 color: white;
-                font-weight: bold;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: 500;
+                transition: background 0.3s ease;
+            }
+
+            .btn-homepage:hover {
+                background: #45a049;
             }
 
             /* Main Content */
@@ -419,9 +423,20 @@
 
             @media (max-width: 768px) {
                 .header-container {
-                    flex-direction: column;
-                    gap: 15px;
-                    text-align: center;
+                    padding: 0 15px;
+                }
+                
+                .logo {
+                    font-size: 18px;
+                }
+                
+                .logo i {
+                    font-size: 22px;
+                }
+                
+                .btn-homepage {
+                    padding: 8px 16px;
+                    font-size: 14px;
                 }
 
                 .page-title h1 {
@@ -451,7 +466,7 @@
                 }
             }
 
-            /* Animation */
+            /* Animation Keyframes */
             @keyframes fadeInUp {
                 from {
                     opacity: 0;
@@ -463,12 +478,42 @@
                 }
             }
 
+            @keyframes slideInFromTop {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .header {
+                animation: slideInFromTop 0.6s ease-out;
+            }
+
             .invoice-card {
                 animation: fadeInUp 0.6s ease forwards;
             }
 
             .invoice-card:nth-child(even) {
                 animation-delay: 0.1s;
+            }
+
+            /* Loading Animation */
+            .loading {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid rgba(76, 175, 80, 0.3);
+                border-radius: 50%;
+                border-top-color: #4CAF50;
+                animation: spin 1s ease-in-out infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
             }
         </style>
     </head>
@@ -483,8 +528,6 @@
                 <a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp" class="btn-homepage">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>
-
-
             </div>
         </header>
 
@@ -658,9 +701,9 @@
                                         <c:choose>
                                             <c:when test="${invoice.status == 'PENDING' && !invoice.paymentRequested}">
                                                 <button class="btn btn-print" onclick="printInvoicePDF('${invoice.invoiceId}', '${invoice.doctorName}', '${invoice.serviceName}', '${invoice.patientName}', '${invoice.totalAmount}', '<fmt:formatDate value="${invoice.createdAt}" pattern="dd/MM/yyyy HH:mm"/>', '<c:choose><c:when test="${not empty invoice.appointmentTime}"><fmt:formatDate value="${invoice.appointmentTime}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise>Chưa xác định</c:otherwise></c:choose>')">
-                                                            <i class="fas fa-file-pdf"></i> In PDF
-                                                        </button>
-                                                            <form method="post" action="${pageContext.request.contextPath}/PatientInvoiceServlet" style="margin:0;">
+                                                    <i class="fas fa-file-pdf"></i> In PDF
+                                                </button>
+                                                <form method="post" action="${pageContext.request.contextPath}/PatientInvoiceServlet" style="margin:0;">
                                                     <input type="hidden" name="action" value="requestPayment" />
                                                     <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
                                                     <button type="submit" class="btn btn-payment">
@@ -670,19 +713,19 @@
                                             </c:when>
                                             <c:when test="${invoice.status == 'PENDING' && invoice.paymentRequested}">
                                                 <button class="btn btn-print" onclick="printInvoicePDF('${invoice.invoiceId}', '${invoice.doctorName}', '${invoice.serviceName}', '${invoice.patientName}', '${invoice.totalAmount}', '<fmt:formatDate value="${invoice.createdAt}" pattern="dd/MM/yyyy HH:mm"/>', '<c:choose><c:when test="${not empty invoice.appointmentTime}"><fmt:formatDate value="${invoice.appointmentTime}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise>Chưa xác định</c:otherwise></c:choose>')">
-                                                            <i class="fas fa-file-pdf"></i> In PDF
-                                                        </button>
-                                                        <div class="payment-requested">
-                                                            <i class="fas fa-hourglass-half"></i> Đang chờ xử lý thanh toán
-                                                        </div>
+                                                    <i class="fas fa-file-pdf"></i> In PDF
+                                                </button>
+                                                <div class="payment-requested">
+                                                    <i class="fas fa-hourglass-half"></i> Đang chờ xử lý thanh toán
+                                                </div>
                                             </c:when>
                                             <c:when test="${invoice.status == 'PAID'}">
                                                 <button class="btn btn-print" onclick="printInvoicePDF('${invoice.invoiceId}', '${invoice.doctorName}', '${invoice.serviceName}', '${invoice.patientName}', '${invoice.totalAmount}', '<fmt:formatDate value="${invoice.createdAt}" pattern="dd/MM/yyyy HH:mm"/>', '<c:choose><c:when test="${not empty invoice.appointmentTime}"><fmt:formatDate value="${invoice.appointmentTime}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise>Chưa xác định</c:otherwise></c:choose>')">
-                                                            <i class="fas fa-file-pdf"></i> In PDF
-                                                        </button>
-                                                        <div style="color: #4CAF50; font-weight: bold; padding: 12px 0;">
-                                                            <i class="fas fa-check-circle"></i> Đã hoàn thành thanh toán
-                                                        </div>
+                                                    <i class="fas fa-file-pdf"></i> In PDF
+                                                </button>
+                                                <div style="color: #4CAF50; font-weight: bold; padding: 12px 0;">
+                                                    <i class="fas fa-check-circle"></i> Đã hoàn thành thanh toán
+                                                </div>
                                             </c:when>
                                         </c:choose>
                                     </div>
@@ -723,236 +766,147 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <p>&copy; 2024 Hệ thống Y tế. Tất cả quyền được bảo lưu. | Thiết kế bởi <strong>Dev Team</strong></p>
+                    <p>&copy; 2024 Hệ thống Y tế. Tất cả quyền được bảo lưu. </p>
                 </div>
             </div>
         </footer>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script>
-                                                    // Filter functionality
-                                                    function filterInvoices(status) {
-                                                        const cards = document.querySelectorAll('.invoice-card');
-                                                        const tabs = document.querySelectorAll('.filter-tab');
+            // Filter functionality
+            function filterInvoices(status) {
+                const cards = document.querySelectorAll('.invoice-card');
+                const tabs = document.querySelectorAll('.filter-tab');
 
-                                                        // Update active tab
-                                                        tabs.forEach(tab => tab.classList.remove('active'));
-                                                        event.target.closest('.filter-tab').classList.add('active');
+                // Update active tab
+                tabs.forEach(tab => tab.classList.remove('active'));
+                event.target.closest('.filter-tab').classList.add('active');
 
-                                                        // Filter cards
-                                                        cards.forEach(card => {
-                                                            if (status === 'all') {
-                                                                card.style.display = 'block';
-                                                            } else {
-                                                                const cardStatus = card.getAttribute('data-status').toLowerCase();
-                                                                card.style.display = cardStatus === status ? 'block' : 'none';
-                                                            }
-                                                        });
-                                                    }
+                // Filter cards
+                cards.forEach(card => {
+                    if (status === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const cardStatus = card.getAttribute('data-status').toLowerCase();
+                        card.style.display = cardStatus === status ? 'block' : 'none';
+                    }
+                });
+            }
 
-                                                    // Print Invoice to PDF
-                                                    // Thay thế function printInvoicePDF trong JSP của bạn bằng function này
-                                                    function printInvoicePDF(invoiceId, doctorName, serviceName, patientName, totalAmount, createdAt, appointmentTime) {
-                                                        const {jsPDF} = window.jspdf;
+            // Print Invoice to PDF
+            function printInvoicePDF(invoiceId, doctorName, serviceName, patientName, totalAmount, createdAt, appointmentTime) {
+                const {jsPDF} = window.jspdf;
 
-                                                        // Tạo canvas để render với font tiếng Việt
-                                                        const canvas = document.createElement('canvas');
-                                                        canvas.width = 800;
-                                                        canvas.height = 1000;
-                                                        const ctx = canvas.getContext('2d');
+                // Create canvas for Vietnamese text rendering
+                const canvas = document.createElement('canvas');
+                canvas.width = 800;
+                canvas.height = 1000;
+                const ctx = canvas.getContext('2d');
 
-                                                        // Nền trắng
-                                                        ctx.fillStyle = '#ffffff';
-                                                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                                                        // Header
-                                                        ctx.fillStyle = '#4CAF50';
-                                                        ctx.font = 'bold 32px Arial, sans-serif';
-                                                        ctx.textAlign = 'center';
-                                                        ctx.fillText('PHÒNG KHÁM NHA KHOA', canvas.width / 2, 60);
+                // Header
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = 'bold 32px Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('PHÒNG KHÁM NHA KHOA', canvas.width / 2, 60);
 
-                                                        ctx.fillStyle = '#000000';
-                                                        ctx.font = '24px Arial, sans-serif';
-                                                        ctx.fillText('HÓA ĐƠN KHÁM CHỮA BỆNH', canvas.width / 2, 100);
+                ctx.fillStyle = '#000000';
+                ctx.font = '24px Arial, sans-serif';
+                ctx.fillText('HÓA ĐƠN', canvas.width / 2, 100);
 
-                                                        // Line separator
-                                                        ctx.strokeStyle = '#000000';
-                                                        ctx.lineWidth = 2;
-                                                        ctx.beginPath();
-                                                        ctx.moveTo(50, 120);
-                                                        ctx.lineTo(750, 120);
-                                                        ctx.stroke();
+                // Line separator
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(50, 120);
+                ctx.lineTo(750, 120);
+                ctx.stroke();
 
-                                                        // Details
-                                                        ctx.textAlign = 'left';
-                                                        ctx.font = '18px Arial, sans-serif';
-                                                        ctx.fillStyle = '#000000';
+                // Details
+                ctx.textAlign = 'left';
+                ctx.font = '18px Arial, sans-serif';
+                ctx.fillStyle = '#000000';
 
-                                                        // Format amount
-                                                        const formattedAmount = new Intl.NumberFormat('vi-VN').format(totalAmount) + ' VND';
+                // Format amount
+                const formattedAmount = new Intl.NumberFormat('vi-VN').format(totalAmount) + ' VND';
 
-                                                        const details = [
-                                                            ['Số hóa đơn:', '#' + invoiceId],
-                                                            ['Bệnh nhân:', patientName],
-                                                            ['Bác sĩ:', doctorName],
-                                                            ['Dịch vụ:', serviceName],
-                                                            ['Ngày tạo:', createdAt],
-                                                            ['Ngày khám:', appointmentTime],
-                                                            ['Tổng tiền:', formattedAmount]
-                                                        ];
+                const details = [
+                    ['Số hóa đơn:', '#' + invoiceId],
+                    ['Bệnh nhân:', patientName],
+                    ['Bác sĩ:', doctorName],
+                    ['Dịch vụ:', serviceName],
+                    ['Ngày tạo:', createdAt],
+                    ['Ngày khám:', appointmentTime],
+                    ['Tổng tiền:', formattedAmount]
+                ];
 
-                                                        let y = 180;
-                                                        details.forEach((detail) => {
-                                                            ctx.font = 'bold 18px Arial, sans-serif';
-                                                            ctx.fillText(detail[0], 60, y);
-                                                            ctx.font = '18px Arial, sans-serif';
-                                                            ctx.fillText(detail[1], 200, y);
-                                                            y += 35;
-                                                        });
+                let y = 180;
+                details.forEach((detail) => {
+                    ctx.font = 'bold 18px Arial, sans-serif';
+                    ctx.fillText(detail[0], 60, y);
+                    ctx.font = '18px Arial, sans-serif';
+                    ctx.fillText(detail[1], 200, y);
+                    y += 35;
+                });
 
+                // Contact info box
+                ctx.strokeStyle = '#cccccc';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(50, y + 200, 700, 120);
 
-                                                        // Contact info box
-                                                        ctx.strokeStyle = '#cccccc';
-                                                        ctx.lineWidth = 2;
-                                                        ctx.strokeRect(50, y + 200, 700, 120);
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 18px Arial, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('THÔNG TIN LIÊN HỆ', 70, y + 230);
 
-                                                        ctx.fillStyle = '#000000';
-                                                        ctx.font = 'bold 18px Arial, sans-serif';
-                                                        ctx.textAlign = 'left';
-                                                        ctx.fillText('THÔNG TIN LIÊN HỆ', 70, y + 230);
+                ctx.font = '16px Arial, sans-serif';
+                ctx.fillText('Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM', 70, y + 260);
+                ctx.fillText('Điện thoại: 1900-123-456', 70, y + 285);
+                ctx.fillText('Email: support@hethongytecom', 70, y + 310);
 
-                                                        ctx.font = '16px Arial, sans-serif';
-                                                        ctx.fillText('Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM', 70, y + 260);
-                                                        ctx.fillText('Điện thoại: 1900-123-456', 70, y + 285);
-                                                        ctx.fillText('Email: support@hethongytecom', 70, y + 310);
+                // Convert canvas to image
+                const imgData = canvas.toDataURL('image/png');
 
-                                                        // Convert canvas to image
-                                                        const imgData = canvas.toDataURL('image/png');
+                // Create PDF and add image
+                const doc = new jsPDF();
 
-                                                        // Create PDF and add image
-                                                        const doc = new jsPDF();
+                // Calculate dimensions to fit A4
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = doc.internal.pageSize.getHeight();
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-                                                        // Calculate dimensions to fit A4
-                                                        const pdfWidth = doc.internal.pageSize.getWidth();
-                                                        const pdfHeight = doc.internal.pageSize.getHeight();
-                                                        const imgWidth = pdfWidth;
-                                                        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                // If image is too tall, scale it down
+                if (imgHeight > pdfHeight) {
+                    const ratio = pdfHeight / imgHeight;
+                    doc.addImage(imgData, 'PNG', 0, 0, imgWidth * ratio, pdfHeight);
+                } else {
+                    doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                }
 
-                                                        // If image is too tall, scale it down
-                                                        if (imgHeight > pdfHeight) {
-                                                            const ratio = pdfHeight / imgHeight;
-                                                            doc.addImage(imgData, 'PNG', 0, 0, imgWidth * ratio, pdfHeight);
-                                                        } else {
-                                                            doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                                                        }
+                // Save the PDF
+                doc.save('Hoa_don_' + invoiceId + '.pdf');
+            }
 
-                                                        // Save the PDF
-                                                        doc.save('Hoa_don_' + invoiceId + '.pdf');
-                                                    }
+                // Add some interactive effects
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Animate stats on scroll
+                    const statCards = document.querySelectorAll('.stat-card');
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+                            }
+                        });
+                    });
 
-                                                    // Hoặc nếu bạn muốn giải pháp đơn giản hơn, chỉ thay đổi font:
-                                                    function printInvoicePDF_Simple(invoiceId, doctorName, serviceName, patientName, totalAmount, createdAt, appointmentTime) {
-                                                        const {jsPDF} = window.jspdf;
-                                                        const doc = new jsPDF();
-
-                                                        // Sử dụng font times thay vì helvetica
-                                                        doc.setFont("times");
-
-                                                        // Header - viết không dấu
-                                                        doc.setFontSize(20);
-                                                        doc.setTextColor(76, 175, 80);
-                                                        doc.text("HE THONG Y TE", 105, 20, {align: 'center'});
-
-                                                        doc.setFontSize(16);
-                                                        doc.setTextColor(0, 0, 0);
-                                                        doc.text("HOA DON KHAM CHUA BENH", 105, 35, {align: 'center'});
-
-                                                        // Line separator
-                                                        doc.setLineWidth(0.5);
-                                                        doc.line(20, 45, 190, 45);
-
-                                                        // Invoice details - chuyển sang không dấu
-                                                        doc.setFontSize(12);
-                                                        const startY = 60;
-                                                        const lineHeight = 10;
-
-                                                        // Format amount
-                                                        const formattedAmount = new Intl.NumberFormat('vi-VN').format(totalAmount) + ' VND';
-
-                                                        // Chuyển đổi tiếng Việt có dấu sang không dấu
-                                                        function removeVietnameseTones(str) {
-                                                            return str
-                                                                    .normalize('NFD')
-                                                                    .replace(/[\u0300-\u036f]/g, '')
-                                                                    .replace(/đ/g, 'd')
-                                                                    .replace(/Đ/g, 'D');
-                                                        }
-
-                                                        const details = [
-                                                            ['So hoa don:', '#' + invoiceId],
-                                                            ['Benh nhan:', removeVietnameseTones(patientName)],
-                                                            ['Bac si:', removeVietnameseTones(doctorName)],
-                                                            ['Dich vu:', removeVietnameseTones(serviceName)],
-                                                            ['Ngay tao:', createdAt],
-                                                            ['Ngay kham:', appointmentTime],
-                                                            ['Tong tien:', formattedAmount]
-                                                        ];
-
-                                                        details.forEach((detail, index) => {
-                                                            const y = startY + (index * lineHeight);
-                                                            doc.setFont("times", "bold");
-                                                            doc.text(detail[0], 20, y);
-                                                            doc.setFont("times", "normal");
-                                                            doc.text(detail[1], 80, y);
-                                                        });
-
-                                                        // Total amount highlight
-                                                        doc.setFontSize(14);
-                                                        doc.setFont("times", "bold");
-                                                        doc.setTextColor(76, 175, 80);
-                                                        doc.text("TONG TIEN: " + formattedAmount, 105, startY + (details.length * lineHeight) + 15, {align: 'center'});
-
-                                                        // Footer
-                                                        doc.setFontSize(10);
-                                                        doc.setTextColor(100, 100, 100);
-                                                        doc.setFont("times", "normal");
-                                                        doc.text("Cam on ban da su dung dich vu cua chung toi!", 105, startY + (details.length * lineHeight) + 35, {align: 'center'});
-                                                        doc.text("Hotline: 1900-123-456 | Email: support@hethongytecom", 105, startY + (details.length * lineHeight) + 45, {align: 'center'});
-
-                                                        // Contact info box
-                                                        doc.setDrawColor(200, 200, 200);
-                                                        doc.setLineWidth(0.5);
-                                                        doc.rect(20, 200, 170, 40);
-
-                                                        doc.setFontSize(10);
-                                                        doc.setTextColor(0, 0, 0);
-                                                        doc.setFont("times", "bold");
-                                                        doc.text("THONG TIN LIEN HE", 25, 210);
-
-                                                        doc.setFont("times", "normal");
-                                                        doc.text("Dia chi: 123 Duong ABC, Quan XYZ, TP.HCM", 25, 220);
-                                                        doc.text("Dien thoai: 1900-123-456", 25, 230);
-                                                        doc.text("Email: support@hethongytecom", 25, 240);
-
-                                                        // Save the PDF
-                                                        doc.save('Hoa_don_' + invoiceId + '.pdf');
-                                                    }
-                                                    // Add some interactive effects
-                                                    document.addEventListener('DOMContentLoaded', function () {
-                                                        // Animate stats on scroll
-                                                        const statCards = document.querySelectorAll('.stat-card');
-                                                        const observer = new IntersectionObserver((entries) => {
-                                                            entries.forEach(entry => {
-                                                                if (entry.isIntersecting) {
-                                                                    entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
-                                                                }
-                                                            });
-                                                        });
-
-                                                        statCards.forEach(card => {
-                                                            observer.observe(card);
-                                                        });
-                                                    });
+                    statCards.forEach(card => {
+                        observer.observe(card);
+                    });
+                });
         </script>
     </body>
 </html>
