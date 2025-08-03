@@ -1438,6 +1438,14 @@ public boolean reassignScheduleToUser(int slotId, int newUserId) throws SQLExcep
                  "GROUP BY se.SlotID, se.UserID, u.FullName, se.Role, se.SlotDate, se.StartTime, se.EndTime, r.RoomName, a.AppointmentID, a.PatientID";
     try (Connection conn = dbContext.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        // 🔍 DEBUG: In ra thông tin tìm kiếm
+        System.out.println("🔍 DEBUG DAO: Searching with parameters:");
+        System.out.println("  - userId: " + userId);
+        System.out.println("  - slotDate: '" + slotDate + "'");
+        System.out.println("  - startTime: '" + startTime + "'");
+        System.out.println("  - endTime: '" + endTime + "'");
+        
         stmt.setInt(1, userId);
         stmt.setString(2, slotDate);
         stmt.setString(3, startTime);
@@ -1456,7 +1464,19 @@ public boolean reassignScheduleToUser(int slotId, int newUserId) throws SQLExcep
                 schedule.put("ServiceNames", rs.getString("ServiceNames") != null ? rs.getString("ServiceNames") : "");
                 schedule.put("AppointmentID", rs.getString("AppointmentID") != null ? rs.getString("AppointmentID") : "");
                 schedule.put("PatientID", rs.getString("PatientID") != null ? rs.getString("PatientID") : "");
+                
+                // 🔍 DEBUG: In ra kết quả tìm thấy
+                System.out.println("🔍 DEBUG DAO: Found schedule:");
+                System.out.println("  - SlotID: " + schedule.get("SlotID"));
+                System.out.println("  - UserID: " + schedule.get("UserID"));
+                System.out.println("  - SlotDate: " + schedule.get("SlotDate"));
+                System.out.println("  - StartTime: " + schedule.get("StartTime"));
+                System.out.println("  - EndTime: " + schedule.get("EndTime"));
+                
                 return schedule;
+            } else {
+                // 🔍 DEBUG: Không tìm thấy kết quả
+                System.out.println("🔍 DEBUG DAO: No schedule found with the given parameters");
             }
         }
     }

@@ -1,11 +1,12 @@
 <%-- 
-    Document   : ReassignDoctorSchedule
+    Document   : EditScheduleDoctorNurse
     Created on : 03 Aug 2025
     Author     : Assistant
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -310,14 +311,14 @@
             <h2 class="section-title">📋 Thông Tin Lịch Hiện Tại</h2>
             
             <div class="current-info">
-                <h3>Thông tin ${role == 'Doctor' ? 'Bác sĩ' : 'Y tá'} hiện tại</h3>
+                <h3>Thông tin ${fn:toLowerCase(role) == 'doctor' ? 'Bác sĩ' : 'Y tá'} hiện tại</h3>
                 <div class="info-row">
-                    <span class="info-label">👨‍⚕️ Họ tên:</span>
+                    <span class="info-label">${fn:toLowerCase(role) == 'doctor' ? '👨‍⚕️' : '👩‍⚕️'} Họ tên:</span>
                     <span class="info-value"><c:out value="${fullName}"/></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">🏥 Vai trò:</span>
-                    <span class="info-value">${role == 'Doctor' ? 'Bác sĩ' : 'Y tá'}</span>
+                    <span class="info-value">${fn:toLowerCase(role) == 'doctor' ? 'Bác sĩ' : 'Y tá'}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">📅 Ngày làm việc:</span>
@@ -352,14 +353,14 @@
             <div class="warning-box">
                 <span class="warning-icon">⚠️</span>
                 <strong>Lưu ý quan trọng:</strong> 
-                Việc đổi ${role == 'Doctor' ? 'bác sĩ' : 'y tá'} sẽ ảnh hưởng đến lịch hẹn của bệnh nhân. 
+                Việc đổi ${fn:toLowerCase(role) == 'doctor' ? 'bác sĩ' : 'y tá'} sẽ ảnh hưởng đến lịch hẹn của bệnh nhân. 
                 Hệ thống sẽ tự động gửi thông báo cho bệnh nhân về sự thay đổi này.
             </div>
         </div>
 
         <!-- Danh sách bác sĩ/y tá khả dụng -->
         <div class="form-section">
-            <h2 class="section-title">👥 Chọn ${role == 'Doctor' ? 'Bác Sĩ' : 'Y Tá'} Thay Thế</h2>
+            <h2 class="section-title">👥 Chọn ${fn:toLowerCase(role) == 'doctor' ? 'Bác Sĩ' : 'Y Tá'} Thay Thế</h2>
             
             <div class="available-doctors">
                 <c:choose>
@@ -367,16 +368,19 @@
                         <form action="${pageContext.request.contextPath}/ReassignScheduleDoctorNurseServlet" method="post" id="reassignForm">
                             <!-- Hidden fields để truyền thông tin -->
                             <input type="hidden" name="currentUserId" value="${userId}"/>
-                            <input type="hidden" name="slotDate" value="${slotDate}"/>
+
+                            <input type="hidden" name="slotDate" value="${slotDateStr}"/>
                             <input type="hidden" name="startTime" value="${startTime}"/>
                             <input type="hidden" name="endTime" value="${endTime}"/>
                             <input type="hidden" name="role" value="${role}"/>
                             <input type="hidden" name="patientId" value="${patientId}"/>
                             <input type="hidden" name="currentFullName" value="${fullName}"/>
                             <input type="hidden" name="patientName" value="${patientName}"/>
+                            
+
 
                             <p style="margin-bottom: 20px; color: #666; font-style: italic;">
-                                Tìm thấy <strong>${availableEmployees.size()}</strong> ${role == 'Doctor' ? 'bác sĩ' : 'y tá'} 
+                                Tìm thấy <strong>${availableEmployees.size()}</strong> ${fn:toLowerCase(role) == 'doctor' ? 'bác sĩ' : 'y tá'} 
                                 khả dụng trong cùng khung giờ và chưa có bệnh nhân đặt lịch:
                             </p>
 
@@ -384,10 +388,10 @@
                                 <div class="doctor-option" onclick="selectDoctor(${employee.userID})">
                                     <input type="radio" name="newUserId" value="${employee.userID}" id="doctor_${employee.userID}"/>
                                     <div class="doctor-name">
-                                        ${role == 'Doctor' ? '👨‍⚕️' : '👩‍⚕️'} <c:out value="${employee.fullName}"/>
+                                        ${fn:toLowerCase(role) == 'doctor' ? '👨‍⚕️' : '👩‍⚕️'} <c:out value="${employee.fullName}"/>
                                     </div>
                                     <div class="doctor-details">
-                                        <strong>Vai trò:</strong> ${employee.role == 'Doctor' ? 'Bác sĩ' : 'Y tá'} • 
+                                        <strong>Vai trò:</strong> ${fn:toLowerCase(employee.role) == 'doctor' ? 'Bác sĩ' : 'Y tá'} • 
                                         <strong>ID:</strong> ${employee.userID} • 
                                         <span style="color: var(--primary-green); font-weight: 500;">✅ Khả dụng</span>
                                     </div>
@@ -396,7 +400,7 @@
 
                             <div class="button-group">
                                 <button type="submit" class="btn btn-primary" id="confirmBtn" disabled>
-                                    🔄 Xác Nhận Đổi ${role == 'Doctor' ? 'Bác Sĩ' : 'Y Tá'}
+                                    🔄 Xác Nhận Đổi ${fn:toLowerCase(role) == 'doctor' ? 'Bác Sĩ' : 'Y Tá'}
                                 </button>
                                 <a href="${pageContext.request.contextPath}/ViewScheduleDoctorNurseServlet" class="btn btn-secondary">
                                     ❌ Hủy Bỏ
@@ -406,8 +410,8 @@
                     </c:when>
                     <c:otherwise>
                         <div class="no-doctors">
-                            <h3 style="color: #666; margin-top: 0;">😔 Không có ${role == 'Doctor' ? 'bác sĩ' : 'y tá'} khả dụng</h3>
-                            <p>Hiện tại không có ${role == 'Doctor' ? 'bác sĩ' : 'y tá'} nào khả dụng trong khung giờ này 
+                            <h3 style="color: #666; margin-top: 0;">😔 Không có ${fn:toLowerCase(role) == 'doctor' ? 'bác sĩ' : 'y tá'} khả dụng</h3>
+                            <p>Hiện tại không có ${fn:toLowerCase(role) == 'doctor' ? 'bác sĩ' : 'y tá'} nào khả dụng trong khung giờ này 
                                (${startTime} - ${endTime}) vào ngày 
                                <c:choose>
                                    <c:when test="${not empty slotDateStr}">
@@ -418,7 +422,7 @@
                                    </c:otherwise>
                                </c:choose>.</p>
                             <p style="color: #888; font-size: 0.9em;">
-                                Điều này có thể do tất cả ${role == 'Doctor' ? 'bác sĩ' : 'y tá'} khác đều đã có bệnh nhân đặt lịch 
+                                Điều này có thể do tất cả ${fn:toLowerCase(role) == 'doctor' ? 'bác sĩ' : 'y tá'} khác đều đã có bệnh nhân đặt lịch 
                                 hoặc không có lịch làm việc trong khung giờ này.
                             </p>
                         </div>
@@ -459,10 +463,28 @@
 
         // Xác nhận trước khi submit
         document.getElementById('reassignForm')?.addEventListener('submit', function(e) {
+            // Debug: Kiểm tra form data
+            const form = document.getElementById('reassignForm');
+            const formData = new FormData(form);
+            console.log('=== FORM DEBUG ===');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+            
+            // Kiểm tra currentUserId cụ thể
+            const currentUserId = form.querySelector('input[name="currentUserId"]').value;
+            console.log('currentUserId value:', currentUserId);
+            
+            if (!currentUserId || currentUserId.trim() === '') {
+                e.preventDefault();
+                alert('Lỗi: currentUserId không có giá trị!');
+                return;
+            }
+            
             const selectedDoctor = document.querySelector('input[name="newUserId"]:checked');
             if (!selectedDoctor) {
                 e.preventDefault();
-                const roleText = role === 'Doctor' ? 'bác sĩ' : 'y tá';
+                const roleText = role.toLowerCase() === 'doctor' ? 'bác sĩ' : 'y tá';
                 alert('Vui lòng chọn ' + roleText + ' thay thế!');
                 return;
             }
@@ -472,8 +494,9 @@
             const patientName = '${patientName}';
             
             let confirmMessage = `Bạn có chắc chắn muốn đổi từ:\n\n`;
-            const roleText2 = role === 'Doctor' ? 'Bác sĩ' : 'Y tá';
-            confirmMessage += `👨‍⚕️ ${roleText2} hiện tại: ${currentName}\n`;
+            const roleText2 = role.toLowerCase() === 'doctor' ? 'Bác sĩ' : 'Y tá';
+            const roleIcon = role.toLowerCase() === 'doctor' ? '👨‍⚕️' : '👩‍⚕️';
+            confirmMessage += `${roleIcon} ${roleText2} hiện tại: ${currentName}\n`;
             confirmMessage += `➡️ ${roleText2} mới: ${selectedName}\n\n`;
             
             if (patientName && patientName !== 'Chưa có bệnh nhân') {
@@ -507,6 +530,8 @@
             }
         `;
         document.head.appendChild(style);
+        
+
     </script>
 </body>
 </html>

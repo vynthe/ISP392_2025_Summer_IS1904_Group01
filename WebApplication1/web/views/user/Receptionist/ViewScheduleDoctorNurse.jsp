@@ -385,7 +385,7 @@
 
                     <tr>
                         <td class="slot-cell">
-                            <div class="slot-number">Slot 3 )</div>
+                            <div class="slot-number">Slot 3</div>
                         </td>
                         <td class="slot-cell" id="slot3-mon"></td>
                         <td class="slot-cell" id="slot3-tue"></td>

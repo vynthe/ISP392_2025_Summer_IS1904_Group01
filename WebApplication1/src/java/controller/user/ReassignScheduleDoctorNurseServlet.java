@@ -79,7 +79,7 @@ public class ReassignScheduleDoctorNurseServlet extends HttpServlet {
                 
                 System.err.println("❌ ERROR: Missing required parameters");
                 request.setAttribute("error", "Thiếu thông tin bắt buộc để thực hiện đổi lịch.");
-                request.getRequestDispatcher("/ViewScheduleDoctorNurseServlet").forward(request, response);
+                request.getRequestDispatcher("/views/user/Receptionist/ViewScheduleDoctorNurse.jsp").forward(request, response);
                 return;
             }
 
@@ -92,6 +92,13 @@ public class ReassignScheduleDoctorNurseServlet extends HttpServlet {
             System.out.println("✅ PARSED: currentUserId=" + currentUserId + " -> newUserId=" + newUserId + 
                              ", date=" + slotDate + ", time=" + startTime + "-" + endTime);
 
+            // 🔍 DEBUG: In ra thông tin tìm kiếm
+            System.out.println("🔍 DEBUG: Searching for schedule with:");
+            System.out.println("  - currentUserId: " + currentUserId);
+            System.out.println("  - slotDateStr: '" + slotDateStr + "'");
+            System.out.println("  - startTimeStr: '" + startTimeStr + "'");
+            System.out.println("  - endTimeStr: '" + endTimeStr + "'");
+
             // Lấy SlotID của bác sĩ hiện tại dựa trên thời gian
             Map<String, String> currentSchedule = schedulesService.getScheduleByUserAndTime(
                     currentUserId, slotDateStr, startTimeStr, endTimeStr);
@@ -99,7 +106,7 @@ public class ReassignScheduleDoctorNurseServlet extends HttpServlet {
             if (currentSchedule == null || currentSchedule.isEmpty()) {
                 System.err.println("❌ ERROR: Current schedule not found");
                 request.setAttribute("error", "Không tìm thấy lịch của bác sĩ/y tá hiện tại.");
-                request.getRequestDispatcher("/ViewScheduleDoctorNurseServlet").forward(request, response);
+                request.getRequestDispatcher("/views/user/Receptionist/ViewScheduleDoctorNurse.jsp").forward(request, response);
                 return;
             }
 
@@ -113,7 +120,7 @@ public class ReassignScheduleDoctorNurseServlet extends HttpServlet {
             if (!isAvailable) {
                 System.err.println("❌ ERROR: New user not available");
                 request.setAttribute("error", "Bác sĩ/Y tá được chọn không khả dụng trong khung giờ này hoặc đã có bệnh nhân đặt lịch.");
-                request.getRequestDispatcher("/ViewScheduleDoctorNurseServlet").forward(request, response);
+                request.getRequestDispatcher("/views/user/Receptionist/ViewScheduleDoctorNurse.jsp").forward(request, response);
                 return;
             }
 
@@ -170,6 +177,6 @@ public class ReassignScheduleDoctorNurseServlet extends HttpServlet {
         }
 
         // Chuyển hướng về trang lịch với thông báo
-        response.sendRedirect(request.getContextPath() + "/ViewScheduleDoctorNurseServlet");
+       response.sendRedirect(request.getContextPath() + "/views/user/Receptionist/ReceptionistDashBoard.jsp");
     }
 }

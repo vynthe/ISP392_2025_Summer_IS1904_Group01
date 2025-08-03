@@ -208,6 +208,14 @@ public class UpdateScheduleDoctorNurseServlet extends HttpServlet {
             request.setAttribute("patientName", patientName != null ? patientName : "Có bệnh nhân đặt lịch");
             request.setAttribute("patientId", Integer.parseInt(patientId));
             request.setAttribute("availableEmployees", availableEmployees);
+            
+            // 🔍 DEBUG: In ra các attribute đã set
+            System.out.println("🔍 DEBUG: Set attributes for JSP:");
+            System.out.println("  - userId: " + userId);
+            System.out.println("  - slotDateStr: " + slotDateStr);
+            System.out.println("  - startTime: " + startTime);
+            System.out.println("  - endTime: " + endTime);
+            System.out.println("  - role: " + role);
 
             // ✅ Load dữ liệu schedules để JSP có thể hiển thị
             try {
