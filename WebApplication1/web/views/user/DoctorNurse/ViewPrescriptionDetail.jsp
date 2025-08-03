@@ -34,7 +34,7 @@
             --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
             --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
             --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
-            --border-radius: 0px;
+            --border-radius: 8px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -139,7 +139,7 @@
             background: var(--white);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-xl);
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             border: 1px solid var(--gray-200);
             overflow: hidden;
@@ -161,15 +161,7 @@
             background: var(--gradient-primary);
             padding: 2rem;
             color: var(--white);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
+            text-align: center;
         }
 
         .dental-logo {
@@ -181,19 +173,13 @@
             align-items: center;
             justify-content: center;
             font-size: 1.75rem;
-        }
-
-        .title-group {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            text-align: center;
+            margin: 0 auto 1rem;
         }
 
         .page-title {
             font-size: 1.75rem;
             font-weight: 700;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
 
         .page-subtitle {
@@ -203,19 +189,6 @@
 
         .content-section {
             padding: 2.5rem;
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--gray-200);
-        }
-
-        .form-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gray-800);
         }
 
         .alert {
@@ -242,66 +215,6 @@
             border-color: #86efac;
         }
 
-        .alert i {
-            font-size: 1.25rem;
-        }
-
-        .stats-section {
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .stat-card {
-            background: var(--gray-50);
-            padding: 1.25rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--gray-200);
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--gray-300);
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--gray-600);
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.025em;
-        }
-
-        .stat-value {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--gray-800);
-            word-break: break-word;
-        }
-
         .prescription-id-header {
             text-align: center;
             margin-bottom: 2.5rem;
@@ -310,17 +223,6 @@
             border: 3px solid var(--primary);
             border-radius: var(--border-radius);
             position: relative;
-            overflow: hidden;
-        }
-
-        .prescription-id-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
         }
 
         .prescription-id {
@@ -330,42 +232,11 @@
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
-        }
-
-        .prescription-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .info-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            padding: 1.5rem 0;
-            border-bottom: 2px solid var(--gray-100);
-            transition: var(--transition);
-        }
-
-        .info-row:hover {
-            background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
-            padding-left: 1rem;
-            padding-right: 1rem;
-            margin-left: -1rem;
-            margin-right: -1rem;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
         }
 
         .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            position: relative;
-            padding: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
             background: linear-gradient(135deg, #fefefe 0%, #f9fafb 100%);
             border: 1px solid var(--gray-200);
             border-radius: var(--border-radius);
@@ -378,28 +249,22 @@
             border-color: var(--primary-light);
         }
 
-        .info-item.full-width {
-            grid-column: 1 / -1;
-        }
-
         .info-label {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 0.075em;
-            position: relative;
-            padding-left: 0.5rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .info-label::before {
             content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 100%;
+            width: 4px;
+            height: 20px;
             background: var(--gradient-primary);
             border-radius: 2px;
         }
@@ -408,41 +273,20 @@
             font-size: 1.1rem;
             font-weight: 500;
             color: var(--gray-800);
-            word-wrap: break-word;
             line-height: 1.6;
-            padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+            padding: 1rem;
             background: var(--white);
             border-radius: var(--border-radius);
             border: 1px solid var(--gray-100);
+            word-wrap: break-word;
         }
 
         .medication-section {
-            margin-top: 2.5rem;
-            padding: 2rem;
             background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
             border: 2px solid var(--accent);
             border-radius: var(--border-radius);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .medication-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-accent);
-        }
-
-        .medication-section .info-row {
-            border-bottom: 2px solid rgba(5, 150, 105, 0.1);
-            padding: 1.5rem 0;
-        }
-
-        .medication-section .info-row:last-child {
-            border-bottom: none;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .medication-section .info-item {
@@ -456,23 +300,11 @@
         }
 
         .signature-section {
-            margin-top: 2.5rem;
-            padding: 2rem;
             background: linear-gradient(135deg, #fefbff 0%, #f8fafc 100%);
             border: 2px solid var(--primary);
             border-radius: var(--border-radius);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .signature-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
         .section-title {
@@ -480,21 +312,16 @@
             font-weight: 700;
             color: var(--gray-800);
             margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 3px solid var(--primary);
-            position: relative;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-primary);
+        .section-title i {
+            color: var(--primary);
+            font-size: 1.1rem;
         }
 
         .signature-content {
@@ -502,7 +329,7 @@
             border: 2px solid var(--gray-200);
             padding: 2rem;
             border-radius: var(--border-radius);
-            min-height: 150px;
+            min-height: 120px;
             font-family: 'Courier New', monospace;
             font-size: 1.1rem;
             color: var(--gray-700);
@@ -552,10 +379,6 @@
             box-shadow: var(--shadow-lg);
             background: var(--primary-dark);
             border-color: var(--primary-dark);
-        }
-
-        .back-link a i {
-            font-size: 1.1rem;
         }
 
         .main-footer {
@@ -661,11 +484,6 @@
                 justify-content: center;
             }
 
-            .info-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
             .footer-sections {
                 grid-template-columns: 1fr;
             }
@@ -699,22 +517,12 @@
     <main class="main-wrapper">
         <div class="dental-container">
             <div class="dental-header">
-                <div class="header-content">
-                    <div class="title-group">
-                        <div class="dental-logo">📄</div>
-                        <div>
-                            <h1 class="page-title">Chi Tiết Đơn Thuốc</h1>
-                            <p class="page-subtitle">Xem thông tin chi tiết của đơn thuốc</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="dental-logo">📄</div>
+                <h1 class="page-title">Chi Tiết Đơn Thuốc</h1>
+                <p class="page-subtitle">Xem thông tin chi tiết của đơn thuốc</p>
             </div>
 
             <div class="content-section">
-                <div class="form-header">
-                    <h2 class="form-title">Thông Tin Đơn Thuốc</h2>
-                </div>
-
                 <c:if test="${not empty errorMessage}">
                     <div class="alert alert-error">
                         <i class="fas fa-exclamation-circle"></i>
@@ -731,92 +539,124 @@
                 <c:choose>
                     <c:when test="${not empty prescriptionDetail}">
                         <div class="prescription-id-header">
-                            <h2 class="prescription-id">Mã Đơn Thuốc: ${prescriptionDetail.prescriptionId}</h2>
+                            <h2 class="prescription-id">Đơn Thuốc ${prescriptionDetail.prescriptionId}</h2>
                         </div>
 
-                        <div class="prescription-content">
-                            <div class="info-row">
-                                <div class="info-item">
-                                    <span class="info-label">Bệnh Nhân:</span>
-                                    <span class="info-value">${prescriptionDetail.patientName != null ? prescriptionDetail.patientName : 'Không xác định'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Bác Sĩ:</span>
-                                    <span class="info-value">${prescriptionDetail.doctorName != null ? prescriptionDetail.doctorName : 'Không xác định'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Y Tá:</span>
-                                    <span class="info-value">${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Không có thông tin'}</span>
-                                </div>
+                        <!-- 1. Tên Bệnh Nhân -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-user"></i>
+                                Tên Bệnh Nhân
                             </div>
-
-                            <div class="info-row">
-                                <div class="info-item">
-                                    <span class="info-label">Mã Lịch Hẹn:</span>
-                                    <span class="info-value">
-                                        <c:choose>
-                                            <c:when test="${prescriptionDetail.appointmentId != null}">
-                                                ${prescriptionDetail.appointmentId}
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span style="color: var(--gray-500); font-style: italic;">Không có thông tin</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Mã Kết Quả Khám:</span>
-                                    <span class="info-value">${prescriptionDetail.resultId}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Ngày Tạo:</span>
-                                    <span class="info-value">${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt : 'Không có thông tin'}</span>
-                                </div>
-                            </div>
-
-                            <div class="info-row">
-                                <div class="info-item full-width">
-                                    <span class="info-label">Chẩn Đoán:</span>
-                                    <span class="info-value">${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin'}</span>
-                                </div>
-                            </div>
-
-                            <div class="info-row">
-                                <div class="info-item full-width">
-                                    <span class="info-label">Ghi Chú:</span>
-                                    <span class="info-value">${prescriptionDetail.notes != null ? prescriptionDetail.notes : 'Không có thông tin'}</span>
-                                </div>
-                            </div>
-
-                            <div class="medication-section">
-                                <h3 class="section-title">Chi Tiết Thuốc</h3>
-                                <div class="info-row">
-                                    <div class="info-item">
-                                        <span class="info-label">Liều Lượng:</span>
-                                        <span class="info-value">${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Số Lượng:</span>
-                                        <span class="info-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Ngày Cập Nhật:</span>
-                                        <span class="info-value">${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt : 'Không có thông tin'}</span>
-                                    </div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-item full-width">
-                                        <span class="info-label">Hướng Dẫn Sử Dụng:</span>
-                                        <span class="info-value">${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có thông tin'}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="signature-section">
-                                <h3 class="section-title">Chữ Ký Bác Sĩ</h3>
-                                <div class="signature-content">${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có thông tin'}</div>
+                            <div class="info-value">
+                                ${prescriptionDetail.patientName != null ? prescriptionDetail.patientName : 'Không xác định'}
                             </div>
                         </div>
+
+                        <!-- 2. Tên Bác Sĩ Thăm Khám -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-user-md"></i>
+                                Bác Sĩ Thăm Khám
+                            </div>
+                            <div class="info-value">
+                                ${prescriptionDetail.doctorName != null ? prescriptionDetail.doctorName : 'Không xác định'}
+                            </div>
+                        </div>
+
+                        <!-- 3. Tên Y Tá -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-user-nurse"></i>
+                                Y Tá Hỗ Trợ
+                            </div>
+                            <div class="info-value">
+                                ${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Không có thông tin'}
+                            </div>
+                        </div>
+
+                        <!-- 4. Chẩn Đoán -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-diagnoses"></i>
+                                Chẩn Đoán
+                            </div>
+                            <div class="info-value">
+                                ${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin'}
+                            </div>
+                        </div>
+
+                        <!-- 5. Ghi Chú -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-sticky-note"></i>
+                                Ghi Chú
+                            </div>
+                            <div class="info-value">
+                                ${prescriptionDetail.notes != null ? prescriptionDetail.notes : 'Không có thông tin'}
+                            </div>
+                        </div>
+
+                        <!-- 6. Chi Tiết Thuốc -->
+                        <div class="medication-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-pills"></i>
+                                Chi Tiết Thuốc
+                            </h3>
+                            
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-prescription-bottle"></i>
+                                    Liều Lượng
+                                </div>
+                                <div class="info-value">
+                                    ${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-sort-numeric-up"></i>
+                                    Số Lượng
+                                </div>
+                                <div class="info-value">
+                                    ${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-instructions"></i>
+                                    Hướng Dẫn Sử Dụng
+                                </div>
+                                <div class="info-value">
+                                    ${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có thông tin'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Ngày Kê Đơn Thuốc -->
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Ngày Kê Đơn Thuốc
+                            </div>
+                            <div class="info-value">
+                                ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt : 'Không có thông tin'}
+                            </div>
+                        </div>
+
+                        <!-- 8. Chữ Ký (Cuối cùng) -->
+                        <div class="signature-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-signature"></i>
+                                Chữ Ký Bác Sĩ
+                            </h3>
+                            <div class="signature-content">
+                                ${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có thông tin'}
+                            </div>
+                        </div>
+
                     </c:when>
                     <c:otherwise>
                         <div class="alert alert-error">
@@ -881,7 +721,7 @@
                     item.style.transition = 'all 0.3s ease';
                     item.style.opacity = '1';
                     item.style.transform = 'translateY(0)';
-                }, index * 30);
+                }, index * 100);
             });
 
             // Animation cho sections
@@ -893,7 +733,7 @@
                     section.style.transition = 'all 0.4s ease';
                     section.style.opacity = '1';
                     section.style.transform = 'translateY(0)';
-                }, (index + 1) * 200);
+                }, (index + 8) * 100);
             });
         });
     </script>

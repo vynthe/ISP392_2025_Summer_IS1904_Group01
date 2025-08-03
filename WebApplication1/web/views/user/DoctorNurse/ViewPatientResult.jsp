@@ -955,9 +955,7 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th>STT</th>
-                                                <th>Mã Lịch Hẹn</th> 
-                                                <th>Mã Đơn Thuốc</th>
+                                                <th>Đơn Thuốc</th>
                                                 <th>Tên Bệnh Nhân</th>
                                                 <th>Tên Bác Sĩ</th>
                                                 <th>Tên Y Tá</th>
@@ -969,8 +967,6 @@
                                         <tbody>
                                             <c:forEach var="result" items="${results}" varStatus="status">
                                                 <tr>
-                                                    <td><span class="row-number">${(currentPage - 1) * pageSize + status.count}</span></td>
-                                                    <td><div class="prescription-details">${result.appointmentId != null ? result.appointmentId : 'N/A'}</div></td>
                                                     <td><div class="prescription-details">${result.prescriptionId != null ? result.prescriptionId : 'Chưa có đơn thuốc'}</div></td>
                                                     <td><div class="prescription-details">${result.patientName}</div></td>
                                                     <td><div class="prescription-details">${result.doctorName}</div></td>

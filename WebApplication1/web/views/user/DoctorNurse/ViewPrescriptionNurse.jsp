@@ -293,7 +293,7 @@
             color: var(--primary-color);
         }
 
-        .diagnosis-section {
+        .diagnosis-section, .notes-section {
             background-color: #f0fdf4;
             border: 1px solid #bbf7d0;
             border-left: 4px solid var(--success-color);
@@ -301,14 +301,14 @@
             margin-bottom: 1.2rem;
         }
 
-        .diagnosis-title {
+        .diagnosis-title, .notes-title {
             font-weight: 700;
             color: var(--success-color);
             margin-bottom: 0.75rem;
             font-size: 1rem;
         }
 
-        .diagnosis-preview {
+        .diagnosis-preview, .notes-preview {
             max-height: 3.5em;
             overflow: hidden;
             line-height: 1.4;
@@ -517,7 +517,7 @@
                 background: none;
                 margin: 0;
             }
-            .prescription-card, .detail-card, .info-card, .prescription-details, .diagnosis-section, .patient-info {
+            .prescription-card, .detail-card, .info-card, .prescription-details, .diagnosis-section, .notes-section {
                 border: 1px solid #000;
                 box-shadow: none;
                 transform: none;
@@ -542,11 +542,11 @@
                 color: #333;
                 margin-bottom: 0;
             }
-            .prescription-id, .patient-name, .diagnosis-title {
+            .prescription-id, .patient-name, .diagnosis-title, .notes-title {
                 color: #000;
                 font-size: 9pt;
             }
-            .timestamp, .info-item, .detail-value, .diagnosis-preview {
+            .timestamp, .info-item, .detail-value, .diagnosis-preview, .notes-preview {
                 color: #333;
                 font-size: 8pt;
             }
@@ -598,10 +598,10 @@
                 font-size: 9pt;
                 margin-bottom: 0.2cm;
             }
-            .diagnosis-section {
+            .diagnosis-section, .notes-section {
                 padding: 0.3cm;
             }
-            .diagnosis-preview {
+            .diagnosis-preview, .notes-preview {
                 max-height: none;
             }
             @page {
@@ -800,42 +800,28 @@
                 <div class="detail-header">
                     <h2 class="prescription-id">
                         <i class="fas fa-prescription-bottle-alt me-3"></i>
-                        Đơn Thuốc #${prescriptionDetail.prescriptionId}
+                        Đơn Thuốc ${prescriptionDetail.prescriptionId}
                     </h2>
                 </div>
                 <div class="detail-body">
                     <div class="row info-grid">
                         <div class="col-md-6">
                             <div class="info-card border-left-primary">
-                                <h5 class="mb-3 text-primary-custom fw-bold">
-                                    <i class="fas fa-user-md me-2"></i>Thông tin bác sĩ
-                                </h5>
                                 <div class="info-item">
                                     <i class="fas fa-user-md info-icon"></i>
-                                    <span class="doctor-name">${prescriptionDetail.doctorName}</span>
+                                    <span class="doctor-name">Họ Và Tên Bác Sĩ: ${prescriptionDetail.doctorName}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-user-nurse info-icon"></i>
+                                    <span>Y Tá Hỗ Trợ: ${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Chưa có'}</span>
                                 </div>
                                 <div class="info-item">
                                     <i class="fas fa-calendar-plus info-icon"></i>
-                                    <span>Ngày tạo: ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
+                                    <span>Ngày Kê Đơn: ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
                                 </div>
                                 <div class="info-item">
                                     <i class="fas fa-calendar-check info-icon"></i>
-                                    <span>Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-card border-left-primary">
-                                <h5 class="mb-3 text-primary-custom fw-bold">
-                                    <i class="fas fa-info-circle me-2"></i>Thông tin khác
-                                </h5>
-                                <div class="info-item">
-                                    <i class="fas fa-user-nurse info-icon"></i>
-                                    <span>Y tá: ${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Chưa có'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-calendar-day info-icon"></i>
-                                    <span>Mã lịch hẹn: ${prescriptionDetail.appointmentId != null ? prescriptionDetail.appointmentId : 'Không có'}</span>
+                                    <span>Ngày Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
                                 </div>
                             </div>
                         </div>
@@ -848,6 +834,16 @@
                         </h5>
                         <p class="diagnosis-preview">
                             ${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin chẩn đoán'}
+                        </p>
+                    </div>
+
+                    <div class="notes-section border-left-success">
+                        <h5 class="notes-title">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            Ghi chú
+                        </h5>
+                        <p class="notes-preview">
+                            ${prescriptionDetail.notes != null ? prescriptionDetail.notes : 'Không có ghi chú'}
                         </p>
                     </div>
 
@@ -966,7 +962,7 @@
                                     <div class="card-header">
                                         <h5 class="prescription-id">
                                             <i class="fas fa-notes-medical me-2"></i>
-                                            Kết quả #${result.resultId}
+                                            Kết quả Số ${result.resultId}
                                         </h5>
                                     </div>
                                     <div class="card-body">
@@ -974,15 +970,11 @@
                                         <div class="patient-info border-left-primary">
                                             <div class="patient-name mb-3">
                                                 <i class="fas fa-user me-2"></i>
-                                                ${result.patientName != null ? result.patientName : 'Không có tên'}
+                                                Họ Và Tên Bệnh Nhân: ${result.patientName != null ? result.patientName : 'Không có tên'}
                                             </div>
                                             <div class="info-item">
                                                 <i class="fas fa-user-md info-icon"></i>
-                                                <span>Bác sĩ: ${result.doctorName != null ? result.doctorName : 'Không có'}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-calendar-day info-icon"></i>
-                                                <span>Mã lịch hẹn: ${result.appointmentId != null ? result.appointmentId : 'Không có'}</span>
+                                                <span>Bác sĩ Thăm Khám: ${result.doctorName != null ? result.doctorName : 'Không có'}</span>
                                             </div>
                                         </div>
 
@@ -996,6 +988,17 @@
                                                 ${result.diagnosis != null ? result.diagnosis : 'Không có thông tin chẩn đoán'}
                                             </p>
                                         </div>
+
+                                        <!-- Notes Preview -->
+                                        <div class="notes-section border-left-success">
+                                            <h6 class="notes-title">
+                                                <i class="fas fa-sticky-note me-2"></i>
+                                                Ghi chú
+                                            </h6>
+                                            <p class="notes-preview">
+                                                ${result.Notes != null ? result.Notes : 'Không có ghi chú'}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <!-- Card Footer -->
@@ -1004,11 +1007,11 @@
                                             <div>
                                                 <div class="timestamp">
                                                     <i class="fas fa-calendar-plus me-2"></i>
-                                                    <strong>Tạo:</strong> ${result.createdAt != null ? result.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
+                                                    <strong>Ngày Kê Đơn:</strong> ${result.createdAt != null ? result.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
                                                 </div>
                                                 <div class="timestamp">
                                                     <i class="fas fa-clock me-2"></i>
-                                                    <strong>Cập nhật:</strong> ${result.updatedAt != null ? result.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
+                                                    <strong>Ngày Cập nhật:</strong> ${result.updatedAt != null ? result.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}
                                                 </div>
                                             </div>
                                             <c:if test="${result.hasPrescription}">
@@ -1242,7 +1245,7 @@
                 });
             });
 
-            const diagnosisPreviews = document.querySelectorAll('.diagnosis-preview');
+            const diagnosisPreviews = document.querySelectorAll('.diagnosis-preview, .notes-preview');
             diagnosisPreviews.forEach(preview => {
                 if (preview.scrollHeight > preview.clientHeight) {
                     preview.title = preview.textContent;
