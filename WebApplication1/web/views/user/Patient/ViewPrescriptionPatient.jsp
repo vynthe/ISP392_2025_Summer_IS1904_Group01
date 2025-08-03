@@ -381,232 +381,53 @@
             padding: 1.5rem;
         }
 
-        .info-grid {
+        .prescription-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 1.2rem;
         }
 
-        .info-card {
-            background-color: var(--bg-light);
+        .prescription-table th,
+        .prescription-table td {
+            padding: 1rem;
             border: 1px solid var(--border-color);
-            padding: 1rem;
-            transition: all 0.3s ease;
-            margin-bottom: 1.2rem;
+            vertical-align: top;
         }
 
-        .info-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
+        .prescription-table th {
+            background-color: var(--bg-light);
+            font-weight: 600;
+            color: var(--primary-color);
+            width: 30%;
         }
 
-        .prescription-details {
-            background-color: #fef3c7;
-            border: 1px solid #fbbf24;
-            border-left: 4px solid var(--warning-color);
-            padding: 1rem;
-            margin-bottom: 1.2rem;
+        .prescription-table td {
+            background-color: var(--bg-white);
+            color: var(--text-secondary);
         }
 
-        .prescription-details h6 {
-            color: var(--warning-color);
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
+        /* Footer */
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            text-align: center;
         }
 
-        .detail-content {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
-        .detail-item {
-            flex: 1 1 auto;
+        .footer p {
+            margin: 0;
             font-size: 0.9rem;
         }
 
-        .detail-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            display: inline;
+        .footer a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
         }
 
-        .detail-value {
-            color: var(--text-secondary);
-            display: inline;
-        }
-
-        /* Patient Info Section */
-        .patient-info {
-            background-color: #e0f2fe;
-            border: 1px solid #81d4fa;
-            border-left: 4px solid var(--info-color);
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .patient-info h5 {
-            color: var(--info-color);
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .patient-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--info-color);
-            margin-bottom: 0;
-        }
-
-        /* Doctor Info Section */
-        .doctor-section {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--primary-color);
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .doctor-section h5 {
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        /* Nurse Info Section */
-        .nurse-section {
-            background-color: #f3e8ff;
-            border: 1px solid #c084fc;
-            border-left: 4px solid #7c3aed;
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .nurse-section h5 {
-            color: #7c3aed;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .nurse-name {
-            font-weight: 500;
-            font-size: 1rem;
-            color: var(--primary-color);
-            margin-bottom: 0.75rem;
-        }
-
-        /* Date Section */
-        .date-section {
-            background-color: #fef7ff;
-            border: 1px solid #f0abfc;
-            border-left: 4px solid #d946ef;
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .date-section h5 {
-            color: #d946ef;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        /* Signature Section */
-        .signature-section {
-            background-color: #f0f9ff;
-            border: 1px solid #7dd3fc;
-            border-left: 4px solid #0284c7;
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .signature-section h5 {
-            color: #0284c7;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            background-color: var(--bg-white);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
-        }
-
-        .empty-icon {
-            font-size: 3.5rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-            opacity: 0.6;
-        }
-
-        .empty-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
-        }
-
-        .empty-subtitle {
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 0;
-        }
-
-        /* Pagination */
-        .pagination {
-            --bs-pagination-border-color: var(--border-color);
-            --bs-pagination-hover-bg: var(--primary-color);
-            --bs-pagination-hover-border-color: var(--primary-color);
-            --bs-pagination-hover-color: white;
-            --bs-pagination-active-bg: var(--primary-color);
-            --bs-pagination-active-border-color: var(--primary-color);
-            --bs-pagination-focus-box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
-            gap: 0.25rem;
-        }
-
-        .page-link {
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border-width: 2px;
-            min-width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .page-link:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .page-item.active .page-link {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .pagination-info {
-            background-color: var(--bg-white);
-            border: 1px solid var(--border-color);
-            padding: 0.75rem 1.5rem;
-            box-shadow: var(--shadow-sm);
-            display: inline-block;
-            margin-top: 1.5rem;
-        }
-
-        /* Error Alert */
-        .alert-danger {
-            background-color: #fee2e2;
-            border: 1px solid #fca5a5;
-            color: var(--danger-color);
-            box-shadow: var(--shadow-sm);
+        .footer a:hover {
+            color: white;
         }
 
         /* Print Styles */
@@ -618,7 +439,7 @@
                 margin: 0;
                 padding: 0;
             }
-            .navbar, .controls-section, .pagination, .btn-refresh, .btn-print, .btn-detail {
+            .navbar, .controls-section, .pagination, .btn-refresh, .btn-print, .btn-detail, .footer {
                 display: none;
             }
             .page-header {
@@ -628,7 +449,7 @@
                 background: none;
                 margin: 0;
             }
-            .prescription-card, .detail-card, .info-card, .prescription-details, .diagnosis-section, .notes-section, .doctor-info, .patient-info, .doctor-section, .nurse-section, .date-section, .signature-section {
+            .prescription-card, .detail-card {
                 border: 1px solid #000;
                 box-shadow: none;
                 transform: none;
@@ -636,7 +457,7 @@
                 margin: 0;
                 padding: 0.3cm;
             }
-            .prescription-card:hover, .detail-card:hover, .info-card:hover {
+            .prescription-card:hover, .detail-card:hover {
                 transform: none;
                 box-shadow: none;
             }
@@ -653,28 +474,25 @@
                 color: #333;
                 margin-bottom: 0;
             }
-            .prescription-id, .doctor-name, .diagnosis-title, .notes-title, .patient-name {
+            .prescription-id {
                 color: #000;
                 font-size: 9pt;
             }
-            .timestamp, .info-item, .detail-value, .diagnosis-preview, .notes-preview {
+            .timestamp {
                 color: #333;
                 font-size: 8pt;
             }
-            .detail-content {
-                display: flex;
-                gap: 0.5cm;
-                flex-wrap: nowrap;
-            }
-            .detail-item {
-                flex: 1 1 25%;
+            .prescription-table th,
+            .prescription-table td {
+                border: 1px solid #000;
+                padding: 0.3cm;
                 font-size: 8pt;
             }
-            .detail-label {
-                font-size: 8pt;
+            .prescription-table th {
+                background-color: #f5f5f5;
             }
-            .detail-value {
-                font-size: 8pt;
+            .prescription-table td {
+                background-color: #fff;
             }
             .container {
                 margin: 0;
@@ -695,25 +513,6 @@
                 page-break-inside: avoid;
                 max-height: 29.7cm;
                 overflow: hidden;
-            }
-            .info-grid {
-                margin-bottom: 0.3cm;
-            }
-            .info-card {
-                padding: 0.3cm;
-            }
-            .prescription-details {
-                padding: 0.3cm;
-            }
-            .prescription-details h6 {
-                font-size: 9pt;
-                margin-bottom: 0.2cm;
-            }
-            .diagnosis-section, .notes-section {
-                padding: 0.3cm;
-            }
-            .diagnosis-preview, .notes-preview {
-                max-height: none;
             }
             @page {
                 size: A4;
@@ -750,12 +549,13 @@
                 height: 48px;
                 font-size: 1.2rem;
             }
-            .detail-content {
-                flex-direction: column;
-                gap: 0.5rem;
+            .prescription-table th,
+            .prescription-table td {
+                display: block;
+                width: 100%;
             }
-            .detail-item {
-                flex: 1 1 100%;
+            .prescription-table th {
+                text-align: left;
             }
             .col-md-6 {
                 width: 100%;
@@ -845,7 +645,7 @@
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="fas fa-clinic-medical me-3"></i>
-                Phòng khám ABC
+                Phòng Khám Nha Khoa PDC
             </a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp">
@@ -907,108 +707,65 @@
                     </h2>
                 </div>
                 <div class="detail-body">
-                    <!-- 1. Tên bệnh nhân -->
-                    <div class="patient-info">
-                        <h5>
-                            <i class="fas fa-user me-2"></i>Họ và Tên Bệnh Nhân
-                        </h5>
-                        <div class="patient-name">
-                            ${prescriptionDetail.patientName != null ? prescriptionDetail.patientName : 'Không có thông tin bệnh nhân'}
-                        </div>
-                    </div>
-
-               
-
-                    <!-- 4. Tên bác sĩ -->
-                    <div class="doctor-section">
-                        <h5>
-                            <i class="fas fa-user-md me-2"></i>Họ và Tên bác sĩ
-                        </h5>
-                        <div class="info-item">
-                            <span class="doctor-name">${prescriptionDetail.doctorName}</span>
-                        </div>
-                    </div>
-
-                    <!-- 5. Tên y tá -->
-                    <div class="nurse-section">
-                        <h5>
-                            <i class="fas fa-user-nurse me-2"></i>Y Tá Phụ Trách 
-                        </h5>
-                        <div class="info-item">
-                            <span class="nurse-name">${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Chưa có y tá phụ trách'}</span>
-                        </div>
-                    </div>
-                        
-                           <!-- 2. Chẩn đoán -->
-                    <div class="diagnosis-section border-left-success">
-                        <h5 class="diagnosis-title">
-                            <i class="fas fa-notes-medical me-2"></i>
-                            Chẩn đoán
-                        </h5>
-                        <p class="diagnosis-preview">
-                            ${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin chẩn đoán'}
-                        </p>
-                    </div>
-
-                    <!-- 3. Ghi chú -->
-                    <div class="notes-section border-left-success">
-                        <h5 class="notes-title">
-                            <i class="fas fa-sticky-note me-2"></i>
-                            Ghi chú
-                        </h5>
-                        <p class="notes-preview">
-                            ${prescriptionDetail.notes != null ? prescriptionDetail.notes : 'Không có ghi chú'}
-                        </p>
-                    </div>
-
-                    <!-- 6. Thông tin đơn thuốc -->
-                    <div class="prescription-details border-left-warning">
-                        <h6>
-                            <i class="fas fa-pills me-2"></i>
-                            Thông Tin Đơn Thuốc
-                        </h6>
-                        <div class="detail-content">
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-syringe me-1"></i>Thuốc:</span>
-                                <span class="detail-value">${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-clipboard-list me-1"></i>Hướng dẫn sử dụng:</span>
-                                <span class="detail-value">${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có hướng dẫn'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-sort-numeric-up me-1"></i>Số lượng:</span>
-                                <span class="detail-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 7. Ngày tạo -->
-                    <div class="date-section">
-                        <div class="info-item">
-                            <i class="fas fa-calendar-plus info-icon"></i>
-                            <span>Ngày Kê Đơn: ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-calendar-check info-icon"></i>
-                            <span>Ngày Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-calendar-day info-icon"></i>
-                            <span>Lịch hẹn số: ${prescriptionDetail.appointmentId != null ? prescriptionDetail.appointmentId : 'Không có'}</span>
-                        </div>
-                    </div>
-
-                    <!-- 8. Chữ ký -->
-                    <div class="signature-section">
-                        <h5>
-                            <i class="fas fa-signature me-2"></i>Chữ ký bác sĩ
-                        </h5>
-                        <div class="info-item">
-                            <i class="fas fa-signature info-icon"></i>
-                            <span>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'}</span>
-                        </div>
-                    </div>
+                    <table class="prescription-table">
+                        <tr>
+                            <th><i class="fas fa-user me-2"></i>Họ và Tên Bệnh Nhân</th>
+                            <td>${prescriptionDetail.patientName != null ? prescriptionDetail.patientName : 'Không có thông tin bệnh nhân'}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-user-md me-2"></i>Họ và Tên Bác Sĩ</th>
+                            <td>${prescriptionDetail.doctorName}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-user-nurse me-2"></i>Y Tá Phụ Trách</th>
+                            <td>${prescriptionDetail.nurseName != null ? prescriptionDetail.nurseName : 'Chưa có y tá phụ trách'}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-notes-medical me-2"></i>Chẩn đoán</th>
+                            <td>${prescriptionDetail.diagnosis != null ? prescriptionDetail.diagnosis : 'Không có thông tin chẩn đoán'}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-sticky-note me-2"></i>Ghi chú</th>
+                            <td>${prescriptionDetail.notes != null ? prescriptionDetail.notes : 'Không có ghi chú'}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-pills me-2"></i>Thông Tin Đơn Thuốc</th>
+                            <td>
+                                <div class="detail-content">
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fas fa-syringe me-1"></i>Thuốc:</span>
+                                        <span class="detail-value">${prescriptionDetail.prescriptionDosage != null ? prescriptionDetail.prescriptionDosage : 'Không có thông tin'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fas fa-clipboard-list me-1"></i>Hướng dẫn sử dụng:</span>
+                                        <span class="detail-value">${prescriptionDetail.instruct != null ? prescriptionDetail.instruct : 'Không có hướng dẫn'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fas fa-sort-numeric-up me-1"></i>Số lượng:</span>
+                                        <span class="detail-value">${prescriptionDetail.quantity != null ? prescriptionDetail.quantity : 'Không có thông tin'}</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-calendar-plus me-2"></i>Ngày Kê Đơn</th>
+                            <td>
+                                <div class="info-item">
+                                    <span>Ngày Kê Đơn: ${prescriptionDetail.createdAt != null ? prescriptionDetail.createdAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Ngày Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Lịch hẹn số: ${prescriptionDetail.appointmentId != null ? prescriptionDetail.appointmentId : 'Không có'}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-signature me-2"></i>Chữ ký Bác Sĩ</th>
+                            <td>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'}</td>
+                        </tr>
+                    </table>
 
                     <div class="text-center">
                         <a href="${pageContext.request.contextPath}/ViewPrescriptionPatient" 
@@ -1242,6 +999,18 @@
                     </div>
                 </c:if>
             </c:if>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container">
+                    <p>
+                        &copy; 2025 Phòng khám ABC. All rights reserved.<br>
+                        <a href="#">Chính sách bảo mật</a> | 
+                        <a href="#">Điều khoản sử dụng</a> | 
+                        <a href="#">Liên hệ hỗ trợ</a>
+                    </p>
+                </div>
+            </footer>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -1378,19 +1147,6 @@
                         this.style.transform = 'translateY(0)';
                         this.style.boxShadow = 'var(--shadow-sm)';
                         this.style.borderColor = 'var(--border-color)';
-                    });
-                });
-
-                const infoCards = document.querySelectorAll('.info-card');
-                infoCards.forEach(card => {
-                    card.addEventListener('mouseenter', function() {
-                        this.style.transform = 'translateY(-3px)';
-                        this.style.boxShadow = 'var(--shadow-md)';
-                    });
-
-                    card.addEventListener('mouseleave', function() {
-                        this.style.transform = 'translateY(0)';
-                        this.style.boxShadow = 'none';
                     });
                 });
 
