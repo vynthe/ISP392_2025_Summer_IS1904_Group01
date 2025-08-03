@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Period;
+import model.entity.ReviewReply;
+import model.entity.Reviews;
 import java.util.ArrayList;
 import java.util.List;
 import model.entity.Users;
@@ -1017,4 +1019,5 @@ public boolean editReply(int replyId, int adminId, String replyContent) throws S
     }
     
 }
+
 
