@@ -249,6 +249,30 @@
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
         }
         
+        /* ✅ THÊM MỚI: Style cho nút In PDF */
+        .print-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 140px;
+            justify-content: center;
+            margin-left: 10px; /* Khoảng cách với nút Thanh toán */
+        }
+        
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
         .payment-status {
             color: #48bb78;
             font-weight: 600;
@@ -368,6 +392,13 @@
             .invoice-footer {
                 padding: 16px;
             }
+            
+            /* ✅ THÊM MỚI: Responsive cho nút In PDF trên mobile */
+            .print-btn {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+            }
         }
         
         /* Animations */
@@ -403,6 +434,68 @@
         @keyframes loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
+        }
+        
+        /* ✅ THÊM MỚI: CSS cho print mode - ẩn các phần không cần thiết khi in */
+        @media print {
+            /* Ẩn header, footer, nút quay lại */
+            .page-header,
+            .back-link,
+            .action-btn,
+            .print-btn {
+                display: none !important;
+            }
+            
+            /* Ẩn background gradient */
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+            
+            /* Format lại card hóa đơn cho in */
+            .invoice-card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 2px solid #333 !important;
+                margin-bottom: 20px !important;
+                page-break-inside: avoid;
+            }
+            
+            /* Ẩn hiệu ứng hover */
+            .invoice-card:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Format header hóa đơn cho in */
+            .invoice-header {
+                background: #333 !important;
+                color: white !important;
+                padding: 15px !important;
+            }
+            
+            /* Format body hóa đơn cho in */
+            .invoice-body {
+                padding: 20px !important;
+            }
+            
+            /* Format footer hóa đơn cho in */
+            .invoice-footer {
+                border-top: 1px solid #333 !important;
+                padding: 15px !important;
+                background: #f9f9f9 !important;
+            }
+            
+            /* Thêm tiêu đề cho mỗi trang in */
+            .invoice-card::before {
+                content: "HÓA ĐƠN KHÁM BỆNH";
+                display: block;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 15px;
+                color: #333;
+            }
         }
     </style>
 </head>
@@ -476,7 +569,8 @@
                                     <fmt:formatDate value="${invoice.createdAt}" pattern="dd/MM/yyyy"/>
                                 </div>
                                 
-                                <div>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <!-- ✅ LOGIC CŨ: Nút Thanh toán và trạng thái -->
                                     <c:choose>
                                         <c:when test="${invoice.status == 'PENDING' && !invoice.paymentRequested}">
                                             <form method="post" action="${pageContext.request.contextPath}/PatientInvoiceServlet" style="margin:0;">
@@ -494,6 +588,12 @@
                                             <span class="payment-status">Hoàn thành</span>
                                         </c:otherwise>
                                     </c:choose>
+                                    
+                                    <!-- ✅ THÊM MỚI: Nút In PDF cho tất cả hóa đơn -->
+                                    <button type="button" class="print-btn" 
+                                            onclick="printInvoice('${invoice.invoiceId}', '${invoice.doctorName}', '${invoice.serviceName}', '${invoice.patientName}', '${invoice.appointmentTime}', '${invoice.totalAmount}', '${invoice.status}')">
+                                        🖨️ In PDF
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -510,7 +610,7 @@
     </div>
 
     <script>
-        // Add smooth scrolling and enhanced interactions
+        // ✅ LOGIC CŨ: Add smooth scrolling and enhanced interactions
         document.addEventListener('DOMContentLoaded', function() {
             // Smooth reveal animation on scroll
             const observerOptions = {
@@ -554,6 +654,193 @@
                 });
             });
         });
+        
+        // ✅ THÊM MỚI: Function để in hóa đơn PDF
+        function printInvoice(invoiceId, doctorName, serviceName, patientName, appointmentTime, totalAmount, status) {
+            // Tạo popup window để in
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            
+            // Chuyển đổi totalAmount từ string sang number
+            const amount = parseFloat(totalAmount);
+            
+            // Format ngày khám
+            let formattedDate = 'Chưa xác định';
+            if (appointmentTime && appointmentTime !== 'null') {
+                try {
+                    const date = new Date(appointmentTime);
+                    if (!isNaN(date.getTime())) {
+                        formattedDate = date.toLocaleDateString('vi-VN');
+                    }
+                } catch (e) {
+                    console.log('Lỗi format ngày:', e);
+                }
+            }
+            
+            // Xác định style cho status
+            const statusBgColor = status === 'PAID' ? '#e8f5e8' : '#fff3cd';
+            const statusBorderColor = status === 'PAID' ? '#48bb78' : '#ffc107';
+            const statusTextColor = status === 'PAID' ? '#38a169' : '#856404';
+            const statusText = status === 'PAID' ? '✅ ĐÃ THANH TOÁN' : '⏳ CHỜ THANH TOÁN';
+            
+            // Format ngày hiện tại
+            const currentDate = new Date().toLocaleDateString('vi-VN');
+            const currentTime = new Date().toLocaleTimeString('vi-VN');
+            
+            // Tạo nội dung HTML cho hóa đơn
+            const invoiceContent = `
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Hóa đơn #${invoiceId}</title>
+                    <style>
+                        body {
+                            font-family: 'Arial', sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            background: white;
+                        }
+                        .invoice-container {
+                            max-width: 800px;
+                            margin: 0 auto;
+                            border: 2px solid #333;
+                            padding: 30px;
+                        }
+                        .invoice-header {
+                            text-align: center;
+                            border-bottom: 2px solid #333;
+                            padding-bottom: 20px;
+                            margin-bottom: 30px;
+                        }
+                        .invoice-title {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 10px;
+                        }
+                        .invoice-number {
+                            font-size: 18px;
+                            color: #666;
+                        }
+                        .invoice-info {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 30px;
+                            margin-bottom: 30px;
+                        }
+                        .info-section {
+                            border: 1px solid #ddd;
+                            padding: 15px;
+                            border-radius: 5px;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 5px;
+                        }
+                        .info-value {
+                            color: #666;
+                        }
+                        .amount-section {
+                            text-align: center;
+                            border: 2px solid #48bb78;
+                            padding: 20px;
+                            border-radius: 10px;
+                            background: #f0fff4;
+                            margin: 30px 0;
+                        }
+                        .amount-label {
+                            font-size: 16px;
+                            color: #38a169;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        .amount-value {
+                            font-size: 28px;
+                            font-weight: bold;
+                            color: #38a169;
+                        }
+                        .status-section {
+                            text-align: center;
+                            margin-top: 30px;
+                            padding: 15px;
+                            background: ${statusBgColor};
+                            border: 1px solid ${statusBorderColor};
+                            border-radius: 5px;
+                        }
+                        .status-text {
+                            font-weight: bold;
+                            color: ${statusTextColor};
+                        }
+                        .footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            color: #666;
+                            font-size: 12px;
+                        }
+                        @media print {
+                            body { margin: 0; }
+                            .invoice-container { border: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="invoice-container">
+                        <div class="invoice-header">
+                            <div class="invoice-title">HÓA ĐƠN KHÁM BỆNH</div>
+                            <div class="invoice-number">Số hóa đơn: #${invoiceId}</div>
+                        </div>
+                        
+                        <div class="invoice-info">
+                            <div class="info-section">
+                                <div class="info-label">👨‍⚕️ Bác sĩ:</div>
+                                <div class="info-value">${doctorName}</div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-label">🏥 Dịch vụ:</div>
+                                <div class="info-value">${serviceName}</div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-label">👤 Bệnh nhân:</div>
+                                <div class="info-value">${patientName}</div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-label">📅 Ngày khám:</div>
+                                <div class="info-value">${formattedDate}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="amount-section">
+                            <div class="amount-label">TỔNG CHI PHÍ</div>
+                            <div class="amount-value">${amount.toLocaleString('vi-VN')} ₫</div>
+                        </div>
+                        
+                        <div class="status-section">
+                            <div class="status-text">
+                                ${statusText}
+                            </div>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Hóa đơn được tạo tự động từ hệ thống quản lý phòng khám</p>
+                            <p>Ngày in: ${currentDate} - ${currentTime}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Ghi nội dung vào popup window
+            printWindow.document.write(invoiceContent);
+            printWindow.document.close();
+            
+            // Đợi trang load xong rồi in
+            printWindow.onload = function() {
+                printWindow.print();
+                // Đóng popup sau khi in xong (tùy chọn)
+                // printWindow.close();
+            };
+        }
     </script>
 
     <style>

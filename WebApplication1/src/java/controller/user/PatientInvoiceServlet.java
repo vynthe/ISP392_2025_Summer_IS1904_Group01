@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,11 +37,16 @@ public class PatientInvoiceServlet extends HttpServlet {
         }
         
         try {
-            // Get patient's invoices using user ID (sửa lại nhận List<Map<String, Object>>)
+            // Get patient's invoices using user ID
             List<Map<String, Object>> invoices = invoiceService.getInvoicesByPatientId(user.getUserID());
-            
-            // Set invoice list to request for JSP usage
-            request.setAttribute("invoices", invoices);
+            System.out.println("Số lượng hóa đơn lấy được cho user ID " + user.getUserID() + ": " 
+                    + (invoices != null ? invoices.size() : 0));
+            if (invoices != null && !invoices.isEmpty()) {
+                request.setAttribute("invoices", invoices);
+            } else {
+                request.setAttribute("invoices", new ArrayList<>());
+                System.out.println("Không tìm thấy hóa đơn cho user ID: " + user.getUserID());
+            }
             
             // Forward to JSP
             request.getRequestDispatcher("/views/user/Patient/PatientInvoice.jsp").forward(request, response);
@@ -55,21 +61,24 @@ public class PatientInvoiceServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // ✅ XỬ LÝ MỚI: Bệnh nhân bấm nút "Thanh toán" hóa đơn
         String action = request.getParameter("action");
         if ("requestPayment".equals(action)) {
             String invoiceIdStr = request.getParameter("invoiceId");
             try {
                 int invoiceId = Integer.parseInt(invoiceIdStr);
-                invoiceService.markInvoicePaymentRequested(invoiceId); 
+                invoiceService.markInvoicePaymentRequested(invoiceId);
+                System.out.println("Yêu cầu thanh toán thành công cho hóa đơn ID: " + invoiceId);
+                response.sendRedirect(request.getContextPath() + "/PatientInvoiceServlet?status=success");
+            } catch (NumberFormatException e) {
+                System.err.println("Lỗi: invoiceId không hợp lệ - " + invoiceIdStr);
+                response.sendRedirect(request.getContextPath() + "/PatientInvoiceServlet?status=error&message=Invalid invoice ID");
             } catch (Exception e) {
-                // Có thể log lỗi hoặc set thông báo lỗi nếu cần
+                System.err.println("Lỗi xử lý thanh toán: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/PatientInvoiceServlet?status=error&message=" + e.getMessage());
             }
-            // Sau khi xử lý xong, redirect lại trang hóa đơn để tránh submit lại form
-            response.sendRedirect(request.getContextPath() + "/PatientInvoiceServlet");
             return;
         }
-        // Redirect POST requests to GET to prevent duplicate form submissions (logic cũ)
+        // Redirect POST requests to GET to prevent duplicate form submissions
         response.sendRedirect(request.getContextPath() + "/PatientInvoiceServlet");
     }
     
