@@ -1017,7 +1017,96 @@ public boolean editReply(int replyId, int adminId, String replyContent) throws S
             if (conn != null) conn.close();
         }
     }
-    
+    public boolean saveReview(Reviews review) {
+        // Kiểm tra null
+        if (review == null || review.getUserID() <= 0 || review.getDoctorID() <= 0) {
+            System.err.println("Invalid review data");
+            return false;
+        }
+
+        // Câu SQL đã sửa, khớp với cấu trúc bảng Reviews - thêm serviceID
+        String sql = "INSERT INTO Reviews (UserID, DoctorID, ServiceID, ServiceRating, DoctorRating, Comment) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, review.getUserID());
+            pstmt.setInt(2, review.getDoctorID());
+            pstmt.setInt(3, review.getServiceID());
+            pstmt.setInt(4, review.getServiceRating());
+            pstmt.setInt(5, review.getDoctorRating());
+            pstmt.setString(6, review.getComment());
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error saving review: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Reviews> getReviewsByDoctorID(int doctorID) {
+        List<Reviews> reviews = new ArrayList<>();
+        String sql = "SELECT r.ReviewID, r.UserID, r.DoctorID, r.ServiceID, r.ServiceRating, r.DoctorRating, r.Comment, r.CreatedAt, " +
+                     "u.FullName AS userFullName, s.ServiceName " +
+                     "FROM Reviews r " +
+                     "JOIN Users u ON r.UserID = u.UserID " +
+                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                     "WHERE r.DoctorID = ? " +
+                     "ORDER BY r.CreatedAt DESC";
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, doctorID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Reviews review = new Reviews();
+                    review.setReviewID(rs.getInt("ReviewID"));
+                    review.setUserID(rs.getInt("UserID"));
+                    review.setDoctorID(rs.getInt("DoctorID"));
+                    review.setServiceID(rs.getInt("ServiceID"));
+                    review.setServiceRating(rs.getInt("ServiceRating"));
+                    review.setDoctorRating(rs.getInt("DoctorRating"));
+                    review.setComment(rs.getString("Comment"));
+                    review.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    review.setUserFullName(rs.getString("userFullName"));
+                    review.setServiceName(rs.getString("ServiceName"));
+                    reviews.add(review);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching reviews: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return reviews;
+    }
+    public boolean userExists(int userID) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Users WHERE userID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+public List<Users> getDoctors() throws SQLException {
+        List<Users> doctors = new ArrayList<>();
+        String sql = "SELECT UserID, FullName, Specialization FROM Users WHERE Role = 'doctor' AND Status = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Users doctor = new Users();
+                doctor.setUserID(rs.getInt("UserID"));
+                doctor.setFullName(rs.getString("FullName"));
+                doctor.setSpecialization(rs.getString("Specialization"));
+                doctors.add(doctor);
+            }
+        }
+        return doctors;
+    }
 }
+
 
 
