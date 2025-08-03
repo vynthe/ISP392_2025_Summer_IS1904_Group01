@@ -478,17 +478,13 @@
             <div class="header-container">
                 <div class="logo">
                     <i class="fas fa-hospital"></i>
-                    <span>Hệ thống Y tế</span>
+                    <span>Phòng khám nha khoa</span>
                 </div>
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: bold;">Bệnh nhân</div>
-                        <div style="font-size: 0.9rem; color: #666;">Quản lý hóa đơn</div>
-                    </div>
-                </div>
+                <a href="${pageContext.request.contextPath}/views/user/Patient/PatientDashBoard.jsp" class="btn-homepage">
+                    <i class="fas fa-home"></i> Trang chủ
+                </a>
+
+
             </div>
         </header>
 
