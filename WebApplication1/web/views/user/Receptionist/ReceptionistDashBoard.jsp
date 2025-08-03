@@ -334,6 +334,10 @@
                             <a href="${pageContext.request.contextPath}/EditProfileUserController">
                                 <i class="fas fa-edit mr-2"></i>Chỉnh Sửa Hồ Sơ
                             </a>
+                            <a href="${pageContext.request.contextPath}/ViewReviewsServlet" class="dropdown-item danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Xem Đánh Giá</span>
+                            </a>
                             <a href="${pageContext.request.contextPath}/ChangePasswordController">
                                 <i class="fas fa-lock mr-2"></i>Đổi Mật Khẩu
                             </a>
