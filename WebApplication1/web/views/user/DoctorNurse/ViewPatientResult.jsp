@@ -1153,16 +1153,7 @@
                         <h3>Về Chúng Tôi</h3>
                         <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm.</p>
                     </div>
-                    <div class="footer-section">
-                        <h3>Liên Kết Nhanh</h3>
-                        <ul class="footer-links">
-                            <li><a href="/ViewExaminationResults"><i class="fas fa-stethoscope"></i> Kết Quả Khám</a></li>
-                            <li><a href="/ViewMedicationsServlet"><i class="fas fa-pills"></i> Danh Sách Thuốc</a></li>
-                            <li><a href="/ViewPatientResults"><i class="fas fa-prescription"></i> Kê Đơn Thuốc</a></li>
-                            <li><a href="/ViewScheduleUserServlet"><i class="fas fa-calendar-check"></i> Lịch Làm Việc</a></li>
-                            <li><a href="/ViewRoomServlet"><i class="fas fa-door-open"></i> Quản Lý Phòng</a></li>
-                        </ul>
-                    </div>
+                  
 
                     <div class="footer-section">
                         <h3>Liên Hệ</h3>

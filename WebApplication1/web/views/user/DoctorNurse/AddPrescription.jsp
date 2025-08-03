@@ -645,7 +645,7 @@
             <div class="header-container">
                 <div class="logo-section">
                     <div class="logo">PDC</div>
-                    <div class="brand-name">Phòng Khám Nha Khoa</div>
+                    <div class="brand-name">Phòng Khám Nha Khoa PDC</div>
                 </div>
                 <nav class="nav-menu">
                     <a href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp" class="nav-item">
@@ -855,16 +855,7 @@
                         <h3>Về Chúng Tôi</h3>
                         <p>Chúng tôi cam kết mang đến dịch vụ y tế chất lượng với đội ngũ bác sĩ tận tâm và hệ thống quản lý hiện đại.</p>
                     </div>
-                    <div class="footer-section">
-                        <h3>Liên Kết Nhanh</h3>
-                        <ul class="footer-links">
-                            <li><a href="/ViewExaminationResults"><i class="fas fa-stethoscope"></i> Kết Quả Khám</a></li>
-                            <li><a href="/ViewMedicationsServlet"><i class="fas fa-pills"></i> Danh Sách Thuốc</a></li>
-                            <li><a href="/ViewPatientResults"><i class="fas fa-prescription"></i> Kê Đơn Thuốc</a></li>
-                            <li><a href="/ViewScheduleUserServlet"><i class="fas fa-calendar-check"></i> Lịch Làm Việc</a></li>
-                            <li><a href="/ViewRoomServlet"><i class="fas fa-door-open"></i> Quản Lý Phòng</a></li>
-                        </ul>
-                    </div>
+                  
                     <div class="footer-section">
                         <h3>Liên Hệ</h3>
                         <div class="contact-info">
@@ -876,7 +867,7 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <div class="copyright">© 2024 Phòng Khám Nha Khoa PDC. Tất cả quyền được bảo lưu.</div>
+                    <div class="copyright">© 2025 Phòng Khám Nha Khoa PDC. Tất cả quyền được bảo lưu.</div>
                 </div>
             </div>
         </footer>
