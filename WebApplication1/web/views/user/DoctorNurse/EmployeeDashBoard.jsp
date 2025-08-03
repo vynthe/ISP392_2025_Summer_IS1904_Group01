@@ -503,9 +503,14 @@
                             <i class="fas fa-edit"></i>
                             <span>Đổi mật khẩu</span>
                         </a>
+                            <a href="${pageContext.request.contextPath}/ViewReviewsServlet" class="dropdown-item danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Xem Đánh Giá</span>
+                            </a>
                         <a href="${pageContext.request.contextPath}/LogoutServlet" class="dropdown-item danger" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Đăng xuất</span>
+                            
                         </a>
                     </div>
                 </div>
@@ -572,6 +577,7 @@
                     <div class="stat-number"></div>
                     <div class="stat-label">Phòng hoạt động</div>
                 </div>
+                
             </div>
 
             <!-- Quick Actions -->
