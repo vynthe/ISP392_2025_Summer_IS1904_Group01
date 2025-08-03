@@ -20,6 +20,15 @@ public class ViewInvoiceServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            // ✅ BỔ SUNG: Xử lý message từ ConfirmPaymentServlet
+            String message = request.getParameter("message");
+            String added = request.getParameter("added");
+            
+            if (message != null) {
+                request.setAttribute("message", message);
+                request.setAttribute("added", "true".equals(added));
+            }
+            
             // ✅ BỔ SUNG: Xử lý tìm kiếm với 2 từ khóa
             String keyword1 = request.getParameter("keyword1");
             String keyword2 = request.getParameter("keyword2");

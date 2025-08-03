@@ -580,7 +580,19 @@
                 <c:if test="${not empty message}">
                     <div class="message ${added == true ? 'success' : 'error'}">
                         <i class="fas ${added == true ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                        <span>${message}</span>
+                        <span>
+                            <c:choose>
+                                <c:when test="${message == 'success' && added == true}">
+                                     Xác nhận thanh toán thành công! 
+                                </c:when>
+                                <c:when test="${message == 'error' && added == false}">
+                                     Xác nhận thanh toán thất bại! Vui lòng thử lại.
+                                </c:when>
+                                <c:otherwise>
+                                    ${message}
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                 </c:if>
 

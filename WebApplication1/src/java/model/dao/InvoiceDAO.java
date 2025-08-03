@@ -26,7 +26,7 @@ public class InvoiceDAO {
                 + "r.Status, r.CreatedBy, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes, "
                 + "d.FullName AS doctorName, p.FullName AS patientName, "
                 + "n.FullName AS nurseName, s.ServiceName, s.Price, "
-                + "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus "
+                + "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus, i.paymentRequested "
                 + "FROM ExaminationResults r "
                 + "LEFT JOIN Users d ON r.DoctorID = d.UserID "
                 + "LEFT JOIN Users p ON r.PatientID = p.UserID "
@@ -66,6 +66,7 @@ public class InvoiceDAO {
                 row.put("invoiceId", rs.getObject("InvoiceID"));
                 row.put("totalAmount", rs.getObject("TotalAmount"));
                 row.put("invoiceStatus", rs.getString("invoiceStatus"));
+                row.put("paymentRequested", rs.getObject("paymentRequested"));
                 
                 results.add(row);
             }
@@ -345,7 +346,7 @@ public class InvoiceDAO {
                 + "r.Status, r.CreatedBy, r.CreatedAt, r.UpdatedAt, r.Diagnosis, r.Notes, "
                 + "d.FullName AS doctorName, p.FullName AS patientName, "
                 + "n.FullName AS nurseName, s.ServiceName, s.Price, "
-                + "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus "
+                + "i.InvoiceID, i.TotalAmount, i.Status AS invoiceStatus, i.paymentRequested "
                 + "FROM ExaminationResults r "
                 + "LEFT JOIN Users d ON r.DoctorID = d.UserID "
                 + "LEFT JOIN Users p ON r.PatientID = p.UserID "
@@ -396,6 +397,7 @@ public class InvoiceDAO {
                     row.put("invoiceId", rs.getObject("InvoiceID"));
                     row.put("totalAmount", rs.getObject("TotalAmount"));
                     row.put("invoiceStatus", rs.getString("invoiceStatus"));
+                    row.put("paymentRequested", rs.getObject("paymentRequested"));
                     results.add(row);
                 }
                 return results;
@@ -488,7 +490,7 @@ public class InvoiceDAO {
                 "s.ServiceName AS serviceName, " +
                 "p.FullName AS patientName, " +
                 "a.AppointmentTime AS appointmentTime, " +
-                "i.TotalAmount, i.Status, i.CreatedAt " +
+                "i.TotalAmount, i.Status, i.paymentRequested, i.CreatedAt " +
                 "FROM Invoices i " +
                 "LEFT JOIN Users d ON i.DoctorID = d.UserID " +
                 "LEFT JOIN Users p ON i.PatientID = p.UserID " +
@@ -511,6 +513,7 @@ public class InvoiceDAO {
                     row.put("appointmentTime", rs.getTimestamp("appointmentTime"));
                     row.put("totalAmount", rs.getDouble("TotalAmount"));
                     row.put("status", rs.getString("Status"));
+                    row.put("paymentRequested", rs.getObject("paymentRequested"));
                     row.put("createdAt", rs.getTimestamp("CreatedAt"));
                     invoices.add(row);
                 }
