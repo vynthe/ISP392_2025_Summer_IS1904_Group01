@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -337,7 +338,9 @@
                             <i class="fas fa-dollar-sign"></i>
                             Phí dịch vụ
                         </div>
-                        <div class="info-value price-highlight">${detail.servicePrice} VNĐ</div>
+                        <div class="info-value price-highlight">
+                            <fmt:formatNumber value="${detail.servicePrice}" pattern="#,###" /> VND
+                        </div>
                     </div>
 
                     <div class="info-item">
@@ -430,7 +433,9 @@
                                     <i class="fas fa-money-bill-wave"></i>
                                     Tổng tiền
                                 </div>
-                                <div class="info-value price-highlight">${detail.totalAmount} VNĐ</div>
+                                <div class="info-value price-highlight">
+                                    <fmt:formatNumber value="${detail.totalAmount}" pattern="#,###" /> VND
+                                </div>
                             </div>
 
                             <div class="info-item">
