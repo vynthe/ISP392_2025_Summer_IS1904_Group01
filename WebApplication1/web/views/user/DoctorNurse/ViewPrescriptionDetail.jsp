@@ -653,7 +653,7 @@
                                 Chữ Ký Bác Sĩ
                             </h3>
                             <div class="signature-content">
-                                ${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có thông tin'}
+                                ${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có thông tin'} - Phòng Khám Nha Khoa PDC
                             </div>
                         </div>
 

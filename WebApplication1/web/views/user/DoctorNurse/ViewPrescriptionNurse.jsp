@@ -645,10 +645,10 @@
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="fas fa-clinic-medical me-3"></i>
-                Phòng Khám ABC
+                Phòng Khám Nha Khoa PDC
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="${pageContext.request.contextPath}/views/user/Nurse/NurseDashBoard.jsp">
+                <a class="nav-link" href="${pageContext.request.contextPath}/views/user/DoctorNurse/EmployeeDashBoard.jsp">
                     <i class="fas fa-home me-2"></i>Trang chủ
                 </a>
                 <a class="nav-link active" href="${pageContext.request.contextPath}/ViewPatientResultServlet">
@@ -760,7 +760,7 @@
                         </tr>
                         <tr>
                             <th><i class="fas fa-signature me-2"></i>Chữ ký Bác Sĩ</th>
-                            <td>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'} - Phòng Khám ABC</td>
+                            <td>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'} - Phòng Khám Nha Khoa PDC</td>
                         </tr>
                     </table>
 
