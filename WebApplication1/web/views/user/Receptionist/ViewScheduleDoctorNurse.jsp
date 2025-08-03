@@ -425,14 +425,10 @@
             <c:if test="${not empty schedules}">
                 <c:forEach var="schedule" items="${schedules}">
                     <c:set var="roomName" value="${schedule.roomName != null ? schedule.roomName : 'Chưa phân phòng'}" />
-                    <c:set var="serviceList" value="" />
-                    <c:forEach var="service" items="${schedule.serviceNames}" varStatus="loop">
-                        <c:set var="serviceList" value="${serviceList}'${service}'${!loop.last ? ',' : ''}" />
-                    </c:forEach>
-
+                    
             scheduleData.push({
                 slotId: '${schedule.slotId}',
-                userId: '${schedule.userId}', // ✅ THÊM DÒNG NÀY
+                userId: '${schedule.userId}',
                 fullName: '<c:out value="${schedule.fullName}" escapeXml="true"/>',
                 role: '<c:out value="${schedule.role}" escapeXml="true"/>',
                 roomId: '${schedule.roomId != null ? schedule.roomId : ""}',
@@ -441,10 +437,13 @@
                 startTime: '${schedule.startTime}',
                 endTime: '${schedule.endTime}',
                 status: '<c:out value="${schedule.status}" escapeXml="true"/>',
-                serviceNames: [${serviceList}]
+                serviceNames: []
             });
                 </c:forEach>
             </c:if>
+
+            // Debug: In ra dữ liệu để kiểm tra
+            console.log('Schedule Data:', scheduleData);
 
             var currentWeekStart = new Date();
             // Adjust to Monday of the current week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -603,20 +602,28 @@
                                     '</div>' +
                                     '<div class="appointment-service">' + services + '</div>' +
                                     '<div class="appointment-actions">' +
-                                    // ✅ SỬA FORM - Đảm bảo tham số đúng
-                                    '<form action="${pageContext.request.contextPath}/EditScheduleDoctorNurseServlet" method="get" style="display:inline;">' +
+                                    // ✅ SỬA FORM - Truyền ngày giờ thay vì slotId
+                                    '<form action="${pageContext.request.contextPath}/UpdateScheduleDoctorNurseServlet" method="get" style="display:inline;">' +
                                     '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' +
-                                    '<input type="hidden" name="userID" value="' + schedule.userId + '">' +
+                                    '<input type="hidden" name="userId" value="' + schedule.userId + '">' +
+                                    '<input type="hidden" name="slotDate" value="' + schedule.slotDate + '">' +
+                                    '<input type="hidden" name="startTime" value="' + schedule.startTime + '">' +
+                                    '<input type="hidden" name="endTime" value="' + schedule.endTime + '">' +
+                                    '<input type="hidden" name="role" value="' + schedule.role + '">' +
+                                    '<input type="hidden" name="fullName" value="' + schedule.fullName + '">' +
                                     '<button type="submit" style="margin-right:5px;">Sửa</button>' +
-                                    '</form>' +
-                                    // ✅ SỬA FORM XÓA
-                                    '<form action="${pageContext.request.contextPath}/DeleteScheduleDoctorNurseServlet" method="post" style="display:inline;">' +
+                                    '</form>'+
+                            // ✅ SỬA FORM XÓA - Cũng truyền ngày giờ thay vì slotId
+                            '<form action="${pageContext.request.contextPath}/DeleteScheduleDoctorNurseServlet" method="post" style="display:inline;">' +
                                     '<input type="hidden" name="slotId" value="' + schedule.slotId + '">' +
                                     '<input type="hidden" name="userId" value="' + schedule.userId + '">' +
                                     '<button type="submit" onclick="return confirm(\'Bạn có chắc muốn xóa lịch này?\')">Xóa</button>' +
                                     '</form>' +
                                     '</div>' +
                                     statusBadgeHtml;
+
+                            // Debug: In ra thông tin form để kiểm tra
+                            console.log('Created appointment for userId:', schedule.userId, 'slotDate:', schedule.slotDate);
 
                             cell.appendChild(appointmentDiv);
                         }

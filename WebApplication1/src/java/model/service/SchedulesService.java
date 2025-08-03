@@ -290,9 +290,7 @@ public List<ScheduleEmployee> getSchedulesByDateRange(LocalDate startDate, Local
       
         return scheduleDAO.getWeeklyScheduleByRangeEmployeeCentricNoRoom(startDate, endDate);
     }
- public List<ScheduleEmployee> searchSchedules(String keyword) throws SQLException {
-        return scheduleDAO.searchSchedules(keyword);
-    }
+
 public List<ScheduleEmployee> getSchedulesByUserIdAndRole(int userId, String role) throws SQLException {
         return scheduleDAO.getSchedulesByUserIdAndRole(userId, role);
     }
@@ -349,6 +347,94 @@ public boolean updateScheduleForDoctorNurse(int slotId, int userId, LocalDate ne
             throw e;
         }
     }
+ public List<ScheduleEmployee> getSchedulesForWeek(LocalDate startDate, LocalDate endDate) throws SQLException {
+        return scheduleDAO.getSchedulesForWeek(startDate, endDate);
+    }
+
+    public List<Users> getAvailableEmployeesForReassignment(String role, LocalDate slotDate, LocalTime startTime, LocalTime endTime, int excludeUserId) throws SQLException {
+        if (role == null || slotDate == null || startTime == null || endTime == null) {
+            throw new IllegalArgumentException("Role, slotDate, startTime, and endTime must not be null.");
+        }
+        return scheduleDAO.getAvailableEmployeesForReassignment(role, slotDate, startTime, endTime, excludeUserId);
+    }
+    public Map<String, String> getScheduleByUserAndTime(int userId, String slotDate, String startTime, String endTime) throws SQLException {
+    if (userId <= 0) {
+        throw new IllegalArgumentException("User ID phải là số dương");
+    }
+    if (slotDate == null || startTime == null || endTime == null) {
+        throw new IllegalArgumentException("SlotDate, startTime và endTime không được null");
+    }
+    
+    try {
+        return scheduleDAO.getScheduleByUserAndTime(userId, slotDate, startTime, endTime);
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi lấy lịch theo user và thời gian: " + e.getMessage() + 
+                          " tại " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+}
+
+/**
+ * Lấy danh sách nhân viên khả dụng cho việc reassignment (version String parameters)
+ */
+public List<Users> getAvailableEmployeesForReassignment(String role, String slotDate, String startTime, String endTime, int excludeUserId) throws SQLException {
+    if (role == null || slotDate == null || startTime == null || endTime == null) {
+        throw new IllegalArgumentException("Tất cả tham số không được null");
+    }
+    if (excludeUserId <= 0) {
+        throw new IllegalArgumentException("ExcludeUserId phải là số dương");
+    }
+    
+    // Validate role
+    if (!"Doctor".equalsIgnoreCase(role) && !"Nurse".equalsIgnoreCase(role)) {
+        throw new IllegalArgumentException("Role phải là 'Doctor' hoặc 'Nurse'");
+    }
+    
+    try {
+        return scheduleDAO.getAvailableEmployeesForReassignment(role, slotDate, startTime, endTime, excludeUserId);
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi lấy danh sách nhân viên khả dụng: " + e.getMessage() + 
+                          " tại " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+}
+
+/**
+ * Kiểm tra user có khả dụng cho reassignment không
+ */
+public boolean isUserAvailableForReassignment(int userId, String slotDate, String startTime, String endTime) throws SQLException {
+    if (userId <= 0) {
+        throw new IllegalArgumentException("User ID phải là số dương");
+    }
+    if (slotDate == null || startTime == null || endTime == null) {
+        throw new IllegalArgumentException("SlotDate, startTime và endTime không được null");
+    }
+    
+    try {
+        return scheduleDAO.isUserAvailableForReassignment(userId, slotDate, startTime, endTime);
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi kiểm tra tính khả dụng của user: " + e.getMessage() + 
+                          " tại " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+}
+
+/**
+ * Lấy thông tin lịch dựa trên SlotID
+ */
+public Map<String, String> getScheduleBySlotId(int slotId) throws SQLException {
+    if (slotId <= 0) {
+        throw new IllegalArgumentException("Slot ID phải là số dương");
+    }
+    
+    try {
+        return scheduleDAO.getScheduleBySlotId(slotId);
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi lấy lịch theo SlotID: " + e.getMessage() + 
+                          " tại " + LocalDateTime.now() + " +07");
+        throw e;
+    }
+}
 }
 
 
