@@ -756,9 +756,7 @@
                                 <div class="info-item">
                                     <span>Ngày Cập nhật: ${prescriptionDetail.updatedAt != null ? prescriptionDetail.updatedAt.toString().substring(0, 16).replace('T', ' ') : 'Không có'}</span>
                                 </div>
-                                <div class="info-item">
-                                    <span>Lịch hẹn số: ${prescriptionDetail.appointmentId != null ? prescriptionDetail.appointmentId : 'Không có'}</span>
-                                </div>
+                              
                             </td>
                         </tr>
                         <tr>
@@ -880,10 +878,7 @@
                                                     <i class="fas fa-user-nurse info-icon"></i>
                                                     <span>Y tá Phụ Trách: ${prescription.nurseName != null ? prescription.nurseName : 'Chưa có'}</span>
                                                 </div>
-                                                <div class="info-item">
-                                                    <i class="fas fa-calendar-day info-icon"></i>
-                                                    <span>Lịch hẹn số: ${prescription.appointmentId != null ? prescription.appointmentId : 'Không có'}</span>
-                                                </div>
+                                              
                                             </div>
 
                                             <!-- Diagnosis Preview -->
