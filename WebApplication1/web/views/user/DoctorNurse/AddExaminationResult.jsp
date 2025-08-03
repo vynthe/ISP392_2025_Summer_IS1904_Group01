@@ -554,7 +554,7 @@
                             <textarea id="diagnosis" 
                                       name="diagnosis" 
                                       rows="4"
-                                      placeholder="Nhập chuẩn đoán chi tiết của bác sĩ...">${param.diagnosis}</textarea>
+                                      placeholder="Nhập chuẩn đoán chi tiết của bác sĩ..." required="">${param.diagnosis}</textarea>
                         </div>
                         <div class="form-hint">Mô tả chi tiết tình trạng sức khỏe và chẩn đoán</div>
                     </div>
@@ -565,7 +565,7 @@
                             <textarea id="notes" 
                                       name="notes" 
                                       rows="4"
-                                      placeholder="Nhập ghi chú, lời khuyên, hoặc hướng dẫn điều trị...">${param.notes}</textarea>
+                                      placeholder="Nhập ghi chú, lời khuyên, hoặc hướng dẫn điều trị..." required="">${param.notes}</textarea>
                         </div>
                         <div class="form-hint">Các ghi chú thêm, lời khuyên cho bệnh nhân hoặc hướng dẫn điều trị</div>
                     </div>
