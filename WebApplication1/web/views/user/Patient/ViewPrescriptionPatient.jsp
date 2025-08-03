@@ -761,7 +761,7 @@
                         </tr>
                         <tr>
                             <th><i class="fas fa-signature me-2"></i>Chữ ký Bác Sĩ</th>
-                            <td>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'}</td>
+                            <td>${prescriptionDetail.signature != null ? prescriptionDetail.signature : 'Không có chữ ký'} - Phòng Khám Nha Khoa PDC</td>
                         </tr>
                     </table>
 
