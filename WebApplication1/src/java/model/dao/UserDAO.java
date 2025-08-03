@@ -603,5 +603,418 @@ public List<ScheduleEmployee> getUserSchedulesForReceptionist(int userId) throws
         }
         return doctors;
     }
+     public boolean saveReply(ReviewReply reply) throws SQLException {
+        String sql = "INSERT INTO ReviewReplies (ReviewID, UserID, ReplyContent) " +
+                     "VALUES (?, ?, ?)";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reply.getReviewID());
+            pstmt.setInt(2, reply.getUserID());
+            pstmt.setString(3, reply.getComment());
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean reviewExists(int reviewID) throws SQLException {
+        String sql = "SELECT 1 FROM Reviews WHERE ReviewID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public List<Reviews> getAllReviewsWithReplies() throws SQLException {
+        List<Reviews> reviews = new ArrayList<>();
+        String sql = "SELECT r.ReviewID, r.UserID, r.DoctorID, r.ServiceID, r.ServiceRating, r.DoctorRating, r.Comment, r.CreatedAt, " +
+                     "u1.FullName AS userFullName, u2.FullName AS doctorFullName, s.ServiceName " +
+                     "FROM Reviews r " +
+                     "JOIN Users u1 ON r.UserID = u1.UserID " +
+                     "JOIN Users u2 ON r.DoctorID = u2.UserID " +
+                     "LEFT JOIN Services s ON r.ServiceID = s.ServiceID " +
+                     "ORDER BY r.CreatedAt DESC";
+        
+        // Sử dụng connection riêng cho việc lấy reviews và replies
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Reviews review = new Reviews();
+                review.setReviewID(rs.getInt("ReviewID"));
+                review.setUserID(rs.getInt("UserID"));
+                review.setDoctorID(rs.getInt("DoctorID"));
+                review.setServiceID(rs.getInt("ServiceID"));
+                review.setServiceRating(rs.getInt("ServiceRating"));
+                review.setDoctorRating(rs.getInt("DoctorRating"));
+                review.setComment(rs.getString("Comment"));
+                review.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                review.setUserFullName(rs.getString("userFullName"));
+                review.setDoctorFullName(rs.getString("doctorFullName"));
+                review.setServiceName(rs.getString("ServiceName"));
+
+                reviews.add(review);
+            }
+        }
+        
+        // Lấy replies cho từng review bằng connection riêng biệt
+        for (Reviews review : reviews) {
+            List<ReviewReply> replies = getRepliesByReviewId(review.getReviewID());
+            review.setReplies(replies);
+        }
+        
+        return reviews;
+    }
+
+    public List<ReviewReply> getRepliesByReviewId(int reviewID) throws SQLException {
+        List<ReviewReply> replies = new ArrayList<>();
+        String sql = "SELECT rr.ReplyID, rr.ReviewID, rr.UserID, rr.ReplyContent, rr.CreatedAt, u.FullName AS userFullName " +
+                     "FROM ReviewReplies rr JOIN Users u ON rr.UserID = u.UserID " +
+                     "WHERE rr.ReviewID = ? ORDER BY rr.CreatedAt ASC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    ReviewReply reply = new ReviewReply();
+                    reply.setReplyID(rs.getInt("ReplyID"));
+                    reply.setReviewID(rs.getInt("ReviewID"));
+                    reply.setUserID(rs.getInt("UserID"));
+                    reply.setComment(rs.getString("ReplyContent"));
+                    reply.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    reply.setUserFullName(rs.getString("userFullName"));
+                    replies.add(reply);
+                }
+            }
+        }
+        return replies;
+    }
+public boolean hasAppointment(int patientID, int doctorID) throws SQLException {
+    String sql = "SELECT 1 FROM Appointments WHERE PatientID = ? AND DoctorID = ? AND Status = 'Approved'";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, patientID);
+        pstmt.setInt(2, doctorID);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            return rs.next();
+        }
+    }
+}
+public boolean addReview(int patientId, int doctorId, int serviceRating, int doctorRating, String comment) {
+    String sql = "INSERT INTO Reviews (userID, doctorID, serviceRating, doctorRating, comment) VALUES (?, ?, ?, ?, ?)";
+
+    try (Connection conn = DBContext.getInstance().getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, patientId);
+        ps.setInt(2, doctorId);
+        ps.setInt(3, serviceRating);
+        ps.setInt(4, doctorRating);
+        ps.setString(5, comment);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+        System.err.println("[ERROR] " + new java.util.Date() + " - addReview: " + e.getMessage());
+        return false;
+    }
+}
+public List<Users> getDoctorsForReview(int patientId) {
+    List<Users> doctors = new ArrayList<>();
+    String sql = """
+        SELECT DISTINCT u.UserID, u.FullName
+        FROM Appointments a
+        JOIN Users u ON a.DoctorID = u.UserID
+        JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+        WHERE a.PatientID = ?
+          AND a.Status = 'Approved'
+          AND se.SlotDate < CAST(GETDATE() AS DATE)
+    """;
+
+    try (Connection conn = DBContext.getInstance().getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, patientId);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Users doc = new Users();
+                doc.setUserID(rs.getInt("UserID"));
+                doc.setFullName(rs.getString("FullName"));
+                doctors.add(doc);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("[ERROR] getDoctorsForReview: " + e.getMessage());
+    }
+
+    return doctors;
+}
+
+// Kiểm tra xem bệnh nhân có quyền đánh giá bác sĩ này không
+public boolean canPatientReview(int patientId, int doctorId) {
+    String sql = """
+        SELECT COUNT(*) 
+        FROM Appointments a
+        JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+        WHERE a.PatientID = ?
+          AND a.DoctorID = ?
+          AND a.Status = 'Approved'
+          AND se.SlotDate < CAST(GETDATE() AS DATE)
+    """;
+
+    try (Connection conn = DBContext.getInstance().getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, patientId);
+        ps.setInt(2, doctorId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("[ERROR] canPatientReview: " + e.getMessage());
+    }
+
+    return false;
+}
+
+/**
+ * Lấy danh sách dịch vụ mà bệnh nhân đã sử dụng với bác sĩ cụ thể
+ */
+public List<model.entity.Services> getServicesForReview(int patientId, int doctorId) {
+    List<model.entity.Services> services = new ArrayList<>();
+    String sql = """
+        SELECT s.ServiceID, s.ServiceName, s.Price
+        FROM Appointments a
+        JOIN ScheduleEmployee se ON a.SlotID = se.SlotID
+        JOIN RoomServices rs ON se.RoomID = rs.RoomID
+        JOIN Services s ON rs.ServiceID = s.ServiceID
+        WHERE a.PatientID = ?
+          AND a.DoctorID = ?
+          AND a.Status = 'Approved'
+          AND se.SlotDate < CAST(GETDATE() AS DATE)
+        GROUP BY s.ServiceID, s.ServiceName, s.Price
+    """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, patientId);
+        ps.setInt(2, doctorId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                model.entity.Services service = new model.entity.Services();
+                service.setServiceID(rs.getInt("ServiceID"));
+                service.setServiceName(rs.getString("ServiceName"));
+                service.setDescription("");
+                service.setPrice(rs.getDouble("Price"));
+                services.add(service);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("[ERROR] getServicesForReview: " + e.getMessage());
+    }
+
+    return services;
+}
+
+/**
+ * Kiểm tra xem bệnh nhân đã đánh giá bác sĩ cho dịch vụ này chưa
+ */
+public boolean hasPatientReviewed(int patientId, int doctorId, int serviceId) {
+    String sql = "SELECT COUNT(*) FROM Reviews WHERE userID = ? AND doctorID = ? AND serviceID = ?";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, patientId);
+        ps.setInt(2, doctorId);
+        ps.setInt(3, serviceId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("[ERROR] hasPatientReviewed: " + e.getMessage());
+    }
+
+    return false;
+}public List<Reviews> searchReviewsByDoctorOrPatient(String doctorName, String patientName) throws SQLException {
+        // Nếu cả hai tham số đều rỗng hoặc null, trả về tất cả đánh giá
+        if ((doctorName == null || doctorName.trim().isEmpty()) && 
+            (patientName == null || patientName.trim().isEmpty())) {
+            return getAllReviewsWithReplies();
+        }
+
+        // Lấy tất cả đánh giá và lọc phía server
+        List<Reviews> allReviews = getAllReviewsWithReplies();
+        List<Reviews> filteredReviews = new ArrayList<>();
+
+        // Chuẩn hóa tham số tìm kiếm
+        doctorName = (doctorName != null) ? doctorName.trim().toLowerCase() : "";
+        patientName = (patientName != null) ? patientName.trim().toLowerCase() : "";
+
+        for (Reviews review : allReviews) {
+            boolean matches = true;
+
+            // Kiểm tra tên bác sĩ nếu có
+            if (!doctorName.isEmpty()) {
+                String reviewDoctorName = review.getDoctorFullName() != null ? 
+                    review.getDoctorFullName().toLowerCase() : "";
+                if (!reviewDoctorName.contains(doctorName)) {
+                    matches = false;
+                }
+            }
+
+            // Kiểm tra tên bệnh nhân nếu có
+            if (!patientName.isEmpty()) {
+                String reviewPatientName = review.getUserFullName() != null ? 
+                    review.getUserFullName().toLowerCase() : "";
+                if (!reviewPatientName.contains(patientName)) {
+                    matches = false;
+                }
+            }
+
+            // Nếu phù hợp với tiêu chí, thêm vào danh sách kết quả
+            if (matches) {
+                filteredReviews.add(review);
+            }
+        }
+
+        return filteredReviews;
+    }
+public boolean editReply(int replyId, int adminId, String replyContent) throws SQLException {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+
+    try {
+        conn = dbContext.getConnection(); // Sử dụng dbContext
+        String sql = "UPDATE ReviewReplies SET ReplyContent = ? WHERE ReplyID = ? AND UserID = ?";
+        
+        stmt = conn.prepareStatement(sql);
+        stmt.setString(1, replyContent);
+        stmt.setInt(2, replyId);
+        stmt.setInt(3, adminId);
+
+        int rowsAffected = stmt.executeUpdate();
+        if (rowsAffected == 0) {
+            System.out.println("Không tìm thấy phản hồi với ReplyID: " + replyId + " và UserID: " + adminId);
+        }
+        return rowsAffected > 0;
+
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi cập nhật phản hồi: " + e.getMessage());
+        throw e; // Ném lại ngoại lệ để servlet xử lý
+    } finally {
+        try {
+            if (stmt != null) stmt.close();
+            if (conn != null) conn.close();
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi đóng kết nối: " + e.getMessage());
+            throw e;
+        }
+    }
+}
+
+    public boolean deleteReply(int replyId, int adminId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = dbContext.getConnection();
+            String sql = "DELETE FROM ReviewReplies WHERE ReplyID = ? AND UserID = ?";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, replyId);
+            stmt.setInt(2, adminId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } finally {
+            if (stmt != null) stmt.close();
+            if (conn != null) conn.close();
+        }
+    }
+
+    public boolean deleteComment(int reviewId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = dbContext.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // Xóa các phản hồi liên quan trước
+            String deleteRepliesSql = "DELETE FROM ReviewReplies WHERE ReviewID = ?";
+            stmt = conn.prepareStatement(deleteRepliesSql);
+            stmt.setInt(1, reviewId);
+            stmt.executeUpdate();
+            stmt.close();
+
+            // Xóa nhận xét
+            String deleteReviewSql = "DELETE FROM Reviews WHERE ReviewID = ?";
+            stmt = conn.prepareStatement(deleteReviewSql);
+            stmt.setInt(1, reviewId);
+
+            int rowsAffected = stmt.executeUpdate();
+            conn.commit();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback();
+            throw e;
+        } finally {
+            if (stmt != null) stmt.close();
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        }
+    }
+    public boolean replyExists(int replyId, int adminId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbContext.getConnection();
+            String sql = "SELECT COUNT(*) FROM ReviewReplies WHERE ReplyID = ? AND UserID = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, replyId);
+            stmt.setInt(2, adminId);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } finally {
+            if (stmt != null) stmt.close();
+            if (conn != null) conn.close();
+        }
+    }
+   public boolean updateReply(ReviewReply reply) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbContext.getConnection();
+            String sql = "UPDATE ReviewReplies SET ReplyContent = ? WHERE ReplyID = ? AND UserID = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, reply.getComment());
+            stmt.setInt(2, reply.getReplyID());
+            stmt.setInt(3, reply.getUserID());
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } finally {
+            if (stmt != null) stmt.close();
+            if (conn != null) conn.close();
+        }
+    }
     
 }
+
